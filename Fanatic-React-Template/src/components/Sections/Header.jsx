@@ -95,7 +95,7 @@ const RightSide = styled.div`
   position: relative;
   @media (max-width: 960px) {
     width: 100%;
-    margin-top: 30px;
+    margin-top: 31px;
   }
 `;
 
