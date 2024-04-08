@@ -130,13 +130,6 @@ function CreateQPage() {
     console.log(selections);
   }, [selections]); // selections 상태가 변경될 때마다 실행됩니다.
 
-  // 선택된 유형 토글 처리 함수 -> 특정 문제 유형을 선택하거나 해제할 때 호출
-  //선택에 따라 selectedTypes 배열 업데이트, 그러나 selections 상태를 직접 업데이트하지는 않음
-  // 문제 유형의 활성화 상태 관리
-  // 사용자가 특정 문제 유형의 버튼을 클릭하면 toggleSelection 함수가 호출되어 selectedTypes 상태가 업데이트
-  // handleSelectionChange 함수가 호출됩니다. 이 함수는 선택된 문제 유형과 개수를 selections 객체에 저장
-  // 문제 생성 버튼 클릭 -> fetchQuestion 함수가 호출되어 현재 selection 객체를 서버로 전송
-  // 서버는 이 정보를 사용하여 요청된 문제 유형과 개수에 맞는 문제를 생성하거나 반환
   const toggleSelection = (key) => {
     setSelectedTypes(prev => 
       prev.includes(key) ? prev.filter(type => type !== key) : [...prev, key]
@@ -159,7 +152,7 @@ function CreateQPage() {
 
   const fetchQuestions = () => {
     setLoading(true);
-    fetch("http://127.0.0.1:8000/GenerateProblem/", {
+    fetch("http://127.0.0.1:8000/GenerateQuestion/", {
       method: "POST",
       headers: {
         'Content-Type': 'application/json',
@@ -168,6 +161,7 @@ function CreateQPage() {
     })
     .then(response => response.json())
     .then(data => {
+      console.log(selections)
       setLoading(false);
       setQuestions(data.questions);
     })
