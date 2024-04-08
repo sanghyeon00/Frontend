@@ -285,7 +285,7 @@ function CreateQPage() {
           </form>
         </InputContainer>
         <DownloadButtonContainer>
-          <DownloadButton onClick={() => alert('PDF 다운로드 시작...')}>PDF 다운로드</DownloadButton>
+          <DownloadButton onClick={() => alert('PDF 다운로드 시작.....')}>PDF 다운로드</DownloadButton>
         </DownloadButtonContainer>
         {/* 서버로부터 받은 문제 데이터를 바탕으로 문제 유형 및 문제 내용을 표시하는 UI */}
         {questions.map((questionType, index) => (
