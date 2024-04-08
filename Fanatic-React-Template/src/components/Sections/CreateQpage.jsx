@@ -116,34 +116,38 @@ const DownloadButton = styled.button`
   }
 `;
 
-
+// 주요 컴포넌트 정의
 function CreateQPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selections, setSelections] = useState({});
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [question, setQuestion] = useState('');
+  const [questions, setQuestions] = useState([]); // 서버로부터 받은 문제 데이터
 
+  // 선택된 옵션 변겅 시 로그 출력을 위한 useEffect 훅 사용
   useEffect(() => {
     console.log(selections);
-  }, [selections]);
+  }, [selections]); // selections 상태가 변경될 때마다 실행됩니다.
 
   const toggleSelection = (key) => {
     setSelectedTypes(prev => 
       prev.includes(key) ? prev.filter(type => type !== key) : [...prev, key]
     );
+    // 선택 시 기본값을 0으로 설정
+    setSelections(prev => ({
+      ...prev,
+      [key]: prev[key] !== undefined ? prev[key] : 0
+    }));
   };
+  //특정 문제 유형에 대해 원하는 문제의 개수를 선택할 때 호출
+  // 문제의 개수를 선택하면, 해당 문제 유형(key)과 선택된 개수(count)를
+  //selections 객체에 저장하거나 업데이트
   const handleSelectionChange = (key, count) => {
     setSelections(prev => ({
       ...prev,
       [key]: count
     }));
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert(`질문이 제출되었습니다: ${question}`);
-    // 이 부분에서 질문을 처리하는 로직(예: API 호출)을 구현할 수 있습니다.
   };
 
   const fetchQuestions = () => {
@@ -159,7 +163,7 @@ function CreateQPage() {
     .then(data => {
       console.log(selections)
       setLoading(false);
-      console.log(data); // Fetch된 문제 데이터 처리
+      setQuestions(data.questions);
     })
     .catch(error => {
       console.error('Fetching questions failed:', error);
@@ -167,6 +171,17 @@ function CreateQPage() {
       setLoading(false);
     });
   };
+
+    // 선택 변경 처리 함수
+    const handleSubmit = (e) => {
+      e.preventDefault();
+      alert(`질문이 제출되었습니다: ${question}`);
+      // 이 부분에서 질문을 처리하는 로직(예: API 호출)을 구현할 수 있습니다.
+    };
+
+  useEffect(() => {
+    fetchQuestions(); // 컴포넌트가 마운트될 때 서버로부터 문제 데이터를 가져옵니다.
+  }, []); // 의존성 배열이 비어 있으므로, 컴포넌트가 처음 마운트될 때만 fetchQuestions 함수가 실행됩니다
 
   const questionTypes = {
     '객관식': ['빈칸', '단답형', '문장형'],
@@ -196,10 +211,10 @@ function CreateQPage() {
                         {subType}
                       </TypeButton>
                       <CountSelect
-                        value={selections[subTypeKey] || 5}
+                        value={selections[subTypeKey] || 0} // 기본값을 0으로 설정
                         onChange={(e) => handleSelectionChange(subTypeKey, parseInt(e.target.value))}
                       >
-                        {[5, 10, 15].map(count => (
+                        {[0, 5, 10, 15].map(count => (
                           <option key={count} value={count}>{count}개</option>
                         ))}
                       </CountSelect>
@@ -210,10 +225,10 @@ function CreateQPage() {
                 <ButtonContainer>
                   <Label style={{visibility: 'hidden'}}>O/X</Label>
                   <CountSelect
-                    value={selections['OX선택형'] || 5}
+                    value={selections['OX선택형'] || 0} // 기본값을 0으로 설정
                     onChange={(e) => handleSelectionChange('OX선택형', parseInt(e.target.value))}
                   >
-                    {[5, 10, 15].map(count => (
+                    {[0, 5, 10, 15].map(count => (
                       <option key={count} value={count}>{count}개</option>
                     ))}
                   </CountSelect>
@@ -242,11 +257,21 @@ function CreateQPage() {
         <DownloadButtonContainer>
           <DownloadButton onClick={() => alert('PDF 다운로드 시작...')}>PDF 다운로드</DownloadButton>
         </DownloadButtonContainer>
+        {/* 서버로부터 받은 문제 데이터를 바탕으로 문제 유형 및 문제 내용을 표시하는 UI */}
+        {questions.map((questionType, index) => (
+          <Section key={index}>
+            <Label>{questionType.type}</Label>
+            {questionType.items.map((item, itemIndex) => (
+              <div key={itemIndex}>
+                <p>{item.content}</p>
+                <p>문제 개수: {item.count}</p>
+              </div>
+            ))}
+          </Section>
+        ))}
       </PageContainer>
     </>
   );
 }
-
-
 
 export default CreateQPage;
