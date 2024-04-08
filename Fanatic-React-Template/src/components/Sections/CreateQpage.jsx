@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import Sidebar from './Sidebar'; // 사이드바 컴포넌트를 임포트합니다.
 
@@ -124,6 +124,10 @@ function CreateQPage() {
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [question, setQuestion] = useState('');
 
+  useEffect(() => {
+    console.log(selections);
+  }, [selections]);
+
   const toggleSelection = (key) => {
     setSelectedTypes(prev => 
       prev.includes(key) ? prev.filter(type => type !== key) : [...prev, key]
@@ -144,7 +148,7 @@ function CreateQPage() {
 
   const fetchQuestions = () => {
     setLoading(true);
-    fetch("http://127.0.0.1:8000/GenerateProblem/", {
+    fetch("http://127.0.0.1:8000/GenerateQuestion/", {
       method: "POST",
       headers: {
         'Content-Type': 'application/json',
@@ -153,6 +157,7 @@ function CreateQPage() {
     })
     .then(response => response.json())
     .then(data => {
+      console.log(selections)
       setLoading(false);
       console.log(data); // Fetch된 문제 데이터 처리
     })
