@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import Sidebar from './Sidebar'; // 사이드바 컴포넌트를 임포트합니다.
 
@@ -116,19 +116,40 @@ const DownloadButton = styled.button`
   }
 `;
 
-
+// 주요 컴포넌트 정의
 function CreateQPage() {
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [selections, setSelections] = useState({});
-  const [selectedTypes, setSelectedTypes] = useState([]);
-  const [question, setQuestion] = useState('');
+  // 상태 관리를 위한 useState 훅 사용
+  const [loading, setLoading] = useState(false); // 로딩상태
+  const [error, setError] = useState(null); // 에러 상태
+  const [selections, setSelections] = useState({}); //선택된 옵션들
+  const [selectedTypes, setSelectedTypes] = useState([]); // 선택된 유형들
+  const [question, setQuestion] = useState(''); // 질문 내용
 
+  // 선택된 옵션 변겅 시 로그 출력을 위한 useEffect 훅 사용
+  useEffect(() => {
+    console.log(selections);
+  }, [selections]); // selections 상태가 변경될 때마다 실행됩니다.
+
+  // 선택된 유형 토글 처리 함수 -> 특정 문제 유형을 선택하거나 해제할 때 호출
+  //선택에 따라 selectedTypes 배열 업데이트, 그러나 selections 상태를 직접 업데이트하지는 않음
+  // 문제 유형의 활성화 상태 관리
+  // 사용자가 특정 문제 유형의 버튼을 클릭하면 toggleSelection 함수가 호출되어 selectedTypes 상태가 업데이트
+  // handleSelectionChange 함수가 호출됩니다. 이 함수는 선택된 문제 유형과 개수를 selections 객체에 저장
+  // 문제 생성 버튼 클릭 -> fetchQuestion 함수가 호출되어 현재 selection 객체를 서버로 전송
+  // 서버는 이 정보를 사용하여 요청된 문제 유형과 개수에 맞는 문제를 생성하거나 반환
   const toggleSelection = (key) => {
     setSelectedTypes(prev => 
       prev.includes(key) ? prev.filter(type => type !== key) : [...prev, key]
     );
+    // 선택 시 기본값을 0으로 설정
+    setSelections(prev => ({
+      ...prev,
+      [key]: prev[key] !== undefined ? prev[key] : 0
+    }));
   };
+  //특정 문제 유형에 대해 원하는 문제의 개수를 선택할 때 호출
+  // 문제의 개수를 선택하면, 해당 문제 유형(key)과 선택된 개수(count)를
+  //selections 객체에 저장하거나 업데이트
   const handleSelectionChange = (key, count) => {
     setSelections(prev => ({
       ...prev,
@@ -136,6 +157,7 @@ function CreateQPage() {
     }));
   };
 
+  // 선택 변경 처리 함수
   const handleSubmit = (e) => {
     e.preventDefault();
     alert(`질문이 제출되었습니다: ${question}`);
@@ -191,10 +213,10 @@ function CreateQPage() {
                         {subType}
                       </TypeButton>
                       <CountSelect
-                        value={selections[subTypeKey] || 5}
+                        value={selections[subTypeKey] || 0} // 기본값을 0으로 설정
                         onChange={(e) => handleSelectionChange(subTypeKey, parseInt(e.target.value))}
                       >
-                        {[5, 10, 15].map(count => (
+                        {[0, 5, 10, 15].map(count => (
                           <option key={count} value={count}>{count}개</option>
                         ))}
                       </CountSelect>
@@ -205,10 +227,10 @@ function CreateQPage() {
                 <ButtonContainer>
                   <Label style={{visibility: 'hidden'}}>O/X</Label>
                   <CountSelect
-                    value={selections['OX선택형'] || 5}
+                    value={selections['OX선택형'] || 0} // 기본값을 0으로 설정
                     onChange={(e) => handleSelectionChange('OX선택형', parseInt(e.target.value))}
                   >
-                    {[5, 10, 15].map(count => (
+                    {[0, 5, 10, 15].map(count => (
                       <option key={count} value={count}>{count}개</option>
                     ))}
                   </CountSelect>
@@ -241,7 +263,5 @@ function CreateQPage() {
     </>
   );
 }
-
-
 
 export default CreateQPage;
