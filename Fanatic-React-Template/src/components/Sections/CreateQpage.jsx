@@ -116,8 +116,27 @@ const DownloadButton = styled.button`
   }
 `;
 
+const QuestionContainer = styled.div`
+  padding: 10px;
+  margin-bottom: 10px; // 문제 간격
+  border-left: 3px solid transparent; // 기본 상태에서는 투명한 왼쪽 테두리
+  transition: border-color 0.3s; // 테두리 색상 변화를 위한 애니메이션 효과
+
+  &:hover {
+    border-left: 3px solid orange; // 마우스 호버 시 주황색 테두리로 변경
+  }
+`;
+
+const QuestionDivider = styled.hr`
+  margin: 20px 0;
+  border: 0;
+  height: 1px;
+  background-color: #ccc; // 문제 사이의 구별 선
+`;
+
 // 주요 컴포넌트 정의
 function CreateQPage() {
+  // 로딩상태, 에러상태, 선택된 옵션들, 선택된 문제 유형, 사용자 입력 질문, 서버로부터 받은 문제 데이터 상태 관리
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selections, setSelections] = useState({});
@@ -150,25 +169,28 @@ function CreateQPage() {
     }));
   };
 
+  // 문제 데이터를 서버로부터 가져오는 함수
   const fetchQuestions = () => {
-    setLoading(true);
-    fetch("http://127.0.0.1:8000/GenerateQuestion/", {
-      method: "POST",
+
+    setLoading(true); //로딩 상태 true 설정
+    fetch("http://127.0.0.1:8000/GenerateProblem/", {
+      method: "POST", // HTTP 메소드 지정 
       headers: {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json', //콘텐츠 타입 헤더 설정
       },
-      body: JSON.stringify({ selections })
+      body: JSON.stringify({ selections }) // 선택된 옵션들을 JSON 문자열로 변환하여 요청
     })
-    .then(response => response.json())
+    .then(response => response.json()) //응답 JSON으로 파싱
     .then(data => {
+
       console.log(selections)
       setLoading(false);
       setQuestions(data.questions);
     })
     .catch(error => {
-      console.error('Fetching questions failed:', error);
-      setError(error.message);
-      setLoading(false);
+      console.error('Fetching questions failed:', error); // 에러 발생 시 콘솔에 에러
+      setError(error.message); //에러 메시지 상태에 저장
+      setLoading(false); // 로딩상태 FALSE로 설정
     });
   };
 
@@ -178,10 +200,14 @@ function CreateQPage() {
       alert(`질문이 제출되었습니다: ${question}`);
       // 이 부분에서 질문을 처리하는 로직(예: API 호출)을 구현할 수 있습니다.
     };
-
+  // 컴포넌트가 마운트 될 때 서버로부터 문제 데이터를 가져옴
   useEffect(() => {
     fetchQuestions(); // 컴포넌트가 마운트될 때 서버로부터 문제 데이터를 가져옵니다.
   }, []); // 의존성 배열이 비어 있으므로, 컴포넌트가 처음 마운트될 때만 fetchQuestions 함수가 실행됩니다
+
+  useEffect(() => {
+    fetchQuestions();
+  }, []);
 
   const questionTypes = {
     '객관식': ['빈칸', '단답형', '문장형'],
@@ -255,19 +281,26 @@ function CreateQPage() {
           </form>
         </InputContainer>
         <DownloadButtonContainer>
-          <DownloadButton onClick={() => alert('PDF 다운로드 시작...')}>PDF 다운로드</DownloadButton>
+          <DownloadButton onClick={() => alert('PDF 다운로드 시작.....')}>PDF 다운로드</DownloadButton>
         </DownloadButtonContainer>
         {/* 서버로부터 받은 문제 데이터를 바탕으로 문제 유형 및 문제 내용을 표시하는 UI */}
         {questions.map((questionType, index) => (
-          <Section key={index}>
-            <Label>{questionType.type}</Label>
-            {questionType.items.map((item, itemIndex) => (
-              <div key={itemIndex}>
-                <p>{item.content}</p>
-                <p>문제 개수: {item.count}</p>
-              </div>
-            ))}
-          </Section>
+          <React.Fragment key={index}>
+            <Section>
+              <Label>문제 유형: {questionType.type}</Label>
+              {questionType.items.map((item, itemIndex) => (
+                <QuestionContainer key={itemIndex}>
+                  <p>{item.content}</p>
+                  {/* 객관식 문제일 경우 선택지 렌더링 */}
+                  {questionType.type === 1 && item.options.map((option, optionIndex) => (
+                    <div key={optionIndex}>{option}</div>
+                  ))}
+                  <p>정답: {item.answer}</p>
+                </QuestionContainer>
+              ))}
+            </Section>
+            {index < questions.length - 1 && <QuestionDivider />}
+          </React.Fragment>
         ))}
       </PageContainer>
     </>
