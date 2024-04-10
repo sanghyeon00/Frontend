@@ -10,6 +10,9 @@ import TopNavbar from "./components/Nav/TopNavbar.jsx";
 //Member
 import Login from "./components/Member/Login.jsx";
 import Membership from "./components/Member/Membership.jsx"
+import TeacherSingout from "./components/Member/TeacherSingout.jsx"
+import StudentSingout from "./components/Member/StudentSingout.jsx"
+
 
 export default function App() {
   return (
@@ -27,6 +30,8 @@ export default function App() {
           <Route path="/classroom" element={<Classroom />}/>
           <Route path="/login" element={<Login />}/>
           <Route path="/membership" element={<Membership />}/>
+          <Route path="/teacherSingout" element={<TeacherSingout />}/>
+          <Route path="/studentSingout" element={<StudentSingout />}/>
         </Routes>
       </>
     </Router>
