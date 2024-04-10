@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-export default function SingupButton({ title, action, border, small,margin_top, margin_left}) {
+export default function SingupButton({ title, action, border, small,margin_top, margin_left, disabled}) {
   return (
     <Wrapper
       onClick={action ? () => action() : null}
@@ -9,6 +9,7 @@ export default function SingupButton({ title, action, border, small,margin_top, 
       small={small} // small prop을 Wrapper에 전달
       margin_top={margin_top}
       margin_left={margin_left}
+      disabled={disabled}
     >
       {title}
     </Wrapper>
@@ -39,5 +40,12 @@ const Wrapper = styled.button`
     background-color: ${props => props.border ? "transparent" : "#01DF01"};
     border: ${props => props.border ? "1px solid #7620ff" : "none"}; // 호버 시 테두리 스타일
     color: ${props => props.border ? "#7620ff" : "#fff"};
+  }
+
+  &:disabled {
+    background-color: #ddd;
+    border-color: #ccc;
+    color: #666;
+    cursor: not-allowed;
   }
 `;

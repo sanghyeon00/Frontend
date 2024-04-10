@@ -2,9 +2,16 @@ import styled from "styled-components";
 import logo from '../../assets/img/Loginout/greenlogo.png';
 import React, { useState, useEffect } from 'react';
 import LoginButton from "../Buttons/LoginButon";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
 
+    const navigate = useNavigate();
+
+    const memberSingout = () => {
+        navigate("/membership");
+        // 여기에 교수 회원가입 입장 로직 구현
+    };
 
     const [id, setid] = useState('');
     const [password, setpassword] = useState('');
@@ -39,7 +46,7 @@ const Login = () => {
                     <a style={{fontSize:"13px", fontWeight:"bold", marginLeft:"160px"}}>아이디 찾기</a> | <a style={{fontSize:"13px", fontWeight:"bold"}}>비밀번호 찾기</a>
                 </div>
                 <LoginButton title="로그인" margin_top={true}/>
-                <LoginButton title="회원가입"/>
+                <LoginButton title="회원가입" action={memberSingout}/>
             </LoginBox>
 
         </Wrapper>

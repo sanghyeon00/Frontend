@@ -65,11 +65,55 @@ const TeacherSingout = () => {
         setGender(event.target.value);
     };
 
+    const [agreement1, setAgreement1] = useState(false);
+
+    const agreementChange1 = () => {
+        setAgreement1(!agreement1);
+    };
+
+    const [agreement2, setAgreement2] = useState(false);
+
+    const agreementChange2 = () => {
+        setAgreement2(!agreement2);
+    };
+
+    const [agreement3, setAgreement3] = useState(false);
+
+    const agreementChange3 = () => {
+        setAgreement3(!agreement3);
+    };
+
     const navigate = useNavigate();
 
     const Singout = () => {
         navigate("/");
     };
+
+    const [isPasswordMatch, setIsPasswordMatch] = useState(true);
+
+    const handlePasswordCheck = (event) => {
+        const { value } = event.target;
+        setpasswordcheack(value);
+        setIsPasswordMatch(value === password);
+    };
+
+    const isAllAgreed = agreement1 && agreement2 && agreement3;
+
+    // 입력 상태를 확인하는 상태 변수 추가
+    const [isInputValid, setInputValid] = useState(false);
+
+    // 각 입력 요소에 대한 입력 유효성 검사 함수 정의
+    const validateInputs = () => {
+        // 필수 입력 요소에 대한 상태를 확인하여 유효성 검사 수행
+        const isValid = id !== '' && password !== '' && passwordcheack !== '' && name !== '' && studentid !== '' && email !== '' && phone !== '' && phoneid !== '' && year !== '' && month !== '' && day !== '' && gender !== '' && isAllAgreed && isPasswordMatch;
+        // 입력 상태를 변경
+        setInputValid(isValid);
+    };
+
+    useEffect(() => {
+        validateInputs();
+    }, [id, password, passwordcheack, name, studentid, email, phone, phoneid, year, month, day, gender, agreement1, agreement2, agreement3]);
+    
 
     return (
         <Wrapper>
@@ -104,7 +148,8 @@ const TeacherSingout = () => {
                 <InputBox6 
                     type="password" 
                     value={passwordcheack} 
-                    onChange={passwordcheackUpdate} 
+                    onChange={handlePasswordCheck} 
+                    style={{borderColor: isPasswordMatch ? '#000' : 'red'}}
                     placeholder="비밀번호를 한번 더 입력해주세요." 
                 />
                 </div>
@@ -125,7 +170,7 @@ const TeacherSingout = () => {
                     type="text" 
                     value={studentid} 
                     onChange={studentidUpdate} 
-                    placeholder="교번을 입력해주세요." 
+                    placeholder="학번을 입력해주세요." 
                 />
                 </div>
 
@@ -212,11 +257,11 @@ const TeacherSingout = () => {
                 <Separator />
                 <div style={{marginBottom:"7px"}}>
                     <strong style={{ fontSize:"15px", fontWeight:"bold", marginLeft:"25px"}} className="font15 extraBold">이용약관 동의</strong> 
-                    <Checkbox2 type="checkbox"/> <strong style={{fontSize:"20px"}}>개인정보 수집 동의</strong>
-                    <div><Checkbox type="checkbox"/> <strong style={{fontSize:"20px"}}>개인정보 이용 동의</strong></div>
-                    <div><Checkbox type="checkbox"/> <strong style={{fontSize:"20px"}}>GPS 사용 동의</strong></div>
+                    <Checkbox2 type="checkbox" checked={agreement1} onChange={() => agreementChange1(!agreement1)}/> <strong style={{fontSize:"20px"}}>개인정보 수집 동의</strong>
+                    <div><Checkbox type="checkbox" checked={agreement2} onChange={() => agreementChange2(!agreement2)}/> <strong style={{fontSize:"20px"}}>개인정보 이용 동의</strong></div>
+                    <div><Checkbox type="checkbox" checked={agreement3} onChange={() => agreementChange3(!agreement3)}/> <strong style={{fontSize:"20px"}}>GPS 사용 동의</strong></div>
                 </div>
-                <Join title="가입하기" action={Singout} margin_left={true} margin_top={true}/>
+                <Join title="가입하기" action={Singout} margin_left={true} margin_top={true} disabled={!isInputValid}/>
             </LoginBox>
         </Wrapper>
     );
