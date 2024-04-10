@@ -1,12 +1,13 @@
 import React from "react";
 import styled from "styled-components";
 
-export default function FullButton({ title, action, border, small }) {
+export default function LoginButton({ title, action, border, small,margin_top }) {
   return (
     <Wrapper
       onClick={action ? () => action() : null}
       border={border}
-      small={small} // small propì„ Wrapperì— ì „ë‹¬
+      small={small} // small propÀ» Wrapper¿¡ Àü´Þ
+      margin_top={margin_top}
     >
       {title}
     </Wrapper>
@@ -14,20 +15,23 @@ export default function FullButton({ title, action, border, small }) {
 }
 
 const Wrapper = styled.button`
-  border: ${props => props.border ? "1px solid #707070" : "none"}; // border propì— ë”°ë¥¸ ì¡°ê±´ë¶€ ìŠ¤íƒ€ì¼
+  border: ${props => props.border ? "1px solid #01DF01" : "none"}; // border prop¿¡ µû¸¥ Á¶°ÇºÎ ½ºÅ¸ÀÏ
   background-color: ${props => props.border ? "transparent" : "#20C075"};
-  width: ${props => props.small ? "50%" : "100%"}; // ë²„íŠ¼ì˜ ë„ˆë¹„ë¥¼ ì¤„ìž…ë‹ˆë‹¤.
-  margin: ${props => props.small ? "10px 0" : "0"}; // ë²„íŠ¼ ìœ„ ì•„ëž˜ì— ë§ˆì§„ì„ ì¶”ê°€í•©ë‹ˆë‹¤.
+  width: 413px; // ¹öÆ°ÀÇ ³Êºñ¸¦ ÁÙÀÔ´Ï´Ù.
+  margin-top: ${props => props.margin_top ? "45px" : "20px"};
+  margin-left:  43.5px;
   align-self: ${props => props.small ? "flex-end" : "auto"};
   padding: ${props => props.small ? "8px 12px" : "15px 30px"};
   font-size: ${props => props.small ? "14px" : "16px"};
   color: ${props => props.border ? "#707070" : "#fff"};
   outline: none;
   font-weight:bold;
+  border-radius: 5px;
+  
 
   &:hover {
-    background-color: ${props => props.border ? "transparent" : "#580cd2"};
-    border: ${props => props.border ? "1px solid #7620ff" : "none"}; // í˜¸ë²„ ì‹œ í…Œë‘ë¦¬ ìŠ¤íƒ€ì¼
+    background-color: ${props => props.border ? "transparent" : "#01DF01"};
+    border: ${props => props.border ? "1px solid #7620ff" : "none"}; // È£¹ö ½Ã Å×µÎ¸® ½ºÅ¸ÀÏ
     color: ${props => props.border ? "#7620ff" : "#fff"};
   }
 `;

@@ -13,19 +13,7 @@ import ProjectImg6 from "../../assets/img/projects/6.png";
 import AddImage2 from "../../assets/img/add/add2.png";
 
 export default function Projects() {
-  const [slideIndex, setSlideIndex] = useState(0);
-
-  const handleArrowClick = (direction) => {
-    // 이동할 프로젝트 박스의 수와 너비를 설정합니다.
-    const totalProjects = 6;
-    //const projectWidth = 376; // 여기서 프로젝트 박스의 너비를 설정하세요.
-
-    if (direction === "left") {
-      setSlideIndex(slideIndex > 0 ? slideIndex - 1 : 0);
-    } else {
-      setSlideIndex(slideIndex < totalProjects - 3 ? slideIndex + 1 : totalProjects - 3);
-    }
-  };
+  const [slideIndex] = useState(0);
 
   return (
     <Wrapper id="projects">
@@ -39,7 +27,6 @@ export default function Projects() {
               labore et dolore magna aliquyam erat, sed diam voluptua.
             </p>
           </HeaderInfo>
-          <ArrowButton onClick={() => handleArrowClick('left')}>&lt;</ArrowButton>
           <ProjectsContainer slideIndex={slideIndex}>
             <ProjectBox img={ProjectImg1} title="Awesome Project"
               text="Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor."
@@ -60,7 +47,6 @@ export default function Projects() {
               text="Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor."
               action={() => alert("clicked")} />
           </ProjectsContainer>
-          <ArrowButton onClick={() => handleArrowClick('right')}>&gt;</ArrowButton>
         </div>
       </div>
           <div className="row flexCenter">
@@ -116,23 +102,6 @@ const ProjectsContainer = styled.div`
   transform: ${props => `translateX(-${props.slideIndex * 376}px)`}; // 376px은 각 ProjectBox의 너비입니다.
 `;
 
-const ArrowButton = styled.button`
-  border: none;
-  background: none;
-  cursor: pointer;
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 2;
-
-  // 화살표 버튼의 스타일을 여기에 설정하세요
-  &:first-child {
-    left: 0;
-  }
-  &:last-child {
-    right: 0;
-  }
-`;
 
 const Advertising = styled.div`
   padding: 100px 0;

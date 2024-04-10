@@ -5,7 +5,6 @@ import styled from "styled-components";
 import FullButton from "../Buttons/FullButton";
 // Assets
 import QuotesIcon from "../../assets/svg/Quotes";
-import Dots from "../../assets/svg/Dots";
 
 export default function Header() {
   const navigate = useNavigate();
@@ -34,24 +33,18 @@ export default function Header() {
                 <QuotesIcon />
               </QuotesWrapper>
               <p className="font15 whiteColor">
-                <em>Friends, such as we desire, are dreams and fables. Friendship demands the ability to do without it.</em>
+                <em style={{color:'black'}}>Friends, such as we desire, are dreams and fables. Friendship demands the ability to do without it.</em>
               </p>
               
             </QuoteWrapper>
           </div>
         </LeftSide>
         <BtnWrapper>
-          <FullButton title="강의실 입장" action={handleEnterClassroom} style={{ marginTop: '10px' }} />
-          <FullButton title="문제 생성" action={handleCreateQuestion} style={{ marginTop: '10px' }} />
+          <FullButton title="강의실" action={handleEnterClassroom} style={{ marginTop: '10px' }} />
+          <FullButton title="+ 문제 생성" action={handleCreateQuestion} style={{ marginTop: '10px' }} />
         </BtnWrapper>
       </ContentWrapper>
       <RightSide>
-        <ImageWrapper>
-          <DotsWrapper>
-            <Dots />
-          </DotsWrapper>
-        </ImageWrapper>
-        <GreyDiv className="lightBg"></GreyDiv>
       </RightSide>
     </Wrapper>
   );
@@ -65,6 +58,7 @@ const Wrapper = styled.section`
   @media (max-width: 960px) {
     flex-direction: column;
   }
+  background:#EFF8F3;
 `;
 
 const ContentWrapper = styled.div`
@@ -126,29 +120,6 @@ const BtnWrapper = styled.div`
 
 
 
-const GreyDiv = styled.div`
-  width: 30%;
-  height: 700px;
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 0;
-  @media (max-width: 960px) {
-    display: none;
-  }
-`;
-
-const ImageWrapper = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  position: relative;
-  z-index: 9;
-  @media (max-width: 960px) {
-    width: 100%;
-    justify-content: center;
-  }
-`;
-
 const QuoteWrapper = styled.div`
   max-width: 330px;
   z-index: 99;
@@ -163,15 +134,3 @@ const QuotesWrapper = styled.div`
   left: 0; // 변경됨
 `;
 
-const DotsWrapper = styled.div`
-  position: absolute;
-  right: -100px;
-  bottom: 100px;
-  z-index: 2;
-  @media (max-width: 960px) {
-    right: 100px;
-  }
-  @media (max-width: 560px) {
-    display: none;
-  }
-`;
