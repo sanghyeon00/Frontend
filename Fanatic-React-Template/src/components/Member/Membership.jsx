@@ -1,20 +1,20 @@
 import React from 'react';
 import styled from "styled-components";
 
-const Classroom = () => {
+const Membership = () => {
     return (
         <Wrapper>
-            <div>강의실 페이지 입니다.</div>
+            <div>회원가입 페이지 입니다.</div>
         </Wrapper>
     );
   };
    
-  export default Classroom;
+  export default Membership;
 
 
 
   const Wrapper = styled.section`
-  padding-top: 80px;
+  margin-top: 80px;
   width: 100%;
   min-height: 840px;
   display: flex;

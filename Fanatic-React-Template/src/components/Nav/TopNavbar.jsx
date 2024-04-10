@@ -50,7 +50,7 @@ export default function TopNavbar() {
           <Link className="pointer flexNullCenter" to="home" smooth={true}>
             <LogoIcon />
             <h1 style={{ marginLeft: "15px" }} className="font20 extraBold">
-              iSoda
+            <a href="./">iSoda</a>
             </h1>
           </Link>
           <BurderWrapper className="pointer" onClick={() => toggleSidebar(!sidebarOpen)}>
@@ -91,12 +91,12 @@ export default function TopNavbar() {
           </UlWrapper>
           <UlWrapperRight className="flexNullCenter">
             <li className="semiBold font15 pointer">
-              <a href="/" style={{ padding: "10px 30px 10px 0" }} ref={loginButtonRef} onClick={openLoginModal}>
+              <a href="./login" className="radius8 lightBg" style={{ padding: "10px 15px"}}>
                 로그인
               </a>
             </li>
             <li className="semiBold font15 pointer flexCenter">
-              <a href="/" className="radius8 lightBg" style={{ padding: "10px 15px" }} ref={signupButtonRef} onClick={openSignupModal}>
+              <a href="./membership" className="radius8 lightBg" style={{ padding: "10px 15px" , marginLeft:"10px"}}>
                 회원가입
               </a>
             </li>
@@ -115,6 +115,7 @@ const Wrapper = styled.nav`
   top: 0;
   left: 0;
   z-index: 999;
+  background:#D2F4E4;
 `;
 const NavInner = styled.div`
   position: relative;
