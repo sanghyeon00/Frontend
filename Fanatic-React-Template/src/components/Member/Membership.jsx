@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import logo from 'C:/Users/cmvv5/OneDrive/바탕 화면/capston_pj/Front/Frontend/Fanatic-React-Template/src/assets/img/Loginout/greenlogo.png';
+import logo from '../../assets/img/Loginout/greenlogo.png';
 import React, { useState, useEffect } from 'react';
 import SingupButton from "../Buttons/SingupButton";
 import { useNavigate } from "react-router-dom";

@@ -173,7 +173,7 @@ function CreateQPage() {
   const fetchQuestions = () => {
 
     setLoading(true); //로딩 상태 true 설정
-    fetch("http://127.0.0.1:8000/GenerateProblem/", {
+    fetch("http://127.0.0.1:8000/GenerateQuestion/", {
       method: "POST", // HTTP 메소드 지정 
       headers: {
         'Content-Type': 'application/json', //콘텐츠 타입 헤더 설정
@@ -292,11 +292,11 @@ function CreateQPage() {
                 <QuestionContainer key={itemIndex}>
                   <p>{item.content}</p>
                   {/* 객관식 문제일 경우 선택지 렌더링 */}
-                  {questionType.type === 1 && item.options.map((option, optionIndex) => (
+                  {(questionType.type === 1 || questionType.type === 2 ||questionType.type === 3) && item.options.map((option, optionIndex) => (
                     <div key={optionIndex}>{option}</div>
                   ))}
                   <p>정답: {item.answer}</p>
-                </QuestionContainer>
+                </QuestionContainer>  
               ))}
             </Section>
             {index < questions.length - 1 && <QuestionDivider />}

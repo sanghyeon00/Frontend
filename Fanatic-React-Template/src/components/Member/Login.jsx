@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import logo from 'C:/Users/cmvv5/OneDrive/바탕 화면/capston_pj/Front/Frontend/Fanatic-React-Template/src/assets/img/Loginout/greenlogo.png';
+import logo from '../../assets/img/Loginout/greenlogo.png';
 import React, { useState, useEffect } from 'react';
 import LoginButton from "../Buttons/LoginButon";
 
@@ -8,16 +8,12 @@ const Login = () => {
 
     const [id, setid] = useState('');
     const [password, setpassword] = useState('');
-    const [selectedLoginType, setSelectedLoginType] = useState('professor'); // Default selected login type
-
+    
     const idChange = (event) => {
         setid(event.target.value); // 입력한 아이디로 상태 업데이트
       };
     const passwordChange = (event) => {
         setpassword(event.target.value); // 입력한 아이디로 상태 업데이트
-    };
-    const handleLoginTypeChange = (type) => {
-        setSelectedLoginType(type);
     };
 
 
@@ -26,16 +22,6 @@ const Login = () => {
             <LoginBox>
                 <img src={logo} alt="로고 이미지"  style={{marginLeft:"200px",marginTop:"20px",marginBottom:"15px", width:"100px", height:"40px"}}/>
                 <h1 style={{ textAlign:"center" }} className="font30 extraBold">로그인</h1>
-                
-                <div style={{ display: 'flex', marginLeft:"33px", marginTop:"30px", marginBottom:"7px"}}>
-                    <LoginTypeText selected={selectedLoginType === 'professor'} onClick={() => handleLoginTypeChange('professor')}>
-                        교수 로그인
-                    </LoginTypeText>
-                    <LoginTypeText selected={selectedLoginType === 'student'} onClick={() => handleLoginTypeChange('student')}>
-                        학생 로그인
-                    </LoginTypeText>
-                </div>
-            
                 <InputBox 
                     type="text" 
                     value={id} 
@@ -76,14 +62,18 @@ const Login = () => {
 
 
 const LoginBox = styled.div`
-margin-top: 50px;
+margin-top: 40px;
 position: absolute;
 top: 50%;
 left: 50%;
 transform: translate(-50%, -50%);
 width:500px;
-height:560px;
+height:500px;
 background: #FFFFFF;
+// display: flex;
+// flex-direction: column;
+// justify-content: center;
+// align-items: center;    
 `;
 
 const InputBox = styled.input`
@@ -103,20 +93,13 @@ const Checkbox = styled.input`
   margin-right: 5px;
 `;
 
-const LoginTypeText = styled.div`
-  cursor: pointer;
-  font-size: 18px;
-  font-weight: ${props => props.selected ? 'bold' : 'normal'};
- 
-  margin: 0 10px;
-  position: relative;
-  &:after {
-    content: '';
-    position: absolute;
-    width: 100%;
-    height: 2px;
-    background-color: ${props => props.selected ? '#000' : 'transparent'};
-    bottom: -1px;
-    left: 0;
-  }
+const Button = styled.button`
+  width: 100px; /* 버튼 너비 조정 */
+  height: 40px; /* 버튼 높이 조정 */
+  background-color: #82FA58; /* 배경색 지정 */
+  color: #black; /* 텍스트 색상 지정 */
+  border: none; /* 테두리 제거 */
+  border-radius: 5px; /* 버튼 테두리 둥글게 만들기 */
+  cursor: pointer; /* 커서 스타일 변경 */
+  font-size: 16px; /* 글꼴 크기 조정 */
 `;
