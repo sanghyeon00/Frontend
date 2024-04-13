@@ -10,6 +10,10 @@ const PageContainer = styled.div`
   align-items: center;
 `;
 
+const SidebarSection = styled.div`
+  margin-bottom: 20px;
+`;
+
 const Section = styled.div`
   margin-bottom: 20px;
   width: 100%; /* 전체 너비를 균일하게 설정 */
@@ -243,7 +247,7 @@ function CreateQPage() {
       <Sidebar>
         {Object.keys(questionTypes).map((type) => (
           <React.Fragment key={type}>
-            <Section>
+            <SidebarSection>
               <Label>{type}</Label>
               {questionTypes[type].length > 0 ? (
                 questionTypes[type].map(subType => {
@@ -280,7 +284,7 @@ function CreateQPage() {
                   </CountSelect>
                 </ButtonContainer>
               )}
-            </Section>
+            </SidebarSection>
             {type !== '서술형' && <Divider />}
           </React.Fragment>
         ))}
@@ -306,34 +310,26 @@ function CreateQPage() {
         {questions.map((questionType, index) => (
   <React.Fragment key={index}>
     <Section>
-      <Label>문제 유형: {questionType.type}</Label>
-      {questionType.items.map((item, itemIndex) => {
-        const questionId = `question-${index}-${itemIndex}`;
-        return (
-          <QuestionContainer
-            key={questionId}
-            isSelected={selectedQuestionId === questionId}
-            onClick={() => handleQuestionClick(questionId)}
-          >
-            <QuestionContent>
-              {item.content}
-            </QuestionContent>
-            {/* 객관식 문제일 경우 선택지 렌더링 */}
-            {questionType.type === '객관식' && (
-              <ol>
-                {item.options.map((option, optionIndex) => (
-                  <li key={optionIndex}>{option}</li>
-                ))}
-              </ol>
-            )}
-            <p>정답: {item.answer} ({item.answer_number}번)</p>
-          </QuestionContainer>
-        );
-      })}
-    </Section>
-    {index < questions.length - 1 && <QuestionDivider />}
-  </React.Fragment>
-))}
+              <Label>문제 유형: {questionType.type}</Label>
+              {questionType.items.map((item, itemIndex) => (
+                <QuestionContainer
+                  key={`question-${index}-${itemIndex}`}
+                  className={selectedQuestionId === `question-${index}-${itemIndex}` ? 'selected' : ''}
+                  onClick={() => setSelectedQuestionId(`question-${index}-${itemIndex}`)}
+                >
+                  <QuestionContent>{item.content}</QuestionContent>
+                  {questionType.type === '객관식' && (
+                    <ol>
+                      {item.options.map((option, optionIndex) => <li key={optionIndex}>{option}</li>)}
+                    </ol>
+                  )}
+                  <p>정답: {item.answer} ({item.answer_number}번)</p>
+                </QuestionContainer>
+              ))}
+            </Section>
+            {index < questions.length - 1 && <QuestionDivider />}
+          </React.Fragment>
+        ))}
       </PageContainer>
     </>
   );
