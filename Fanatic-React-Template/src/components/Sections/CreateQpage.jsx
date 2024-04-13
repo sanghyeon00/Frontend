@@ -120,11 +120,15 @@ const QuestionContainer = styled.div`
   padding: 10px;
   margin-bottom: 10px; // 문제 간격
   border-left: 3px solid transparent; // 기본 상태에서는 투명한 왼쪽 테두리
-  transition: border-color 0.3s; // 테두리 색상 변화를 위한 애니메이션 효과
+  transition: border-color 0.3s, margin-left 0.3s; // 테두리 색상 변화를 위한 애니메이션 효과
 
-  &:hover {
-    border-left: 3px solid orange; // 마우스 호버 시 주황색 테두리로 변경
-  }
+  // 클릭된 상태일 때 왼쪽에 초록색 테두리를 추가하는 CSS
+  ${({ isSelected }) =>
+    isSelected &&
+    css`
+      margin-left: -3px; // 테두리가 추가될 때 내용이 밀리지 않도록 조정
+      border-left: 3px solid #4CAF50; // 클릭 시 초록색 테두리로 변경
+    `}
 `;
 
 const QuestionDivider = styled.hr`
@@ -132,6 +136,10 @@ const QuestionDivider = styled.hr`
   border: 0;
   height: 1px;
   background-color: #ccc; // 문제 사이의 구별 선
+`;
+
+const QuestionContent = styled.div`
+  white-space: pre-wrap; /* 공백과 개행을 유지합니다. */
 `;
 
 // 주요 컴포넌트 정의
@@ -143,6 +151,7 @@ function CreateQPage() {
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [question, setQuestion] = useState('');
   const [questions, setQuestions] = useState([]); // 서버로부터 받은 문제 데이터
+  const [selectedQuestionId, setSelectedQuestionId] = useState(null);
 
   // 선택된 옵션 변겅 시 로그 출력을 위한 useEffect 훅 사용
   useEffect(() => {
@@ -192,6 +201,9 @@ function CreateQPage() {
       setError(error.message); //에러 메시지 상태에 저장
       setLoading(false); // 로딩상태 FALSE로 설정
     });
+  };
+  const handleQuestionClick = (id) => {
+    setSelectedQuestionId(id);
   };
 
     // 선택 변경 처리 함수
@@ -285,24 +297,40 @@ function CreateQPage() {
         </DownloadButtonContainer>
         {/* 서버로부터 받은 문제 데이터를 바탕으로 문제 유형 및 문제 내용을 표시하는 UI */}
         {questions.map((questionType, index) => (
-          <React.Fragment key={index}>
-            <Section>
-              <Label>문제 유형: {questionType.type}</Label>
-              {questionType.items.map((item, itemIndex) => (
-                <QuestionContainer key={itemIndex}>
-                  <p>{item.content}</p>
+        <React.Fragment key={index}>
+          <Section>
+            <Label>문제 유형: {questionType.type}</Label>
+            {questionType.items.map((item, itemIndex) => {
+              // 각 문제에 유니크한 id를 할당하기 위한 변수
+              const questionId = `question-${index}-${itemIndex}`;
+              return (
+                <QuestionContainer
+                  key={questionId}
+                  isSelected={selectedQuestionId === questionId}
+                  onClick={() => handleQuestionClick(questionId)}
+                >
+                  {/* 문제 내용에 대해 개행 처리를 해줍니다. */}
+                  <QuestionContent>
+                    {item.content.split('\n').map((line, lineIndex) => (
+                      <React.Fragment key={lineIndex}>
+                        {line}
+                        <br />
+                      </React.Fragment>
+                    ))}
+                  </QuestionContent>
                   {/* 객관식 문제일 경우 선택지 렌더링 */}
-                  {(questionType.type === 1 || questionType.type === 2 ||questionType.type === 3) && item.options.map((option, optionIndex) => (
+                  {(questionType.type === '객관식') && item.options.map((option, optionIndex) => (
                     <div key={optionIndex}>{option}</div>
                   ))}
                   <p>정답: {item.answer}</p>
-                </QuestionContainer>  
-              ))}
-            </Section>
-            {index < questions.length - 1 && <QuestionDivider />}
-          </React.Fragment>
-        ))}
-      </PageContainer>
+                </QuestionContainer>
+              );
+            })}
+          </Section>
+          {index < questions.length - 1 && <QuestionDivider />}
+        </React.Fragment>
+      ))}
+    </PageContainer>
     </>
   );
 }
