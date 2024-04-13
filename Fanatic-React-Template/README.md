@@ -68,3 +68,13 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+git pr
+cd로 Frontend까지 이동
+git checkout -b Quest
+git branch
+git remote -v
+git add .
+git status
+git commit -m "make problem event"
+git push -u origin Quest
