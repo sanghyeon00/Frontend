@@ -318,7 +318,7 @@ function CreateQPage() {
                   onClick={() => setSelectedQuestionId(`question-${index}-${itemIndex}`)}
                 >
                   <QuestionContent>{item.content}</QuestionContent>
-                  {questionType.type === '객관식' && (
+                  {questionType.type === 1 || questionType.type === 2 ||questionType.type === 3 && ( 
                     <ol>
                       {item.options.map((option, optionIndex) => <li key={optionIndex}>{option}</li>)}
                     </ol>
