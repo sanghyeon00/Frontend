@@ -10,8 +10,16 @@ const PageContainer = styled.div`
   align-items: center;
 `;
 
+const SidebarSection = styled.div`
+  margin-bottom: 20px;
+`;
+
 const Section = styled.div`
   margin-bottom: 20px;
+  width: 100%; /* 전체 너비를 균일하게 설정 */
+  border: 1px solid #ccc; /* 섹션 별 구분선 */
+  padding: 20px; /* 내부 패딩 */
+  box-shadow: 0px 2px 4px rgba(0,0,0,0.1); /* 경계가 더 명확하도록 그림자 추가 */
 `;
 
 const ButtonContainer = styled.div`
@@ -118,17 +126,20 @@ const DownloadButton = styled.button`
 
 const QuestionContainer = styled.div`
   padding: 10px;
-  margin-bottom: 10px; // 문제 간격
-  border-left: 3px solid transparent; // 기본 상태에서는 투명한 왼쪽 테두리
-  transition: border-color 0.3s, margin-left 0.3s; // 테두리 색상 변화를 위한 애니메이션 효과
+  margin-bottom: 10px;
+  border-left: 3px solid transparent;
+  transition: border-color 0.3s, margin-left 0.3s;
+  width: 100%; /* 컨테이너 너비를 균일하게 설정 */
+  display: flex;
+  justify-content: space-between; /* 내용을 양쪽으로 정렬 */
+  border: 1px solid #ddd; /* 각 질문별 구분을 위한 경계선 */
+  background-color: #f9f9f9; /* 배경색 추가 */
 
-  // 클릭된 상태일 때 왼쪽에 초록색 테두리를 추가하는 CSS
-  ${({ isSelected }) =>
-    isSelected &&
-    css`
-      margin-left: -3px; // 테두리가 추가될 때 내용이 밀리지 않도록 조정
-      border-left: 3px solid #4CAF50; // 클릭 시 초록색 테두리로 변경
-    `}
+  &:hover, &.isSelected {
+    margin-left: -3px;
+    border-left: 3px solid #4CAF50; /* 호버 및 선택 시 초록색 테두리로 변경 */
+    background-color: #e6ffe6; /* 호버 및 선택 시 배경색 변경 */
+  }
 `;
 
 const QuestionDivider = styled.hr`
@@ -140,6 +151,7 @@ const QuestionDivider = styled.hr`
 
 const QuestionContent = styled.div`
   white-space: pre-wrap; /* 공백과 개행을 유지합니다. */
+  flex: 1;
 `;
 
 // 주요 컴포넌트 정의
@@ -152,6 +164,7 @@ function CreateQPage() {
   const [question, setQuestion] = useState('');
   const [questions, setQuestions] = useState([]); // 서버로부터 받은 문제 데이터
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
 
   // 선택된 옵션 변겅 시 로그 출력을 위한 useEffect 훅 사용
   useEffect(() => {
@@ -162,46 +175,58 @@ function CreateQPage() {
     setSelectedTypes(prev => 
       prev.includes(key) ? prev.filter(type => type !== key) : [...prev, key]
     );
-    // 선택 시 기본값을 0으로 설정
-    setSelections(prev => ({
-      ...prev,
-      [key]: prev[key] !== undefined ? prev[key] : 0
-    }));
+    if (selections[key] === undefined) {
+      setSelections(prev => ({
+        ...prev,
+        [key]: 0
+      }));
+    }
   };
   //특정 문제 유형에 대해 원하는 문제의 개수를 선택할 때 호출
   // 문제의 개수를 선택하면, 해당 문제 유형(key)과 선택된 개수(count)를
   //selections 객체에 저장하거나 업데이트
   const handleSelectionChange = (key, count) => {
-    setSelections(prev => ({
+    if (selectedTypes.includes(key)) {
+      setSelections(prev => ({
+        ...prev,
+        [key]: count
+      }));
+    } else {
+      alert("먼저 문제 유형을 선택해주세요.");
+    }
+  };
+
+  const handleAnswerSelect = (questionId, answer) => {
+    setSelectedAnswers(prev => ({
       ...prev,
-      [key]: count
+      [questionId]: answer
     }));
   };
 
   // 문제 데이터를 서버로부터 가져오는 함수
   const fetchQuestions = () => {
-
-    setLoading(true); //로딩 상태 true 설정
-    fetch("http://127.0.0.1:8000/GenerateQuestion/", {
-      method: "POST", // HTTP 메소드 지정 
-      headers: {
-        'Content-Type': 'application/json', //콘텐츠 타입 헤더 설정
-      },
-      body: JSON.stringify({ selections }) // 선택된 옵션들을 JSON 문자열로 변환하여 요청
-    })
-    .then(response => response.json()) //응답 JSON으로 파싱
-    .then(data => {
-
-      console.log(selections)
-      setLoading(false);
-      setQuestions(data.questions);
-    })
-    .catch(error => {
-      console.error('Fetching questions failed:', error); // 에러 발생 시 콘솔에 에러
-      setError(error.message); //에러 메시지 상태에 저장
-      setLoading(false); // 로딩상태 FALSE로 설정
-    });
+    if (Object.keys(selections).some(key => selections[key] > 0 && selectedTypes.includes(key))) {
+      setLoading(true);
+      fetch("http://127.0.0.1:8000/GenerateQuestion/", {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ selections: selections })
+      })
+      .then(response => response.json())
+      .then(data => {
+        setLoading(false);
+        setQuestions(data.questions);
+      })
+      .catch(error => {
+        console.error('Fetching questions failed:', error);
+        setError(error.message);
+        setLoading(false);
+      });
+    }
   };
+
   const handleQuestionClick = (id) => {
     setSelectedQuestionId(id);
   };
@@ -217,10 +242,6 @@ function CreateQPage() {
     fetchQuestions(); // 컴포넌트가 마운트될 때 서버로부터 문제 데이터를 가져옵니다.
   }, []); // 의존성 배열이 비어 있으므로, 컴포넌트가 처음 마운트될 때만 fetchQuestions 함수가 실행됩니다
 
-  useEffect(() => {
-    fetchQuestions();
-  }, []);
-
   const questionTypes = {
     '객관식': ['빈칸', '단답형', '문장형'],
     '단답형': ['빈칸', '문장형'],
@@ -235,7 +256,7 @@ function CreateQPage() {
       <Sidebar>
         {Object.keys(questionTypes).map((type) => (
           <React.Fragment key={type}>
-            <Section>
+            <SidebarSection>
               <Label>{type}</Label>
               {questionTypes[type].length > 0 ? (
                 questionTypes[type].map(subType => {
@@ -249,10 +270,10 @@ function CreateQPage() {
                         {subType}
                       </TypeButton>
                       <CountSelect
-                        value={selections[subTypeKey] || 0} // 기본값을 0으로 설정
+                        value={selections[subTypeKey] || 0}
                         onChange={(e) => handleSelectionChange(subTypeKey, parseInt(e.target.value))}
                       >
-                        {[0, 5, 10, 15].map(count => (
+                        {[1, 2, 3, 4, 5].map(count => (
                           <option key={count} value={count}>{count}개</option>
                         ))}
                       </CountSelect>
@@ -263,16 +284,16 @@ function CreateQPage() {
                 <ButtonContainer>
                   <Label style={{visibility: 'hidden'}}>O/X</Label>
                   <CountSelect
-                    value={selections['OX선택형'] || 0} // 기본값을 0으로 설정
+                    value={selections['OX선택형'] || 0}
                     onChange={(e) => handleSelectionChange('OX선택형', parseInt(e.target.value))}
                   >
-                    {[0, 5, 10, 15].map(count => (
+                    {[1, 2, 3, 4, 5].map(count => (
                       <option key={count} value={count}>{count}개</option>
                     ))}
                   </CountSelect>
                 </ButtonContainer>
               )}
-            </Section>
+            </SidebarSection>
             {type !== '서술형' && <Divider />}
           </React.Fragment>
         ))}
@@ -295,44 +316,36 @@ function CreateQPage() {
         <DownloadButtonContainer>
           <DownloadButton onClick={() => alert('PDF 다운로드 시작.....')}>PDF 다운로드</DownloadButton>
         </DownloadButtonContainer>
-        {/* 서버로부터 받은 문제 데이터를 바탕으로 문제 유형 및 문제 내용을 표시하는 UI */}
-        {questions.map((questionType, index) => (
+        {questions && questions.map((questionType, index) => (
         <React.Fragment key={index}>
           <Section>
             <Label>문제 유형: {questionType.type}</Label>
-            {questionType.items.map((item, itemIndex) => {
-              // 각 문제에 유니크한 id를 할당하기 위한 변수
-              const questionId = `question-${index}-${itemIndex}`;
-              return (
-                <QuestionContainer
-                  key={questionId}
-                  isSelected={selectedQuestionId === questionId}
-                  onClick={() => handleQuestionClick(questionId)}
-                >
-                  {/* 문제 내용에 대해 개행 처리를 해줍니다. */}
-                  <QuestionContent>
-                    {item.content.split('\n').map((line, lineIndex) => (
-                      <React.Fragment key={lineIndex}>
-                        {line}
-                        <br />
-                      </React.Fragment>
+            {questionType.items && questionType.items.map((item, itemIndex) => (
+              <QuestionContainer
+              key={`question-${index}-${itemIndex}`}
+              className={selectedQuestionId === `question-${index}-${itemIndex}` ? 'isSelected' : ''}
+              onClick={() => handleQuestionClick(`question-${index}-${itemIndex}`)}
+            >
+                <QuestionContent>
+                  {item.content}
+                  <ol>
+                    {item.options && item.options.map((option, optionIndex) => (
+                      <li key={optionIndex} onClick={() => handleAnswerSelect(`question-${index}-${itemIndex}`, option)}>
+                        {option}
+                      </li>
                     ))}
-                  </QuestionContent>
-                  {/* 객관식 문제일 경우 선택지 렌더링 */}
-                  {(questionType.type === '객관식') && item.options.map((option, optionIndex) => (
-                    <div key={optionIndex}>{option}</div>
-                  ))}
-                  <p>정답: {item.answer}</p>
-                </QuestionContainer>
-              );
-            })}
+                  </ol>
+                  <p>정답: {item.answer} ({item.answer_number}번)</p>
+                </QuestionContent>
+              </QuestionContainer>
+            ))}
           </Section>
           {index < questions.length - 1 && <QuestionDivider />}
         </React.Fragment>
       ))}
     </PageContainer>
-    </>
-  );
+  </>
+);
 }
 
 export default CreateQPage;
