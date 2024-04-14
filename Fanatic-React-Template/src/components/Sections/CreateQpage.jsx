@@ -135,11 +135,11 @@ const QuestionContainer = styled.div`
   border: 1px solid #ddd; /* 각 질문별 구분을 위한 경계선 */
   background-color: #f9f9f9; /* 배경색 추가 */
 
-  &:hover, ${({ isSelected }) => isSelected && css`
+  &:hover, &.isSelected {
     margin-left: -3px;
     border-left: 3px solid #4CAF50; /* 호버 및 선택 시 초록색 테두리로 변경 */
     background-color: #e6ffe6; /* 호버 및 선택 시 배경색 변경 */
-  `}
+  }
 `;
 
 const QuestionDivider = styled.hr`
@@ -164,6 +164,7 @@ function CreateQPage() {
   const [question, setQuestion] = useState('');
   const [questions, setQuestions] = useState([]); // 서버로부터 받은 문제 데이터
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
+  const [selectedAnswers, setSelectedAnswers] = useState({});
 
   // 선택된 옵션 변겅 시 로그 출력을 위한 useEffect 훅 사용
   useEffect(() => {
@@ -195,6 +196,13 @@ function CreateQPage() {
     }
   };
 
+  const handleAnswerSelect = (questionId, answer) => {
+    setSelectedAnswers(prev => ({
+      ...prev,
+      [questionId]: answer
+    }));
+  };
+
   // 문제 데이터를 서버로부터 가져오는 함수
   const fetchQuestions = () => {
     if (Object.keys(selections).some(key => selections[key] > 0 && selectedTypes.includes(key))) {
@@ -218,6 +226,7 @@ function CreateQPage() {
       });
     }
   };
+
   const handleQuestionClick = (id) => {
     setSelectedQuestionId(id);
   };
@@ -307,32 +316,36 @@ function CreateQPage() {
         <DownloadButtonContainer>
           <DownloadButton onClick={() => alert('PDF 다운로드 시작.....')}>PDF 다운로드</DownloadButton>
         </DownloadButtonContainer>
-        {questions.map((questionType, index) => (
-  <React.Fragment key={index}>
-    <Section>
-              <Label>문제 유형: {questionType.type}</Label>
-              {questionType.items.map((item, itemIndex) => (
-                <QuestionContainer
-                  key={`question-${index}-${itemIndex}`}
-                  className={selectedQuestionId === `question-${index}-${itemIndex}` ? 'selected' : ''}
-                  onClick={() => setSelectedQuestionId(`question-${index}-${itemIndex}`)}
-                >
-                  <QuestionContent>{item.content}</QuestionContent>
-                  {questionType.type === 1 || questionType.type === 2 ||questionType.type === 3 && ( 
-                    <ol>
-                      {item.options.map((option, optionIndex) => <li key={optionIndex}>{option}</li>)}
-                    </ol>
-                  )}
+        {questions && questions.map((questionType, index) => (
+        <React.Fragment key={index}>
+          <Section>
+            <Label>문제 유형: {questionType.type}</Label>
+            {questionType.items && questionType.items.map((item, itemIndex) => (
+              <QuestionContainer
+              key={`question-${index}-${itemIndex}`}
+              className={selectedQuestionId === `question-${index}-${itemIndex}` ? 'isSelected' : ''}
+              onClick={() => handleQuestionClick(`question-${index}-${itemIndex}`)}
+            >
+                <QuestionContent>
+                  {item.content}
+                  <ol>
+                    {item.options && item.options.map((option, optionIndex) => (
+                      <li key={optionIndex} onClick={() => handleAnswerSelect(`question-${index}-${itemIndex}`, option)}>
+                        {option}
+                      </li>
+                    ))}
+                  </ol>
                   <p>정답: {item.answer} ({item.answer_number}번)</p>
-                </QuestionContainer>
-              ))}
-            </Section>
-            {index < questions.length - 1 && <QuestionDivider />}
-          </React.Fragment>
-        ))}
-      </PageContainer>
-    </>
-  );
+                </QuestionContent>
+              </QuestionContainer>
+            ))}
+          </Section>
+          {index < questions.length - 1 && <QuestionDivider />}
+        </React.Fragment>
+      ))}
+    </PageContainer>
+  </>
+);
 }
 
 export default CreateQPage;
