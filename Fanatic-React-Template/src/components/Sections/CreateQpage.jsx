@@ -207,7 +207,12 @@ function CreateQPage() {
   const fetchQuestions = () => {
     if (Object.keys(selections).some(key => selections[key] > 0 && selectedTypes.includes(key))) {
       setLoading(true);
-      fetch("http://127.0.0.1:8000/GenerateQuestion/", {
+      const Server_IP = process.env.REACT_APP_Server_IP;
+      console.log("----------------")
+      console.log(process.env.REACT_APP_Server_IP)
+      console.log(Server_IP)
+      console.log("----------------")
+      fetch(`${Server_IP}/GenerateQuestion/`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
