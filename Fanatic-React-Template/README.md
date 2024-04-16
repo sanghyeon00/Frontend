@@ -72,7 +72,7 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 git pr
 cd로 Frontend까지 이동
 git checkout -b Quest
-git branch
+git branchcd
 git remote -v
 git add .
 git status
