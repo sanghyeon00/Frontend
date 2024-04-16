@@ -353,7 +353,7 @@ const StudentSingout = () => {
   export default StudentSingout;
 
 
-
+/////
   const Wrapper = styled.section`
   padding-top: 80px;
   width: 100%;
