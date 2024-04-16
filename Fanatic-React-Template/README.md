@@ -72,9 +72,15 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 git pr
 cd로 Frontend까지 이동
 git checkout -b Quest
-git branch
+git branchcd
 git remote -v
 git add .
 git status
 git commit -m "make problem event"
 git push -u origin Quest
+
+
+
+2024/04/17 01:40 변경사항
+(Login.jsx, AuthContent.jsx, Membership.jsx, StudentSingout.jsx, TeacherSingout.jsx, TopNavbar.jsx, App.js) 수정됨.
+npm install react-cookie >> 진행하세요.

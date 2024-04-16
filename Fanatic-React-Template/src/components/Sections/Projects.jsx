@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 // Components
 import ProjectBox from "../Elements/ProjectBox";
 import FullButton from "../Buttons/FullButton";
@@ -14,6 +15,11 @@ import AddImage2 from "../../assets/img/add/add2.png";
 
 export default function Projects() {
   const [slideIndex] = useState(0);
+  const navigate = useNavigate();
+
+  const handleCreateDiary = () => {
+    navigate("/diary"); // 일기 작성 페이지로 이동
+  };
 
   return (
     <Wrapper id="projects">
@@ -47,14 +53,15 @@ export default function Projects() {
               text="Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor."
               action={() => alert("clicked")} />
           </ProjectsContainer>
-        </div>
-      </div>
           <div className="row flexCenter">
             <div style={{ margin: "50px 0", width: "200px" }}>
               <FullButton title="Load More" action={() => alert("clicked")} />
+              <FullButton title="일기 만들기" action={handleCreateDiary} /> {/* 일기 만들기 버튼 추가 */}
             </div>
           </div>
-        <div className="lightBg">
+        </div>
+      </div>
+      <div className="lightBg">
         <div className="container">
           <Advertising className="flexSpaceCenter">
             <AddLeft>
@@ -149,7 +156,7 @@ const AddRight = styled.div`
 `;
 const AddLeftInner = styled.div`
   width: 100%;
-  position: absolute;
+  position:absolute;
   top: -300px;
   left: 0;
   @media (max-width: 1190px) {

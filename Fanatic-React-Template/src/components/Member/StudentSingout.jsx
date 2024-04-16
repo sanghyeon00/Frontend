@@ -138,7 +138,7 @@ const StudentSingout = () => {
             gender
           })
         });
-        if (response.status === 200) {
+        if (response.status === 200) {  
           navigate("/login");
         } 
         else {

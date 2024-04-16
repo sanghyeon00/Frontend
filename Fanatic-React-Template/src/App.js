@@ -8,6 +8,8 @@ import Classroom from "./components/Sections/Classroom.jsx";
 import TopNavbar from "./components/Nav/TopNavbar.jsx";
 import Footer from "./components/Sections/Footer.jsx";
 
+import DiaryPage from "./components/Sections/DiaryPage.jsx";
+
 //Member
 import Login from "./components/Member/Login.jsx";
 import Membership from "./components/Member/Membership.jsx"
@@ -41,6 +43,7 @@ export default function App() {
             <Route path="/membership" element={<Membership />}/>
             <Route path="/teacherSingout" element={<TeacherSingout />}/>
             <Route path="/studentSingout" element={<StudentSingout />}/>
+            <Route path="/diary" element={<DiaryPage />} />
           </Routes>
         </AuthProvider>
 
