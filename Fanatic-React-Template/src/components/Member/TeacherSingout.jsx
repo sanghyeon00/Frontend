@@ -3,8 +3,9 @@ import logo from '../../assets/img/Loginout/greenlogo.png';
 import React, { useState, useEffect } from 'react';
 import Join from "../Buttons/Join";
 import { useNavigate } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
-const TeacherSingout = () => {
+const StudentSingout = () => {
 
     const [id, setid] = useState('');
     const [password, setpassword] = useState('');
@@ -115,10 +116,49 @@ const TeacherSingout = () => {
     }, [id, password, passwordcheack, name, studentid, email, phone, phoneid, year, month, day, gender, agreement1, agreement2, agreement3]);
     
 
+
+    // 회원가입을 위해 django로 넘겨줄 데이터들
+    const registerUser = async (id, password, passwordcheack, name, studentid, email, phone, year, month, day, gender) => {
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/sign_up/`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            id, 
+            password, 
+            passwordcheack, 
+            name, 
+            studentid, 
+            email, 
+            phone,
+            year,
+            month,
+            day,
+            gender
+          })
+        });
+        if (response.status === 201) {
+          navigate("/login");
+        } 
+        else {
+          console.error('가입 에러');
+          alert("가입 실패");
+        }
+      };
+
+      // 사용자 정보 서버로 전달할거임 가입하기 버튼 누르면 
+      const handleJoin = () => {
+        registerUser(id, password, passwordcheack, name, studentid, email, phone, year, month, day, gender);
+      };
+
+
     return (
         <Wrapper>
             <LoginBox>
-                <img src={logo} alt="로고 이미지"  style={{marginLeft:"250px",marginTop:"20px",marginBottom:"15px", width:"100px", height:"40px"}}/>
+                <Link to="/">
+                  <img src={logo} alt="로고 이미지"  style={{marginLeft:"250px",marginTop:"20px",marginBottom:"15px", width:"100px", height:"40px"}}/>
+                </Link>
                 <h1 style={{ textAlign:"center", fontSize:"25px"}} className="font25 extraBold">회원가입 (교수)</h1>
                 <Separator />
 
@@ -261,13 +301,13 @@ const TeacherSingout = () => {
                     <div><Checkbox type="checkbox" checked={agreement2} onChange={() => agreementChange2(!agreement2)}/> <strong style={{fontSize:"20px"}}>개인정보 이용 동의</strong></div>
                     <div><Checkbox type="checkbox" checked={agreement3} onChange={() => agreementChange3(!agreement3)}/> <strong style={{fontSize:"20px"}}>GPS 사용 동의</strong></div>
                 </div>
-                <Join title="가입하기" action={Singout} margin_left={true} margin_top={true} disabled={!isInputValid}/>
+                <Join title="가입하기" action={handleJoin} margin_left={true} margin_top={true} disabled={!isInputValid}/>
             </LoginBox>
         </Wrapper>
     );
   };
    
-  export default TeacherSingout;
+  export default StudentSingout;
 
 
 

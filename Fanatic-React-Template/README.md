@@ -78,3 +78,9 @@ git add .
 git status
 git commit -m "make problem event"
 git push -u origin Quest
+
+
+
+2024/04/17 01:40 변경사항
+(Login.jsx, AuthContent.jsx, Membership.jsx, StudentSingout.jsx, TeacherSingout.jsx, TopNavbar.jsx, App.js) 수정됨.
+npm install react-cookie >> 진행하세요.
