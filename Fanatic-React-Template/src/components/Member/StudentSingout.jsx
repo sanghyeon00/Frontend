@@ -3,7 +3,7 @@ import logo from '../../assets/img/Loginout/greenlogo.png';
 import React, { useState, useEffect } from 'react';
 import Join from "../Buttons/Join";
 import { useNavigate } from "react-router-dom";
-// import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const StudentSingout = () => {
 
@@ -119,7 +119,7 @@ const StudentSingout = () => {
 
     // 회원가입을 위해 django로 넘겨줄 데이터들
     const registerUser = async (id, password, passwordcheack, name, studentid, email, phone, year, month, day, gender) => {
-        const response = await fetch("http://127.0.0.1:8000/sign_up/", {
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/sign_up/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -138,7 +138,7 @@ const StudentSingout = () => {
             gender
           })
         });
-        if (response.status === 201) {
+        if (response.status === 200) {
           navigate("/login");
         } 
         else {
@@ -156,7 +156,9 @@ const StudentSingout = () => {
     return (
         <Wrapper>
             <LoginBox>
-                <img src={logo} alt="로고 이미지"  style={{marginLeft:"250px",marginTop:"20px",marginBottom:"15px", width:"100px", height:"40px"}}/>
+                <Link to="/">
+                  <img src={logo} alt="로고 이미지"  style={{marginLeft:"250px",marginTop:"20px",marginBottom:"15px", width:"100px", height:"40px"}}/>
+                </Link>
                 <h1 style={{ textAlign:"center", fontSize:"25px"}} className="font25 extraBold">회원가입 (학생)</h1>
                 <Separator />
 

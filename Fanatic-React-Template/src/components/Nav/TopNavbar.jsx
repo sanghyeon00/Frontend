@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useRef } from "react";
 import styled from "styled-components";
-import { Link } from "react-scroll";
+import { Link as ScrollLink } from "react-scroll";
+import { Link as RouterLink } from 'react-router-dom';
+
 // Components
 import Sidebar from "../Nav/Sidebar";
 import Backdrop from "../Elements/Backdrop";
@@ -9,6 +11,12 @@ import SignupModal from "./SignupModal";
 // Assets
 import LogoIcon from "../../assets/svg/Logo";
 import BurgerIcon from "../../assets/svg/BurgerIcon";
+
+import logoo from '../../assets/img/Loginout/isodagreen_nonback.png';
+
+import { useAuth } from '../Member/AuthContext';
+import Login from "../Member/Login";
+import { useNavigate } from "react-router-dom";
 
 export default function TopNavbar() {
   const [y, setY] = useState(window.scrollY);
@@ -41,65 +49,76 @@ export default function TopNavbar() {
     setSignupModalOpen(true); // 회원가입 모달을 열기
   };
 
+
+  const { isLoggedIn, logout } = useAuth();
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    Login.removeTokens();
+    logout();
+    navigate('/');
+  };
+
   return (
     <>
       <Sidebar sidebarOpen={sidebarOpen} toggleSidebar={toggleSidebar} />
       {sidebarOpen && <Backdrop toggleSidebar={toggleSidebar} />}
       <Wrapper className="flexCenter animate whiteBg" style={y > 100 ? { height: "60px" } : { height: "80px" }}>
         <NavInner className="container flexSpaceCenter">
-          <Link className="pointer flexNullCenter" to="home" smooth={true}>
+          <ScrollLink className="pointer flexNullCenter" to="home" smooth={true} >
             <LogoIcon />
-            <h1 style={{ marginLeft: "15px" }} className="font20 extraBold">
-            <a href="./">iSoda</a>
-            </h1>
-          </Link>
+          </ScrollLink>
+          <RouterLink to="/">
+            <img src={logoo} alt="로고 이미지"  style={{marginLeft:"-140px", width:"95px", height:"45px"}}/>
+          </RouterLink>
           <BurderWrapper className="pointer" onClick={() => toggleSidebar(!sidebarOpen)}>
             <BurgerIcon />
           </BurderWrapper>
           <UlWrapper className="flexNullCenter">
             {/* 메뉴 항목들을 여기에 포함 */}
             <li className="semiBold font15 pointer">
-              <Link activeClass="active" style={{ padding: "10px 15px" }} to="home" spy={true} smooth={true} offset={-80}>
+              <ScrollLink activeClass="active" style={{ padding: "10px 15px" }} to="home" spy={true} smooth={true} offset={-80}>
                 학습실
-              </Link>
+              </ScrollLink>
             </li>
             <li className="semiBold font15 pointer">
-              <Link activeClass="active" style={{ padding: "10px 15px" }} to="services" spy={true} smooth={true} offset={-80}>
+              <ScrollLink activeClass="active" style={{ padding: "10px 15px" }} to="services" spy={true} smooth={true} offset={-80}>
                 일기
-              </Link>
+              </ScrollLink>
             </li>
             <li className="semiBold font15 pointer">
-              <Link activeClass="active" style={{ padding: "10px 15px" }} to="projects" spy={true} smooth={true} offset={-80}>
+              <ScrollLink activeClass="active" style={{ padding: "10px 15px" }} to="projects" spy={true} smooth={true} offset={-80}>
                 일기
-              </Link>
+              </ScrollLink>
             </li>
             <li className="semiBold font15 pointer">
-              <Link activeClass="active" style={{ padding: "10px 15px" }} to="blog" spy={true} smooth={true} offset={-80}>
+              <ScrollLink activeClass="active" style={{ padding: "10px 15px" }} to="blog" spy={true} smooth={true} offset={-80}>
                 커뮤니티
-              </Link>
+              </ScrollLink>
             </li>
             <li className="semiBold font15 pointer">
-              <Link activeClass="active" style={{ padding: "10px 15px" }} to="pricing" spy={true} smooth={true} offset={-80}>
+              <ScrollLink activeClass="active" style={{ padding: "10px 15px" }} to="pricing" spy={true} smooth={true} offset={-80}>
                 서비스 소개
-              </Link>
+              </ScrollLink>
             </li>
             <li className="semiBold font15 pointer">
-              <Link activeClass="active" style={{ padding: "10px 15px" }} to="contact" spy={true} smooth={true} offset={-80}>
+              <ScrollLink activeClass="active" style={{ padding: "10px 15px" }} to="contact" spy={true} smooth={true} offset={-80}>
                 1:1 상담
-              </Link>
+              </ScrollLink>
             </li>
           </UlWrapper>
           <UlWrapperRight className="flexNullCenter">
-            <li className="semiBold font15 pointer">
-              <a href="./login" className="radius8 lightBg" style={{ padding: "10px 15px"}}>
-                로그인
-              </a>
-            </li>
-            <li className="semiBold font15 pointer flexCenter">
-              <a href="./membership" className="radius8 lightBg" style={{ padding: "10px 15px" , marginLeft:"10px"}}>
-                회원가입
-              </a>
-            </li>
+            {isLoggedIn ?(<li><button onClick={handleLogout}>로그아웃</button></li>)
+            :
+            (<>
+              <li className="semiBold font15 pointer">
+                <a href="./login" className="radius8 lightBg" style={{ padding: "10px 15px"}}>로그인</a>
+              </li>
+              <li className="semiBold font15 pointer flexCenter">
+                <a href="./membership" className="radius8 lightBg" style={{ padding: "10px 15px" , marginLeft:"10px"}}>회원가입</a>
+              </li>
+            </>)}
+            
+            
           </UlWrapperRight>
         </NavInner>
       </Wrapper>
