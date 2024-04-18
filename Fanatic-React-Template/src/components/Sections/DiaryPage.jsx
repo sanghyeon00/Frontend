@@ -277,7 +277,7 @@ function DiaryPage() {
 </DiaryOutput>
       </MainContent>
       <UploadSection>
-          <Button onClick={handleUpload}>업로드</Button>
+          <Button onClick={handleUpload}>업로드+</Button>
           {uploading && <div style={{ fontSize: '16px', textAlign: 'center' }}>업로드중...</div>}
         </UploadSection>
     </Container>
