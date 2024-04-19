@@ -220,11 +220,12 @@ function DiaryPage() {
       }
 
       const data = await response.json();  // 응답 데이터를 JSON 형식으로 변환
-      setEditorText(data.diaryText);  // 응답받은 일기 내용으로 에디터 업데이트
-      setShowGuideline(false);  // 가이드라인 숨기기
-    } catch (error) {
-      console.error('Error creating diary:', error);
-    }
+      const formattedText = data.diaryText.replace(/(\.)/g, '$1\n');
+    setEditorText(formattedText);
+    setShowGuideline(false);
+  } catch (error) {
+    console.error('Error creating diary:', error);
+  }
 };
 
   const handleUpload = () => {
