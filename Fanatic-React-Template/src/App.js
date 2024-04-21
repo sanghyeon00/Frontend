@@ -32,6 +32,7 @@ export default function App() {
           <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
           <link href="https://fonts.googleapis.com/css2?family=Khula:wght@400;600;800&display=swap" rel="stylesheet" />
         </Helmet>
+
         <AuthProvider>
           <TopNavbar />
 
@@ -44,7 +45,8 @@ export default function App() {
             <Route path="/teacherSingout" element={<TeacherSingout />}/>
             <Route path="/studentSingout" element={<StudentSingout />}/>
             <Route path="/diary" element={<DiaryPage />} />
-          </Routes>
+          </Routes >
+          
         </AuthProvider>
 
         <Footer />

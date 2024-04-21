@@ -33,7 +33,7 @@ const InputLabel = styled.label`
 `;
 
 const Input = styled.input`
-  width: 100%;
+  width: 95%;
   padding: 8px;
   margin-top: 5px;
   font-size: 16px;

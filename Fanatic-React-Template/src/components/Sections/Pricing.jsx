@@ -6,10 +6,10 @@ import PricingTable from "../Elements/PricingTable";
 export default function Pricing() {
   return (
     <Wrapper id="pricing">
-      <div className="whiteBg">
+      <div className="lightBg" style={{padding:"30px 0"}}>
         <div className="container">
           <HeaderInfo>
-            <h1 className="font40 extraBold">Check Our Pricing</h1>
+            <h1 className="font40 extraBold">서비스 소개 담당 영역</h1>
             <p className="font13">
               Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
               <br />
@@ -74,7 +74,6 @@ export default function Pricing() {
 
 const Wrapper = styled.section`
   width: 100%;
-  padding: 50px 0;
 `;
 const HeaderInfo = styled.div`
   margin-bottom: 50px;
