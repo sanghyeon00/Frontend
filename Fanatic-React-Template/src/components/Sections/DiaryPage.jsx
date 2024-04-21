@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import styled, { css } from 'styled-components';
+import styled, { css, keyframes } from 'styled-components';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
@@ -46,31 +46,46 @@ const buttonStyles = css`
   padding: 10px 15px;
   margin: 0 5px;
   font-size: 16px;
-  margin-top : 20px;
+  margin-top: 20px;
   cursor: pointer;
-  border: 2px solid #4CAF50; /* 버튼 테두리 색상 추가 */
-  background-color: white; /* 배경색을 흰색으로 설정 */
-  color: black; /* 글자색을 검정색으로 설정 */
+  border: 2px solid #4CAF50;
+  background-color: white;
+  color: black;
   border-radius: 5px;
   transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s, border-radius 0.3s;
 
   &:hover {
-    transform: scale(1.05); /* 버튼이 조금 커지는 효과 */
-    box-shadow: 0px 8px 15px rgba(0,0,0,0.2); /* 그림자를 진하게 */
-    background: linear-gradient(145deg, #4caf50, #66bb6a); /* 그라디언트 배경 */
+    transform: scale(1.05);
+    background: linear-gradient(145deg, #4caf50, #66bb6a);
     background-color: #4CAF50;
-    border-radius: 8px; /* 모서리가 더 둥글게 */
+    border-radius: 8px;
+    animation: ${pulseAnimation} 1s; /* 애니메이션 추가 */
+    box-shadow: 0 0 0 2em transparent; /* 초기 상태 */
   }
 
   ${({ active }) => active && `
-    background-color: #007BFF; /* 활성화됐을 때의 배경색 */
-    color: white; /* 활성화됐을 때의 글자색 */
-    border-color: #007BFF; /* 활성화됐을 때의 테두리 색상 */
+    background-color: #007BFF;
+    color: white;
+    border-color: #007BFF;
   `}
+`;
+
+const pulseAnimation = keyframes`
+  0% {
+    box-shadow: 0 0 0 0 var(--hover, #66bb6a);
+  }
+  100% {
+    box-shadow: 0 0 0 2em transparent;
+  }
 `;
 
 const Button = styled.button`
   ${buttonStyles}
+  --hover: #66bb6a; /* 호버 색상 설정 */
+  &:hover, &:focus {
+    animation: ${pulseAnimation} 1s;
+    box-shadow: 0 0 0 2em transparent;
+  }
 `;
 
 const Tag = styled.div`
