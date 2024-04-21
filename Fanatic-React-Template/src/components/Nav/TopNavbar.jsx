@@ -65,10 +65,10 @@ export default function TopNavbar() {
       <Wrapper className="flexCenter animate whiteBg" style={y > 100 ? { height: "60px" } : { height: "80px" }}>
         <NavInner className="container flexSpaceCenter">
           <ScrollLink className="pointer flexNullCenter" to="home" smooth={true} >
-            <LogoIcon />
+            {/* <LogoIcon /> */}
           </ScrollLink>
           <RouterLink to="/">
-            <img src={logoo} alt="로고 이미지"  style={{marginLeft:"-140px", width:"95px", height:"45px"}}/>
+            <img src={logoo} alt="로고 이미지"  style={{marginLeft:"-100px", width:"95px", height:"45px"}}/>
           </RouterLink>
           <BurderWrapper className="pointer" onClick={() => toggleSidebar(!sidebarOpen)}>
             <BurgerIcon />
@@ -76,38 +76,38 @@ export default function TopNavbar() {
           <UlWrapper className="flexNullCenter">
             {/* 메뉴 항목들을 여기에 포함 */}
             <li className="semiBold font15 pointer">
-              <ScrollLink activeClass="active" style={{ padding: "10px 15px" }} to="home" spy={true} smooth={true} offset={-80}>
+              <ScrollLink activeClass="active" style={{ padding: "10px 15px 5px", fontSize:"17px"}} to="home" spy={true} smooth={true} offset={-80}>
                 학습실
               </ScrollLink>
             </li>
-            <li className="semiBold font15 pointer">
+            {/* <li className="semiBold font15 pointer">
               <ScrollLink activeClass="active" style={{ padding: "10px 15px" }} to="services" spy={true} smooth={true} offset={-80}>
                 일기
               </ScrollLink>
-            </li>
+            </li> */}
             <li className="semiBold font15 pointer">
-              <ScrollLink activeClass="active" style={{ padding: "10px 15px" }} to="projects" spy={true} smooth={true} offset={-80}>
+              <ScrollLink activeClass="active" style={{ padding: "10px 15px 5px", fontSize:"17px" }} to="projects" spy={true} smooth={true} offset={-80}>
                 일기
               </ScrollLink>
             </li>
             <li className="semiBold font15 pointer">
-              <ScrollLink activeClass="active" style={{ padding: "10px 15px" }} to="blog" spy={true} smooth={true} offset={-80}>
+              <ScrollLink activeClass="active" style={{ padding: "10px 15px 5px", fontSize:"17px" }} to="blog" spy={true} smooth={true} offset={-80}>
                 커뮤니티
               </ScrollLink>
             </li>
             <li className="semiBold font15 pointer">
-              <ScrollLink activeClass="active" style={{ padding: "10px 15px" }} to="pricing" spy={true} smooth={true} offset={-80}>
+              <ScrollLink activeClass="active" style={{ padding: "10px 15px 5px", fontSize:"17px" }} to="pricing" spy={true} smooth={true} offset={-80}>
                 서비스 소개
               </ScrollLink>
             </li>
             <li className="semiBold font15 pointer">
-              <ScrollLink activeClass="active" style={{ padding: "10px 15px" }} to="contact" spy={true} smooth={true} offset={-80}>
+              <ScrollLink activeClass="active" style={{ padding: "10px 15px 5px", fontSize:"17px" }} to="contact" spy={true} smooth={true} offset={-80}>
                 1:1 상담
               </ScrollLink>
             </li>
           </UlWrapper>
           <UlWrapperRight className="flexNullCenter">
-            {isLoggedIn ?(<li><button onClick={handleLogout}>로그아웃</button></li>)
+            {isLoggedIn ?(<li><button onClick={handleLogout} style={{width:"30px"}}>로그아웃</button></li>)
             :
             (<>
               <li className="semiBold font15 pointer">
@@ -117,8 +117,6 @@ export default function TopNavbar() {
                 <a href="./membership" className="radius8 lightBg" style={{ padding: "10px 15px" , marginLeft:"10px"}}>회원가입</a>
               </li>
             </>)}
-            
-            
           </UlWrapperRight>
         </NavInner>
       </Wrapper>
@@ -134,7 +132,8 @@ const Wrapper = styled.nav`
   top: 0;
   left: 0;
   z-index: 999;
-  background:#D2F4E4;
+  background:#F5FBEF;
+  border-bottom:4px solid #0ab867;
 `;
 const NavInner = styled.div`
   position: relative;

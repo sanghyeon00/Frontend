@@ -12,7 +12,8 @@ const PageContainer = styled.div`
 `;
 
 const SidebarSection = styled.div`
-  margin-bottom: 20px;
+  margin: 20px 0 ;
+
 `;
 
 const Section = styled.div`
@@ -303,6 +304,7 @@ function CreateQPage() {
           <GenerateButton onClick={fetchQuestions}>문제 생성</GenerateButton>
         </GenerateButtonContainer>
       </Sidebar>
+
       <PageContainer>
         <InputContainer>
           <form onSubmit={handleSubmit}>
