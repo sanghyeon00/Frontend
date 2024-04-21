@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import Sidebar from './Sidebar'; // 사이드바 컴포넌트를 임포트합니다.
 
+
 const PageContainer = styled.div`
   padding-top: 120px;
   margin-left: 250px; /* 사이드바 너비만큼 여백 추가 */
@@ -51,12 +52,13 @@ const buttonStyles = css`
   background-color: white; /* 배경색을 흰색으로 설정 */
   color: black; /* 글자색을 검정색으로 설정 */
   border-radius: 5px;
-  transition: background-color 0.3s, color 0.3s, transform 0.3s;
+  transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s, border-radius 0.3s;
 
   &:hover {
-    transform: translateY(-2px);
-    background-color: #4CAF50; /* 호버 시 배경색 변경 */
-    color: white; /* 호버 시 글자색 변경 */
+    transform: scale(1.05); /* 버튼이 조금 커지는 효과 */
+    box-shadow: 0px 8px 15px rgba(0,0,0,0.2); /* 그림자를 진하게 */
+    background: linear-gradient(145deg, #4caf50, #66bb6a); /* 그라디언트 배경 */
+    border-radius: 8px; /* 모서리가 더 둥글게 */
   }
 
   ${({ active }) => active && `

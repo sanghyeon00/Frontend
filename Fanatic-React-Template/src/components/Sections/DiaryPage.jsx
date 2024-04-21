@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
+import styled, { css } from 'styled-components';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
+
 
 const MainContent = styled.div`
   display: flex;
@@ -41,20 +42,35 @@ const Input = styled.input`
   border: 1px solid #ccc;
 `;
 
-const Button = styled.button`
+const buttonStyles = css`
   padding: 10px 15px;
+  margin: 0 5px;
   font-size: 16px;
+  margin-top : 20px;
   cursor: pointer;
-  margin-top: 20px;
-  border: none;
-  background-color: #4CAF50;
-  color: white;
+  border: 2px solid #4CAF50; /* 버튼 테두리 색상 추가 */
+  background-color: white; /* 배경색을 흰색으로 설정 */
+  color: black; /* 글자색을 검정색으로 설정 */
   border-radius: 5px;
-  transition: background-color 0.3s, color 0.3s;
+  transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s, border-radius 0.3s;
 
   &:hover {
-    background-color: #367c39;
+    transform: scale(1.05); /* 버튼이 조금 커지는 효과 */
+    box-shadow: 0px 8px 15px rgba(0,0,0,0.2); /* 그림자를 진하게 */
+    background: linear-gradient(145deg, #4caf50, #66bb6a); /* 그라디언트 배경 */
+    background-color: #4CAF50;
+    border-radius: 8px; /* 모서리가 더 둥글게 */
   }
+
+  ${({ active }) => active && `
+    background-color: #007BFF; /* 활성화됐을 때의 배경색 */
+    color: white; /* 활성화됐을 때의 글자색 */
+    border-color: #007BFF; /* 활성화됐을 때의 테두리 색상 */
+  `}
+`;
+
+const Button = styled.button`
+  ${buttonStyles}
 `;
 
 const Tag = styled.div`
@@ -142,6 +158,15 @@ function DiaryPage() {
   const [uploading, setUploading] = useState(false);
   const [editorText, setEditorText] = useState('');
 
+  const placeholders = {
+    who: 'ex) 내가, 친구랑',
+    when: 'ex) 어제, 오늘, 점심에, 저녁에',
+    where: 'ex) 학교에서, 집에서',
+    what: 'ex) 공부를 했다, 과제를 했다',
+    how: 'ex) 강의를 보면서, 멘토링을 하면서',
+    why: 'ex) 시험 때문에, 프로젝트 때문에'
+  };
+
   const handleChange = e => {
     const { name, value } = e.target;
     setFormValues(prev => ({
@@ -163,39 +188,45 @@ function DiaryPage() {
   };
 
   const createDiary = async () => {
-    // 해시태그를 생성합니다.
+    // 사용자 입력으로부터 해시태그를 생성합니다.
     const newTags = Object.values(formValues)
       .filter(value => value)
       .map(value => value.replace(/\s+/g, ''));
-  
-    // 백엔드 API 엔드포인트로 요청을 보냅니다.
-    // 'http://localhost:8000/api/create-diary' 부분은 실제 백엔드 엔드포인트로 변경해야 합니다.
+    setHashtags(newTags);  // UI에 해시태그 표시
+
+    // JSON 데이터 구조, 서버에 전송
+    const diaryData = {
+        who: formValues.who,
+        when: formValues.when,
+        where: formValues.where,
+        what: formValues.what,
+        how: formValues.how,
+        why: formValues.why,
+        hashtags: newTags
+    };
+
+    // 서버에 일기 생성 요청
     try {
-      const response = await fetch(`${process.env.REACT_APP_Server_IP}/GenerateQuestion/`, {
-        method: 'POST', // 요청 방식
+      const response = await fetch(`${process.env.REACT_APP_Server_IP}/api/create-diary`, {
+        method: 'POST',
         headers: {
-          'Content-Type': 'application/json', // 보내는 리소스의 타입
-          // 필요한 경우, 다른 헤더들을 추가할 수 있습니다. 예: 'Authorization': 'Bearer your-token'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ hashtags: newTags }), // 서버로 보내는 데이터
+        body: JSON.stringify(diaryData)  // JSON 형식의 데이터 전송
       });
-  
+
       if (!response.ok) {
         throw new Error(`Error: ${response.status}`);
       }
-  
-      const data = await response.json(); // 응답을 JSON 형태로 파싱합니다.
-  
-      // 받은 일기 내용으로 에디터를 업데이트합니다.
-      setEditorText(data.diaryText);
-      setShowGuideline(false);
-    } catch (error) {
-      // 오류 처리
-      console.error('Error creating diary:', error);
-      // 오류가 발생하면 사용자에게 알릴 수 있는 상태를 설정하거나 메시지를 표시할 수 있습니다.
-    }
-  };
 
+      const data = await response.json();  // 응답 데이터를 JSON 형식으로 변환
+      const formattedText = data.diaryText.replace(/(\.)/g, '$1\n');
+    setEditorText(formattedText);
+    setShowGuideline(false);
+  } catch (error) {
+    console.error('Error creating diary:', error);
+  }
+};
 
   const handleUpload = () => {
     setUploading(true);
@@ -216,6 +247,7 @@ function DiaryPage() {
               name={key}
               value={formValues[key]}
               onChange={handleChange}
+              placeholder={placeholders[key]} // placeholder 추가
             />
           </div>
         ))}
@@ -246,7 +278,7 @@ function DiaryPage() {
 </DiaryOutput>
       </MainContent>
       <UploadSection>
-          <Button onClick={handleUpload}>업로드</Button>
+          <Button onClick={handleUpload}>업로드+</Button>
           {uploading && <div style={{ fontSize: '16px', textAlign: 'center' }}>업로드중...</div>}
         </UploadSection>
     </Container>
