@@ -13,12 +13,12 @@ import AddImage4 from "../../assets/img/add/4.png";
 export default function Services() {
   return (
     <Wrapper id="services">
-      <div className="lightBg" style={{ padding: "50px 0" }}>
+      {/* <div className="lightBg" style={{ padding: "50px 0" }}>
         <div className="container">
           <ClientSlider />
         </div>
-      </div>
-      <div className="whiteBg" style={{ padding: "60px 0" }}>
+      </div> */}
+      <div className="greyBg" style={{ padding: "30px 0" }}>
         <div className="container">
           <HeaderInfo>
             <h1 className="font40 extraBold">Our Awesome Services</h1>

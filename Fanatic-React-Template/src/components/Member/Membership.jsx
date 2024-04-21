@@ -3,6 +3,7 @@ import logo from '../../assets/img/Loginout/greenlogo.png';
 import React, { useState, useEffect } from 'react';
 import SingupButton from "../Buttons/SingupButton";
 import { useNavigate } from "react-router-dom";
+import { Link } from 'react-router-dom';
 
 const Membership = () => {
 
@@ -10,18 +11,18 @@ const Membership = () => {
 
     const TeacherSingout = () => {
         navigate("/teacherSingout");
-        // 여기에 교수 회원가입 입장 로직 구현
     };
     
     const StudentSingout = () => {
         navigate("/studentSingout");
-        // 여기에 학생 회원가입 생성 로직 구현
     };
 
     return (
         <Wrapper>
             <LoginBox>
-                <img src={logo} alt="로고 이미지"  style={{marginLeft:"250px",marginTop:"20px",marginBottom:"15px", width:"100px", height:"40px"}}/>
+                <Link to="/">
+                  <img src={logo} alt="로고 이미지"  style={{marginLeft:"250px",marginTop:"20px",marginBottom:"15px", width:"100px", height:"40px"}}/>
+                </Link>
                 <h1 style={{ textAlign:"center", fontSize:"25px"}} className="font25 extraBold">회원가입</h1>
                 <h1 style={{ textAlign:"center", fontSize:"15px", marginTop:"10px" }} className="font15 extraBold">iSoda에 오신것을 환영합니다.</h1>
                 <h1 style={{ textAlign:"center", fontSize:"11px",color:"gray", marginTop:"10px" }} className="font11 extraBold">iSoda의 회원이 되시면 다양한 학습에 도움이 되는 서비스를 누리실 수 있습니다.</h1>
@@ -63,7 +64,7 @@ const Membership = () => {
   const Wrapper = styled.section`
   margin-top: 80px;
   width: 100%;
-  min-height: 840px;
+  min-height: 700px;
   display: flex;
   @media (max-width: 960px) {
     flex-direction: column;

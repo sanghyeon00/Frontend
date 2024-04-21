@@ -3,7 +3,7 @@ import logo from '../../assets/img/Loginout/greenlogo.png';
 import React, { useState, useEffect } from 'react';
 import Join from "../Buttons/Join";
 import { useNavigate } from "react-router-dom";
-// import axios from 'axios';
+import { Link } from 'react-router-dom';
 
 const StudentSingout = () => {
 
@@ -115,11 +115,11 @@ const StudentSingout = () => {
         validateInputs();
     }, [id, password, passwordcheack, name, studentid, email, phone, phoneid, year, month, day, gender, agreement1, agreement2, agreement3]);
     
-
+    const usertype = "student";
 
     // 회원가입을 위해 django로 넘겨줄 데이터들
-    const registerUser = async (id, password, passwordcheack, name, studentid, email, phone, year, month, day, gender) => {
-        const response = await fetch("http://127.0.0.1:8000/sign_up/", {
+    const registerUser = async (id, password, passwordcheack, name, studentid, email, phone, year, month, day, gender, usertype) => {
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/sign_up/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -135,7 +135,8 @@ const StudentSingout = () => {
             year,
             month,
             day,
-            gender
+            gender,
+            usertype
           })
         });
         if (response.status === 200) {  
@@ -149,26 +150,70 @@ const StudentSingout = () => {
 
       // 사용자 정보 서버로 전달할거임 가입하기 버튼 누르면 
       const handleJoin = () => {
-        registerUser(id, password, passwordcheack, name, studentid, email, phone, year, month, day, gender);
+        registerUser(id, password, passwordcheack, name, studentid, email, phone, year, month, day, gender, usertype);
       };
+
+
+
+
+      // 아이디 중복 확인
+      const checkDuplicateId = async (id) => {
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/id_check/`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                id
+            })
+        });
+        // 중복 여부에 따라 메시지 표시
+        if (response.status === 201) {
+          setIdCheckResult("사용 가능한 아이디입니다.");
+        } 
+        else if (response.status === 409) {
+          setIdCheckResult("이미 사용 중인 아이디입니다.");
+        } 
+        else {
+            console.error('중복 확인 에러');
+            setIdCheckResult("중복 확인에 실패했습니다.");
+        }
+      };
+      
+      // 사용자 id 서버로 전달할거임 중복확인 버튼 누르면
+      const handlecheck = () => {
+        checkDuplicateId(id);
+      };
+    
+      const [idCheckResult, setIdCheckResult] = useState(''); //중복확인 텍스트임.
+
+
+
 
 
     return (
         <Wrapper>
             <LoginBox>
-                <img src={logo} alt="로고 이미지"  style={{marginLeft:"250px",marginTop:"20px",marginBottom:"15px", width:"100px", height:"40px"}}/>
+                <Link to="/">
+                  <img src={logo} alt="로고 이미지"  style={{marginLeft:"250px",marginTop:"20px",marginBottom:"15px", width:"100px", height:"40px"}}/>
+                </Link>
                 <h1 style={{ textAlign:"center", fontSize:"25px"}} className="font25 extraBold">회원가입 (학생)</h1>
                 <Separator />
 
-                <div style={{marginBottom:"7px"}}>
+                <div style={{marginBottom:"2px"}}>
                     <strong style={{ fontSize:"15px", fontWeight:"bold", marginLeft:"25px"}} className="font15 extraBold">아이디</strong> 
                 <InputBox3 
                     type="text" 
                     value={id} 
                     onChange={idUpdate} 
                     placeholder="아이디를 입력해주세요." 
+                    isInvalid={idCheckResult !== "" && idCheckResult !== "사용 가능한 아이디입니다."}
                 />
-                <CheckButton>중복확인</CheckButton>
+                <CheckButton onClick={handlecheck}>중복확인</CheckButton>
+                </div>
+
+                <div className="idcheck_result" style={{marginBottom:"7px", marginLeft:"165px"}}>
+                  {idCheckResult && <span style={{color:"red", fontSize:"13px"}}>{idCheckResult}</span>}
                 </div>
 
                 <div style={{marginBottom:"7px"}}>
@@ -299,7 +344,7 @@ const StudentSingout = () => {
                     <div><Checkbox type="checkbox" checked={agreement2} onChange={() => agreementChange2(!agreement2)}/> <strong style={{fontSize:"20px"}}>개인정보 이용 동의</strong></div>
                     <div><Checkbox type="checkbox" checked={agreement3} onChange={() => agreementChange3(!agreement3)}/> <strong style={{fontSize:"20px"}}>GPS 사용 동의</strong></div>
                 </div>
-                <Join title="가입하기" action={handleJoin} margin_left={true} margin_top={true} disabled={!isInputValid}/>
+                <Join title="가입하기" action={handleJoin} margin_left={true} margin_top={true} disabled={idCheckResult !== "사용 가능한 아이디입니다." || !isInputValid}/>
             </LoginBox>
         </Wrapper>
     );
@@ -358,7 +403,8 @@ margin-top:10px;
 margin-left:90px;
 width:280px;
 height:40px;
-border: 1px solid #000000;
+border: 1px solid ${props => props.isInvalid ? 'red' : '#000000'};
+// border: 1px solid #000000;
 padding-left: 10px;
 border-radius: 3px;
 margin-right:10px;

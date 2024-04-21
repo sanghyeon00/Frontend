@@ -8,10 +8,10 @@ import ContactImg3 from "../../assets/img/contact-3.png";
 export default function Contact() {
   return (
     <Wrapper id="contact">
-      <div className="lightBg">
+      <div className="whiteBg">
         <div className="container">
           <HeaderInfo>
-            <h1 className="font40 extraBold">Let's get in touch</h1>
+            <h1 className="font40 extraBold">1대1상담 담당 영역</h1>
             <p className="font13">
               Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
               <br />

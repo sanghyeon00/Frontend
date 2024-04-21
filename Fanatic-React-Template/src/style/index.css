@@ -42,7 +42,7 @@
     color: #0B093B;
   }
   a:hover {
-    color: #7620FF;
+    color: #0ab867;
   }
   input:-webkit-autofill {
     -webkit-box-shadow:0 0 0 50px #fff inset; /* Change the color to your own background color */
@@ -104,8 +104,8 @@
     width: 100%;
   }
   .active {
-    border-bottom: 2px solid #7620FF;
-    color: #7620FF;
+    border-bottom: 3px solid #0ab867;
+    color: #0ab867;
   }
   .tag {
     padding: 5px 10px;
@@ -254,18 +254,18 @@
   .orangeBg {
     background-color: #F2B300;
   }
-  .lightBg {
-    background-color: #F5F5F5;
+  .lightBg { 
+    background-color: #f1f1f1;
   }
   .coralBg {
-    background-color: #C4FFFF;
+    background-color: #e1f0f0;
   }
   .greenBg {
     background-color: #49CB86;
   }
   .greyBg {
-    background-color: #707070;
+    background-color: #eee7e7fa;
   }
   .whiteBg {
-    background-color: #fff;
+    background-color: #fcfcfcfe;
   }
