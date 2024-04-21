@@ -144,6 +144,28 @@ const QuestionContainer = styled.div`
   }
 `;
 
+const Checkbox = styled.div`
+  display: flex;
+  align-items: center;
+
+  /* 각 라디오 버튼 스타일 지정 */
+  input[type="radio"] {
+    margin-right: 5px;
+  }
+`;
+
+const Button = styled.button` /* 추가한 부분 */
+  ${buttonStyles}
+`;
+
+const QuestionInput = styled.input` /* 추가한 부분 */
+  padding: 10px;
+  margin: 5px 0;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+`;
+
 const QuestionDivider = styled.hr`
   margin: 20px 0;
   border: 0;
@@ -154,6 +176,32 @@ const QuestionDivider = styled.hr`
 const QuestionContent = styled.div`
   white-space: pre-wrap; /* 공백과 개행을 유지합니다. */
   flex: 1;
+`;
+
+const OptionLabel = styled.label`
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  transition: all 0.3s;
+
+  &:hover {
+    background-color: #f0f0f0;
+    border-color: #ccc;
+  }
+
+  ${({ active }) =>
+    active &&
+    `
+    background-color: #33FF00;
+    
+    border-color: gray;
+  `}
+`;
+
+const OptionCheckbox = styled.input`
+  margin-right: 5px;
 `;
 
 // 주요 컴포넌트 정의
@@ -253,6 +301,60 @@ function CreateQPage() {
 
   const typeDividers = ['객관식', '단답형']; // 구분선을 추가할 질문 유형
 
+  const renderQuestionUI = (type, item, questionId) => {
+    switch (type) {
+      case 1: // 객관식-빈칸
+      case 2: // 객관식-단답형
+      case 3: // 객관식-문장형
+        return (
+          <>
+            {item.options.map((option, optionIndex) => (
+              <OptionLabel key={optionIndex} active={selectedAnswers[questionId] === option}>
+                <OptionCheckbox
+                  type="radio"
+                  id={`option-${optionIndex}`}
+                  name={`question-${questionId}`}
+                  value={option}
+                  onChange={() => handleAnswerSelect(questionId, option)}
+                />
+                {option}
+              </OptionLabel>
+            ))}
+          </>
+        );
+    
+      case 4: // 단답형-빈칸
+      case 5: // 단답형-문장형
+      case 7: // 서술형-코딩
+        return (
+          <QuestionInput
+            type="text"
+            placeholder="답을 작성하세요."
+            onChange={(e) => handleAnswerSelect(questionId, e.target.value)}
+          />
+        );
+      case 6: // OX선택형-O/X
+      return (
+        <>
+          <Button
+            onClick={() => handleAnswerSelect(questionId, 'O')}
+            active={selectedAnswers[questionId] === 'O'} // 선택된 항목에 따라 색상 변경을 위해 active 속성 추가
+          >
+            O
+          </Button>
+          <Button
+            onClick={() => handleAnswerSelect(questionId, 'X')}
+            active={selectedAnswers[questionId] === 'X'} // 선택된 항목에 따라 색상 변경을 위해 active 속성 추가
+          >
+            X
+          </Button>
+        </>
+      );
+    default:
+      return null;
+  }
+};
+
   return (
     <>
       <Sidebar>
@@ -319,35 +421,28 @@ function CreateQPage() {
           <DownloadButton onClick={() => alert('PDF 다운로드 시작.....')}>PDF 다운로드</DownloadButton>
         </DownloadButtonContainer>
         {questions && questions.map((questionType, index) => (
-        <React.Fragment key={index}>
-          <Section>
-            <Label>문제 유형: {questionType.type}</Label>
-            {questionType.items && questionType.items.map((item, itemIndex) => (
-              <QuestionContainer
-              key={`question-${index}-${itemIndex}`}
-              className={selectedQuestionId === `question-${index}-${itemIndex}` ? 'isSelected' : ''}
-              onClick={() => handleQuestionClick(`question-${index}-${itemIndex}`)}
-            >
-                <QuestionContent>
-                  {item.content}
-                  <ol>
-                    {item.options && item.options.map((option, optionIndex) => (
-                      <li key={optionIndex} onClick={() => handleAnswerSelect(`question-${index}-${itemIndex}`, option)}>
-                        {option}
-                      </li>
-                    ))}
-                  </ol>
-                  <p>정답: {item.answer} ({item.answer_number}번)</p>
-                </QuestionContent>
-              </QuestionContainer>
-            ))}
-          </Section>
-          {index < questions.length - 1 && <QuestionDivider />}
-        </React.Fragment>
-      ))}
-    </PageContainer>
-  </>
-);
+          <React.Fragment key={index}>
+            <Section>
+              <Label>문제 유형: {questionType.type}</Label>
+              {questionType.items && questionType.items.map((item, itemIndex) => (
+                <QuestionContainer
+                  key={`question-${index}-${itemIndex}`}
+                  className={selectedQuestionId === `question-${index}-${itemIndex}` ? 'isSelected' : ''}
+                  onClick={() => handleQuestionClick(`question-${index}-${itemIndex}`)}
+                >
+                  <QuestionContent>
+                    {item.content}
+                    {renderQuestionUI(questionType.type, item, `question-${index}-${itemIndex}`)}
+                  </QuestionContent>
+                </QuestionContainer>
+              ))}
+            </Section>
+            {index < questions.length - 1 && <QuestionDivider />}
+          </React.Fragment>
+        ))}
+      </PageContainer>
+    </>
+  );
 }
 
 export default CreateQPage;

@@ -3,6 +3,15 @@ import styled, { css, keyframes } from 'styled-components';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
+const pulseAnimation = keyframes`
+  0% {
+    box-shadow: 0 0 0 0 var(--hover, #66bb6a);
+  }
+  100% {
+    box-shadow: 0 0 0 2em transparent;
+  }
+`;
+
 
 const MainContent = styled.div`
   display: flex;
@@ -68,15 +77,6 @@ const buttonStyles = css`
     color: white;
     border-color: #007BFF;
   `}
-`;
-
-const pulseAnimation = keyframes`
-  0% {
-    box-shadow: 0 0 0 0 var(--hover, #66bb6a);
-  }
-  100% {
-    box-shadow: 0 0 0 2em transparent;
-  }
 `;
 
 const Button = styled.button`

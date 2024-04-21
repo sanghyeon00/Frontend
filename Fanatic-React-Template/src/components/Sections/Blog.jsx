@@ -8,10 +8,10 @@ import TestimonialSlider from "../Elements/TestimonialSlider";
 export default function Blog() {
   return (
     <Wrapper id="blog">
-      <div className="whiteBg">
+      <div className="whiteBg" style={{padding:"30px 0"}}>
         <div className="container">
           <HeaderInfo>
-            <h1 className="font40 extraBold">Our Blog Stories</h1>
+            <h1 className="font40 extraBold">커뮤니티 담당 부분 영역</h1>
             <p className="font13">
               Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
               <br />
@@ -83,10 +83,10 @@ export default function Blog() {
           </div>
         </div>
       </div>
-      <div className="lightBg" style={{padding: '50px 0'}}>
+      <div className="whiteBg" style={{padding: '50px 0'}}>
         <div className="container">
           <HeaderInfo>
-            <h1 className="font40 extraBold">What They Say?</h1>
+            <h1 className="font40 extraBold">커뮤니티 영역2</h1>
             <p className="font13">
               Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
               <br />
@@ -102,7 +102,6 @@ export default function Blog() {
 
 const Wrapper = styled.section`
   width: 100%;
-  padding-top: 20px;
 `;
 const HeaderInfo = styled.div`
   margin-bottom: 30px;

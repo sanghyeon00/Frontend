@@ -20,6 +20,7 @@ export default function Header() {
   };
 
   return (
+    <div class="whiteBg">
     <Wrapper id="home" className="container flexSpaceCenter">
       <ContentWrapper>
         <LeftSide className="flexCenter">
@@ -47,18 +48,17 @@ export default function Header() {
       <RightSide>
       </RightSide>
     </Wrapper>
+    </div>
   );
 }
 
 const Wrapper = styled.section`
-  padding-top: 80px;
   width: 100%;
   min-height: 840px;
   display: flex;
   @media (max-width: 960px) {
     flex-direction: column;
   }
-  background:#EFF8F3;
 `;
 
 const ContentWrapper = styled.div`
