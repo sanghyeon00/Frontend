@@ -7,6 +7,7 @@ import CreateQpage from "./components/Sections/CreateQpage.jsx";
 import Classroom from "./components/Sections/Classroom.jsx";
 import TopNavbar from "./components/Nav/TopNavbar.jsx";
 import Footer from "./components/Sections/Footer.jsx";
+import ProClassroom from "./components/Sections/ProClassroom.jsx";
 
 import DiaryPage from "./components/Sections/DiaryPage.jsx";
 
@@ -45,6 +46,7 @@ export default function App() {
             <Route path="/teacherSingout" element={<TeacherSingout />}/>
             <Route path="/studentSingout" element={<StudentSingout />}/>
             <Route path="/diary" element={<DiaryPage />} />
+            <Route path="proClassroom" element={<ProClassroom/>} />
           </Routes >
           
         </AuthProvider>

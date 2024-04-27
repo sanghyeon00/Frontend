@@ -1,22 +1,53 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 // Components
 import FullButton from "../Buttons/FullButton";
 // Assets
 import QuotesIcon from "../../assets/svg/Quotes";
+import { useAuth } from "../Member/AuthContext";
 
 export default function Header() {
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth(); // 수정된 부분
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      checkPosition();
+    }
+  }, [isLoggedIn]);
+
+  const checkPosition = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_Server_IP}/position_check/`);
+      if (response.ok) {
+        const status = response.status;
+        if (status === 200) {
+          navigate("/Classroom");
+        } else if (status === 201) {
+          navigate("/ProClassroom");
+        } else {
+          console.error('Unexpected status code:', status);
+        }
+      } else {
+        throw new Error('Network response was not ok.');
+      }
+    } catch (error) {
+      console.error('Error checking position:', error);
+    }
+  };
 
   const handleEnterClassroom = () => {
-    navigate("/classroom");
-    // 여기에 강의실 입장 로직 구현
+    if (isLoggedIn) {
+      checkPosition();
+    } else {
+      navigate("/login"); // 로그인 페이지로 이동
+    }
   };
-  
+
   const handleCreateQuestion = () => {
     navigate("/create_question");
-    // 여기에 문제 생성 로직 구현
+    // 문제 생성 로직 구현
   };
 
   return (
@@ -34,7 +65,7 @@ export default function Header() {
                 <QuotesIcon />
               </QuotesWrapper>
               <p className="font15 whiteColor">
-                <em style={{color:'black'}}>Friendsssssssssssss, such as wasasaddsssse desire, are dreams and fables. Friendship demands the ability to do without it.</em>
+                <em style={{color:'black'}}>Friendsssssssssssss, such eeeeas wasasaddsssse desire, are dreams and fables. Friendship demands the ability to do without it.</em>
               </p>
               
             </QuoteWrapper>
