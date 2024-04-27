@@ -20,7 +20,7 @@ const ProClassroom = () => {
                 if (status === 200) {
                     navigate("/Classroom");
                 } else if (status === 201) {
-                    console.log("Confirmed as professor.");
+                    console.log("Confirmed as professorr.");
                 } else {
                     console.error('Unexpected status code:', status);
                 }
