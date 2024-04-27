@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 // Components
@@ -9,15 +9,38 @@ import QuotesIcon from "../../assets/svg/Quotes";
 export default function Header() {
   const navigate = useNavigate();
 
+  useEffect(() => {
+    checkPosition();
+  }, []);
+
+  const checkPosition = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_Server_IP}/position_check/`);
+      if (response.ok) {
+        const status = response.status;
+        if (status === 200) {
+          navigate("/Classroom");
+        } else if (status === 201) {
+          navigate("/ProClassroom");
+        } else {
+          console.error('Unexpected status code:', status);
+        }
+      } else {
+        throw new Error('Network response was not ok.');
+      }
+    } catch (error) {
+      console.error('Error checking position:', error);
+    }
+  };
+
   const handleEnterClassroom = () => {
-    navigate("/classroom");
-    // 여기에 강의실 입장 로직 구현
+    // 이 함수 내 로직은 checkPosition에서 처리하므로 필요 없음
   };
   
   const handleCreateQuestion = () => {
     navigate("/create_question");
     // 여기에 문제 생성 로직 구현
-  };
+  }; 
 
   return (
     <div class="whiteBg">
