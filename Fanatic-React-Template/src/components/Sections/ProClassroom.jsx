@@ -1,31 +1,49 @@
-import React, { useState, useEffect } from 'react'; // useEffect 추가
+import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 
 const ProClassroom = () => {
     const navigate = useNavigate();
-    const [view, setView] = useState('createClassroom'); // 초기 뷰를 'createClassroom'으로 설정
-    const [myCourses, setMyCourses] = useState([]); // 초기에 강의 목록은 비어있음
+    const [view, setView] = useState('createClassroom'); // 뷰 상태 추가
+    const [myCourses, setMyCourses] = useState([]);
 
     useEffect(() => {
+        checkPosition();
         fetchCourses();
     }, []);
+
+    const checkPosition = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/position_check/`);
+            if (response.ok) {
+                const status = response.status;
+                if (status === 200) {
+                    navigate("/Classroom");
+                } else if (status === 201) {
+                    console.log("Confirmed as professor.");
+                } else {
+                    console.error('Unexpected status code:', status);
+                }
+            } else {
+                throw new Error('Network response was not ok.');
+            }
+        } catch (error) {
+            console.error('Error checking position:', error);
+            navigate("/login"); // Assuming there's a login route to handle errors
+        }
+    };
 
     const fetchCourses = async () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_Server_IP}/course_view/`);
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                throw new Error('Failed to fetch courses');
             }
             const data = await response.json();
-            setMyCourses(data.lecture); // Django에서 보낸 강의 목록을 상태에 저장
+            setMyCourses(data.lecture);
         } catch (error) {
             console.error('Failed to fetch courses:', error);
         }
-    };
-
-    const handleCreateCourse = () => {
-        navigate('/create_question');
     };
 
     return (
@@ -51,7 +69,7 @@ const ProClassroom = () => {
                             <CourseTitle>{course.name}</CourseTitle>
                             <ProfessorName>교수명 입력</ProfessorName>
                         </CourseInfo>
-                        <Button onClick={handleCreateCourse}>문제 생성</Button>
+                        <Button onClick={() => navigate('/create_question')}>문제 생성</Button>
                     </CourseCard>
                 ))}
             </CoursesBox>
