@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
-import access from '../Member/Login';
+import { useAuth } from "../Member/AuthContext";
 
 const ProClassroom = () => {
     const navigate = useNavigate();
     const [view, setView] = useState('createClassroom'); // 뷰 상태 추가
     const [myCourses, setMyCourses] = useState([]);
+    const { isLoggedIn, accessToken, refreshToken} = useAuth();
 
     useEffect(() => {
         checkPosition();
@@ -18,7 +19,7 @@ const ProClassroom = () => {
           const response = await fetch(`${process.env.REACT_APP_Server_IP}/position_check/`, { //백엔드 엔드포인트 수정해야함
             method: "GET",
             headers: {
-              "Authorization": `Bearer ${access}`
+              "Authorization": `Bearer ${accessToken}`
             }
           });
             if (response.ok) {

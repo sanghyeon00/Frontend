@@ -39,11 +39,11 @@ const Login = () => {
       setCookie(name, token, {path: '/'});
     }
 
-    const { login } = useAuth();
+    const { login, setTokens } = useAuth();
 
     // 로그인 구현 (프론트)
     const accountAccess = async (id, password, selectedLoginType) => {
-      const response = await fetch(`${process.env.REACT_APP_Server_IP}/sign_in/`, { 
+      const response = await fetch(`${process.env.REACT_APP_Server_IP}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -78,31 +78,33 @@ const Login = () => {
       removeCookie('refresh_token');
     };
 
-    // 로그인 버튼 클릭이벤트 함수로 사용 >> 토큰 쿠키에 저장 >> access token 만료됐는지 확인 만료됐으면 refreshAccessToken함수 호출해서 기간 연장함.걍의자 하나 갖고오셈
+    // 로그인 버튼 클릭이벤트 함수로 사용 >> 토큰 쿠키에 저장 >> access token 만료됐는지 확인 만료됐으면 refreshAccessToken함수 호출해서 기간 연장함.
     const loadLogin = async () => {
       const { access, refresh } = await accountAccess(id, password, selectedLoginType);
       onCookie('access_token', access);
       onCookie('refresh_token', refresh);
+      setTokens(access, refresh);
       
       try {
-        const response = await fetch(`${process.env.REACT_APP_Server_IP}/access_token_check/`, { //백엔드 엔드포인트 수정해야함
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}`, { //백엔드 엔드포인트 수정해야함
           method: "GET",
           headers: {
             "Authorization": `Bearer ${access}`
           }
         });
-        console.log("-------------------------");
-        console.log(access);
-        console.log("-------------------------");
+    
         if (response.status === 401) { // 액세스 토큰이 만료되었을 때
           const newAccessToken = await refreshAccessToken(refresh);
-          const newResponse = await fetch(`${process.env.REACT_APP_Server_IP}/refresh/`, { //백엔드 엔드포인트 수정해야함 
+          const newResponse = await fetch(`${process.env.REACT_APP_Server_IP}`, { //백엔드 엔드포인트 수정해야함
             method: "GET",
             headers: {
               "Authorization": `Bearer ${newAccessToken}`
             }
           });
           const newData = await newResponse.json();
+          onCookie('access_token', newData);
+          setTokens(newData, refresh);
+
           console.log(newData);
         } 
         else {
@@ -119,7 +121,7 @@ const Login = () => {
     // access token 만료가 됐으면 refresh token 이용해 다시 access token 새로 받아와서 로그인 유지시킬라고 있는 함수임
     const refreshAccessToken = async (refreshToken) => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_Server_IP}/refresh/`, {
+        const response = await fetch("refresh token 엔드포인트 넣어야함", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
