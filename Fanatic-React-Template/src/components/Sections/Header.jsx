@@ -57,7 +57,7 @@ export default function Header() {
                 <QuotesIcon />
               </QuotesWrapper>
               <p className="font15 whiteColor">
-                <em style={{color:'black'}}>Friendsssssssssssss, such as wasasaddsssse desire, are dreams and fables. Friendship demands the ability to do without it.</em>
+                <em style={{color:'black'}}>Friendsssssssssssss, such eeeeas wasasaddsssse desire, are dreams and fables. Friendship demands the ability to do without it.</em>
               </p>
               
             </QuoteWrapper>
