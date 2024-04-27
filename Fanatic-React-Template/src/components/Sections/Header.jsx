@@ -5,13 +5,17 @@ import styled from "styled-components";
 import FullButton from "../Buttons/FullButton";
 // Assets
 import QuotesIcon from "../../assets/svg/Quotes";
+import { useAuth } from "../Member/AuthContext";
 
 export default function Header() {
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth(); // 수정된 부분
 
   useEffect(() => {
-    checkPosition();
-  }, []);
+    if (isLoggedIn) {
+      checkPosition();
+    }
+  }, [isLoggedIn]);
 
   const checkPosition = async () => {
     try {
@@ -34,13 +38,17 @@ export default function Header() {
   };
 
   const handleEnterClassroom = () => {
-    // 이 함수 내 로직은 checkPosition에서 처리하므로 필요 없음
+    if (isLoggedIn) {
+      checkPosition();
+    } else {
+      navigate("/login"); // 로그인 페이지로 이동
+    }
   };
-  
+
   const handleCreateQuestion = () => {
     navigate("/create_question");
-    // 여기에 문제 생성 로직 구현
-  }; 
+    // 문제 생성 로직 구현
+  };
 
   return (
     <div class="whiteBg">
