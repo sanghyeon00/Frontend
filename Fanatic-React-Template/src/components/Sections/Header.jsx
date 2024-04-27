@@ -9,7 +9,7 @@ import { useAuth } from "../Member/AuthContext";
 
 export default function Header() {
   const navigate = useNavigate();
-  const { isLoggedIn } = useAuth(); // 수정된 부분
+  const { isLoggedIn, accessToken, refreshToken} = useAuth(); // 수정된 부분
 
   useEffect(() => {
     if (isLoggedIn) {
