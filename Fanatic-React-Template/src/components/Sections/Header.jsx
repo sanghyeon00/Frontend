@@ -19,7 +19,12 @@ export default function Header() {
 
   const checkPosition = async () => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_Server_IP}/position_check/`);
+      const response = await fetch(`${process.env.REACT_APP_Server_IP}/position_check/`, { //백엔드 엔드포인트 수정해야함
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`
+        }
+      });
       if (response.ok) {
         const status = response.status;
         if (status === 200) {
