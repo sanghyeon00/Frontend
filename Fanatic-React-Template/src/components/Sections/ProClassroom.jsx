@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../Member/AuthContext";
 
-
+//useState로 컴포넌트 상태 관리
 const ProClassroom = () => {
     const navigate = useNavigate();
     const [view, setView] = useState('createClassroom'); // 뷰 상태 추가
@@ -42,21 +42,23 @@ const ProClassroom = () => {
             navigate("/login"); // Assuming there's a login route to handle errors
         }
     };
-
+    //모든 강의 백엔드로 가져오는 함수
     const fetchCourses = async () => {
-        try {
-            const response = await fetch(`${process.env.REACT_APP_Server_IP}/course_view/`);
-            if (!response.ok) {
-                throw new Error('Failed to fetch courses');
+      try {
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/course_view/`, {
+            headers: {
+                "Authorization": `Bearer ${accessToken}`
             }
+        });
             const data = await response.json();
             setMyCourses(data.lecture);
         } catch (error) {
             console.error('Failed to fetch courses:', error);
         }
     };
-
+    //백엔드로부터 내 강의 목록 가져오는 함수
     const fetchMyCourses = async () => {
+      //get 요청 보내서 내 강의 정보 가져오기
       try {
           const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_show/`, {
               headers: {
@@ -64,9 +66,9 @@ const ProClassroom = () => {
               }
           });
           const data = await response.json();
-          if (response.ok) {
-              setMyCourses(data.lecture);
-          } else {
+          if (response.ok) { 
+              setMyCourses(data.lecture);     //응답 성공적이면 data.lecture에서 얻은 강의 데이터 myCourses 상태에 저장
+          } else {                            //setMyCourses는 data.lecture에서 가져온 내 강의 데이터 myCourses 상태에
               console.error('Failed to fetch my courses');
           }
       } catch (error) {
@@ -74,30 +76,27 @@ const ProClassroom = () => {
       }
   };
   
-
+  //강의실 생성하고 내 강의 목록 새로 고치는 함수
   const handleCreateClassroom = async (courseName) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_generate/`, {
+      const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_generate/`, { //post 요청 보내서 강의 생성
         method: 'POST',
         headers: {
           "Authorization": `Bearer ${accessToken}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ subject: courseName })
+        body: JSON.stringify({ subject: courseName }) //강의명 데이터로 보냄
       });
-      const result = await response.json();
+      const result = await response.json(); //응답 json으로 파싱해 result에 저장
   
       if (response.ok) {
-        // 성공적으로 강의가 생성된 경우 '내 강의' 목록을 새로고칩니다.
-        await fetchMyCourses(); 
-        
+        // 성공적으로 강의가 생성된 경우
+        await fetchMyCourses(); // "내 강의" 목록을 새로고칩니다.
         setShowModal(true); // 모달을 엽니다.
       } else {
-        // 강의 생성 실패 시 사용자에게 알립니다.
         alert(`강의 생성 실패: ${result.message}`);
       }
     } catch (error) {
-      // 네트워크 에러 처리
       alert("네트워크 에러가 발생했습니다. 다시 시도해주세요.");
       console.error("강의 생성 중 에러 발생:", error);
     }
