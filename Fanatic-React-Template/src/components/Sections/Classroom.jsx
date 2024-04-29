@@ -6,19 +6,52 @@ import { useAuth } from "../Member/AuthContext";
 const Classroom = () => {
     const navigate = useNavigate();
     const { accessToken } = useAuth();
-    const [view, setView] = useState('allCourses'); // 현재 보이는 뷰(전체 강의 or 내 강의)
-    const [courses, setCourses] = useState([]); // 전체 강의 목록
-    const [myCourses, setMyCourses] = useState([]); // 내가 신청한 강의 목록
-    const [showModal, setShowModal] = useState(false); // 신청 모달 표시 여부
-    const [page, setPage] = useState(1); // 현재 페이지 번호
+    const [view, setView] = useState('allCourses');
+    const [courses, setCourses] = useState([]);
+    const [myCourses, setMyCourses] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const [page, setPage] = useState(1);
 
-    // 컴포넌트가 마운트될 때 강의 목록을 가져오는 함수
     useEffect(() => {
         checkPosition();
+        fetchCourses();
+        fetchMyCourses();
     }, []);
 
-    // 전체 강의 목록을 가져오는 비동기 함수
+    useEffect(() => {
+        if (view === 'myCourses') {
+            fetchMyCourses();
+        }
+    }, [view]);
+
     const checkPosition = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/position_check/`, {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                const status = response.status;
+                if (status === 200) {
+                    navigate("/Classroom");
+                } else if (status === 201) {
+                    navigate("/ProClassroom");
+                } else {
+                    console.error('Unexpected status code:', status);
+                }
+            } else {
+                throw new Error('Network response was not ok.');
+            }
+        } catch (error) {
+            console.error('Error checking position:', error);
+            navigate("/login");
+        }
+    };
+
+    const fetchCourses = async () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_view/`, {
                 method: "GET",
@@ -27,18 +60,34 @@ const Classroom = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                setCourses(data.lecture);
-                setView('allCourses');
+                setCourses(data.lecture || []);
             } else {
                 console.error('Failed to fetch courses');
             }
         } catch (error) {
-            console.error('Error checking position:', error);
+            console.error('Error fetching courses:', error);
             navigate("/login");
         }
     };
 
-    // 강의를 신청하는 함수
+    const fetchMyCourses = async () => {
+      try {
+          const response = await fetch(`${process.env.REACT_APP_Server_IP}/my_lecture_show/`, {
+              headers: { "Authorization": `Bearer ${accessToken}` }
+          });
+          if (response.ok) {
+              const data = await response.json();
+              setMyCourses(data.lecture || []);
+          } else {
+              console.error('Failed to fetch my courses');
+          }
+      } catch (error) {
+          console.error('Failed to fetch my courses:', error);
+          navigate("/login");
+      }
+  };
+  
+
     const handleEnroll = async (course) => {
         try {
             const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_apply/`, {
@@ -47,14 +96,18 @@ const Classroom = () => {
                     "Authorization": `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ course_name: course.course })
+                body: JSON.stringify({ 
+                    course: course.course,
+                    lecture_id: course.lecture_id 
+                })
             });
 
             const result = await response.json();
 
             if (response.ok) {
+                await fetchMyCourses(); // 신청 후 내 강의 목록 갱신
                 setShowModal(true);
-                fetchMyCourses(); // 신청 후 내 강의 목록 갱신
+                setView('myCourses');
             } else {
                 alert(`신청 실패: ${result.message}`);
             }
@@ -64,24 +117,6 @@ const Classroom = () => {
         }
     };
 
-    // 내 강의 목록을 가져오는 함수
-    const fetchMyCourses = async () => {
-        try {
-            const response = await fetch(`${process.env.REACT_APP_Server_IP}/my_lecture_show/`, {
-                headers: { "Authorization": `Bearer ${accessToken}` }
-            });
-            const data = await response.json();
-            if (response.ok) {
-                setMyCourses(data.lecture);
-            } else {
-                console.error('Failed to fetch my courses');
-            }
-        } catch (error) {
-            console.error('Failed to fetch my courses:', error);
-        }
-    };
-
-    // 강의 신청 모달 컴포넌트
     const Modal = ({ closeModal }) => {
         return (
             <ModalWrapper>
@@ -93,13 +128,11 @@ const Classroom = () => {
         );
     };
 
-    // 모달 닫기 함수
-    const closeModal = () => {
+    const closeModal = async () => {
         setShowModal(false);
-        setView('myCourses'); // 확인 후 '내 강의'로 이동
+        setView('myCourses');
     };
 
-    // 페이지당 보여줄 강의 수, 총 페이지 수, 현재 페이지의 시작과 끝 강의 인덱스 계산
     const coursesPerPage = 4;
     const totalPages = Math.ceil(courses.length / coursesPerPage);
     const courseStart = (page - 1) * coursesPerPage;
@@ -132,13 +165,13 @@ const Classroom = () => {
                 {view === 'allCourses' && courses.slice(courseStart, courseEnd).map(course => (
                     <CourseCard key={course.lecture_id}>
                         <CourseInfo>
-                            <CourseTitle>{course.course_name}</CourseTitle>
+                            <CourseTitle>{course.course}</CourseTitle>
                             <ProfessorName>{course.professor}</ProfessorName>
                         </CourseInfo>
                         <Button onClick={() => handleEnroll(course)}>신청</Button>
                     </CourseCard>
                 ))}
-                {view === 'myCourses' && myCourses.map(course => (
+                {view === 'myCourses' && myCourses.length > 0 && myCourses.map(course => (
                     <CourseCard key={course.lecture_id}>
                         <CourseInfo>
                             <CourseTitle>{course.course}</CourseTitle>
