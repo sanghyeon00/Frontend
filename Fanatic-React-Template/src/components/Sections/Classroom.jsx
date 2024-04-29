@@ -5,7 +5,7 @@ import { useAuth } from "../Member/AuthContext";
 
 const Classroom = () => {
     const navigate = useNavigate();
-    const { accessToken } = useAuth();
+    const { cookie } = useAuth();
     const [view, setView] = useState('allCourses');
     const [courses, setCourses] = useState([]);
     const [myCourses, setMyCourses] = useState([]);
@@ -28,7 +28,9 @@ const Classroom = () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_Server_IP}/position_check/`, {
                 method: "GET",
-                headers: { "Authorization": `Bearer ${accessToken}` }
+                headers: {
+                    "Authorization": `Bearer ${cookie.access_token}`
+                }
             });
 
             if (response.ok) {
@@ -53,7 +55,7 @@ const Classroom = () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_view/`, {
                 method: "GET",
-                headers: { "Authorization": `Bearer ${accessToken}` }
+                headers: { "Authorization": `Bearer ${cookie.access_token}` }
             });
 
             if (response.ok) {
@@ -72,9 +74,36 @@ const Classroom = () => {
     };
 
     const fetchMyCourses = async () => {
+
+      try {
+          const response = await fetch(`${process.env.REACT_APP_Server_IP}/my_lecture_show/`, {
+              headers: { "Authorization": `Bearer ${cookie.access_token}` }
+          });
+          if (response.ok) {
+              const data = await response.json();
+              setMyCourses(data.lecture || []);
+          } else {
+              console.error('Failed to fetch my courses');
+          }
+      } catch (error) {
+          console.error('Failed to fetch my courses:', error);
+          navigate("/login");
+      }
+  };
+  
+
+    const handleEnroll = async (course) => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_Server_IP}/my_lecture_show/`, {
-                headers: { "Authorization": `Bearer ${accessToken}` }
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_apply/`, {
+                method: 'POST',
+                headers: {
+                    "Authorization": `Bearer ${cookie.access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ 
+                    course: course.course,
+                    lecture_id: course.lecture_id 
+                })
             });
 
             const data = await response.json();

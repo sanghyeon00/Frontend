@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 // Components
@@ -9,28 +9,31 @@ import { useAuth } from "../Member/AuthContext";
 
 export default function Header() {
   const navigate = useNavigate();
-  const { isLoggedIn, accessToken, refreshToken} = useAuth(); // 수정된 부분
+  const { isLoggedIn, cookie} = useAuth(); // 수정된 부분
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      checkPosition();
-    }
-  }, [isLoggedIn]);
+  // useEffect(() => {
+  //   if (accessToken) {
+  //     console.log(accessToken)
+  //   }
+  //   else{
+  //     console.log("zzzzzzzzzzzzzzzzzzzzzzzzzzz")
+  //   }
+  // }, [accessToken]);
 
   const checkPosition = async () => {
     try {
       const response = await fetch(`${process.env.REACT_APP_Server_IP}/position_check/`, { //백엔드 엔드포인트 수정해야함
         method: "GET",
         headers: {
-          "Authorization": `Bearer ${accessToken}`
+          "Authorization": `Bearer ${cookie.access_token}`
         }
       });
       if (response.ok) {
         const status = response.status;
         if (status === 200) {
-          navigate("/Classroom");
+          navigate("/classroom");
         } else if (status === 201) {
-          navigate("/ProClassroom");
+          navigate("/proClassroom");
         } else {
           console.error('Unexpected status code:', status);
         }
@@ -43,7 +46,7 @@ export default function Header() {
   };
 
   const handleEnterClassroom = () => {
-    if (isLoggedIn) {
+    if (cookie.access_token) {
       checkPosition();
     } else {
       navigate("/login"); // 로그인 페이지로 이동
@@ -53,6 +56,35 @@ export default function Header() {
   const handleCreateQuestion = () => {
     navigate("/create_question");
     // 문제 생성 로직 구현
+  };
+  const handleSolveQpage = () => {
+    navigate("/solve_question");
+    // 문제 생성 로직 구현
+  };
+
+  const TypingEffect = ({ text, speed, type }) => {
+    const [displayText, setDisplayText] = useState('');
+  
+    useEffect(() => {
+      let currentIndex = 0;
+  
+      const typingInterval = setInterval(() => {
+        if (currentIndex < text.length) {
+          setDisplayText((prevText) => prevText + text[currentIndex]);
+          currentIndex++;
+        } else {
+          clearInterval(typingInterval);
+        }
+      }, speed);
+  
+      return () => clearInterval(typingInterval);
+    }, [text, speed, type]);
+  
+    return (
+      <type>
+        {displayText}
+      </type>
+    );
   };
 
   return (
@@ -69,9 +101,15 @@ export default function Header() {
               <QuotesWrapper>
                 <QuotesIcon />
               </QuotesWrapper>
-              <p className="font15 whiteColor">
-                <em style={{color:'black'}}>Friendsssssssssssss, such eeeeas wasasaddsssse desire, are dreams and fables. Friendship demands the ability to do without it.</em>
+              <div>
+                <TypingEffect text="Friendsssssssssssss, such eeeeas wasasaddsssse desire, are dreams and fables. Friendship demands the ability to do without it." speed={100} type="em"/>
+              </div>
+
+              <p>
+                <TypingEffect text="Friendsssssssssssss, such eeeeas wasasaddsssse desire, are dreams and fables. Friendship demands the ability to do without it." speed={100} type="em"/>
+                {/* <em style={{color:'black'}}>Friendsssssssssssss, such eeeeas wasasaddsssse desire, are dreams and fables. Friendship demands the ability to do without it.</em> */}
               </p>
+              <TypingEffect text="안녕하세요! 반가워요." speed={100} type="div"/>
               
             </QuoteWrapper>
           </div>
@@ -79,6 +117,7 @@ export default function Header() {
         <BtnWrapper>
           <FullButton title="강의실" action={handleEnterClassroom} style={{ marginTop: '10px' }} />
           <FullButton title="+ 문제 생성" action={handleCreateQuestion} style={{ marginTop: '10px' }} />
+          <FullButton title="문제풀기" action={handleSolveQpage} style={{ marginTop: '10px' }} />
         </BtnWrapper>
       </ContentWrapper>
       <RightSide>

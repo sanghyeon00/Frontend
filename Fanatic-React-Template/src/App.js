@@ -4,6 +4,7 @@ import { Helmet } from "react-helmet";
 // Screens
 import Landing from "./screens/Landing.jsx";
 import CreateQpage from "./components/Sections/CreateQpage.jsx";
+import SolveQpage from "./components/Sections/SolveQpage.jsx";
 import Classroom from "./components/Sections/Classroom.jsx";
 import TopNavbar from "./components/Nav/TopNavbar.jsx";
 import Footer from "./components/Sections/Footer.jsx";
@@ -40,13 +41,14 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/create_question" element={<CreateQpage />}/>
+            <Route path="/solve_question" element={<SolveQpage/>} />
             <Route path="/classroom" element={<Classroom />}/>
             <Route path="/login" element={<Login />}/>
             <Route path="/membership" element={<Membership />}/>
             <Route path="/teacherSingout" element={<TeacherSingout />}/>
             <Route path="/studentSingout" element={<StudentSingout />}/>
             <Route path="/diary" element={<DiaryPage />} />
-            <Route path="proClassroom" element={<ProClassroom/>} />
+            <Route path="/proClassroom" element={<ProClassroom/>} />
           </Routes >
           
         </AuthProvider>

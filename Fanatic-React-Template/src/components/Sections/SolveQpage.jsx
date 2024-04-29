@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from "react-router-dom";
 import styled, { css } from 'styled-components';
-import Sidebar from './Sidebar'; // 사이드바 컴포넌트를 임포트합니다.
 import QconfirmButton from "../Buttons/QconfirmButton";
-import {GiBookmarklet} from 'react-icons/gi';
+import { MdQuiz } from "react-icons/md";
 
 
 const PageContainer = styled.div`
   padding-top: 120px;
-  margin-left: 250px; /* 사이드바 너비만큼 여백 추가 */
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -273,10 +270,11 @@ const OptionCheckbox = styled.input`
 `;
 
 // 주요 컴포넌트 정의
-function CreateQPage() {
+function SolveQpage() {
   // 로딩상태, 에러상태, 선택된 옵션들, 선택된 문제 유형, 사용자 입력 질문, 서버로부터 받은 문제 데이터 상태 관리
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
   const [selections, setSelections] = useState({});
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [question, setQuestion] = useState('');
@@ -285,42 +283,12 @@ function CreateQPage() {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [selectedKeywords, setSelectedKeywords] = useState([]); //선택된 키워드 배열 
 
-  const navigate = useNavigate();
-
-  const handleSolveQpage = () => {
-    navigate("/solve_question");
-    // 문제 생성 로직 구현
-  };
 
   // 선택된 옵션 변겅 시 로그 출력을 위한 useEffect 훅 사용
   useEffect(() => {
     console.log(selections);
   }, [selections]); // selections 상태가 변경될 때마다 실행됩니다.
 
-  const toggleSelection = (key) => {
-    setSelectedTypes(prev => 
-      prev.includes(key) ? prev.filter(type => type !== key) : [...prev, key]
-    );
-    if (selections[key] === undefined) {
-      setSelections(prev => ({
-        ...prev,
-        [key]: 0
-      }));
-    }
-  };
-  //특정 문제 유형에 대해 원하는 문제의 개수를 선택할 때 호출
-  // 문제의 개수를 선택하면, 해당 문제 유형(key)과 선택된 개수(count)를
-  //selections 객체에 저장하거나 업데이트
-  const handleSelectionChange = (key, count) => {
-    // if (selectedTypes.includes(key)) {
-      setSelections(prev => ({
-        ...prev,
-        [key]: count
-      }));
-    // } else {
-    //   alert("먼저 문제 유형을 선택해주세요.");
-    // }
-  };
 
   const handleAnswerSelect = (questionId, answer) => {
     setSelectedAnswers(prev => ({
@@ -328,6 +296,8 @@ function CreateQPage() {
       [questionId]: answer
     }));
   };
+
+
 
   // 문제 데이터를 서버로부터 가져오는 함수
   const fetchQuestions = () => {
@@ -354,72 +324,25 @@ function CreateQPage() {
   };
 
 
-  const kkkk = () => {
-    // 활성화된 문제 유형 가져오기
-    const activeTypes = selectedTypes.filter(type => selections[type]);
-  
-    // 활성화된 문제 유형이 없다면 selections 객체 초기화
-    if (activeTypes.length === 0) {
-      setSelections({});
-      return;
-    }
-  
-    // 활성화된 문제 유형이 있을 때 selections 객체 업데이트
-    const updatedSelections = { ...selections };
-  
-    // 활성화되지 않은 문제 유형에 대한 key 삭제
-    Object.keys(selections).forEach(key => {
-      if (!activeTypes.includes(key)) {
-        delete updatedSelections[key];
-      }
-    });
-  
-    // 업데이트된 selections로 설정
-    setSelections(updatedSelections);
-  
-    // 선택된 문제 유형과 개수 출력
-    alert(Object.entries(updatedSelections).map(([key, value]) => `${key}: ${value}`).join('\n'));
-  };
 
   const handleGenerateButtonClick = () => {
-    kkkk();
     fetchQuestions();
   };
 
-  const handleKeywordSelect = (e) => {
-    const selectedKeyword = e.target.value; // 선택된 키워드 값
-    // 이미 선택된 키워드인지 확인 후 선택 배열에 추가
-    if (!selectedKeywords.includes(selectedKeyword)) {
-      setSelectedKeywords([...selectedKeywords, selectedKeyword]);
-    }
-  };
 
-  const handleRemoveKeyword = (indexToRemove) => {
-    setSelectedKeywords((prevKeywords) => {
-      // 선택된 키워드 배열에서 특정 인덱스의 키워드를 제외한 새 배열 반환
-      return prevKeywords.filter((_, index) => index !== indexToRemove);
-    });
-  };
 
 
   const handleQuestionClick = (id) => {
     setSelectedQuestionId(id);
   };
 
-
+    
   // 컴포넌트가 마운트 될 때 서버로부터 문제 데이터를 가져옴
   useEffect(() => {
     fetchQuestions(); // 컴포넌트가 마운트될 때 서버로부터 문제 데이터를 가져옵니다.
   }, []); // 의존성 배열이 비어 있으므로, 컴포넌트가 처음 마운트될 때만 fetchQuestions 함수가 실행됩니다
 
-  const questionTypes = {
-    '객관식': ['빈칸', '단답형', '문장형'],
-    '단답형': ['빈칸', '문장형'],
-    'OX선택형': ['O/X'],
-    '서술형': ['코딩']
-  };
 
-  const typeDividers = ['객관식', '단답형']; // 구분선을 추가할 질문 유형
 
   const renderQuestionUI = (type, item, questionId) => {
     switch (type) {
@@ -477,93 +400,13 @@ function CreateQPage() {
 
   return (
     <>
-      <Sidebar>
-        {Object.keys(questionTypes).map((type) => (
-          <React.Fragment key={type}>
-            <SidebarSection>
-              <Label>{type}</Label>
-              {questionTypes[type].length > 0 ? (
-                questionTypes[type].map(subType => {
-                  const subTypeKey = `${type}-${subType}`;
-                  const isActive = selectedTypes.includes(subTypeKey);
-                  return (
-                    <ButtonContainer key={subType}>
-                      <TypeButton
-                        active={isActive}
-                        onClick={() => {toggleSelection(subTypeKey);
-                                        handleSelectionChange(subTypeKey, 1);
-                        }}
-                      >
-                        {subType}
-                      </TypeButton>
-                      <CountSelect
-                        value={isActive ? (selections[subTypeKey] || 1) : ''}
-                        onChange={(e) => handleSelectionChange(subTypeKey, parseInt(e.target.value))}
-                        disabled={!isActive}
-                      >
-                        {[1, 2, 3, 4, 5].map(count => (
-                          <option key={count} value={count}>{count}개</option>
-                        ))}
-                      </CountSelect>
-                    </ButtonContainer>
-                  );
-                })
-              ) : (
-                <ButtonContainer>
-                  <Label style={{visibility: 'hidden'}}>O/X</Label>
-                  <CountSelect
-                    value={selections['OX선택형'] || 1}
-                    onChange={(e) => handleSelectionChange('OX선택형', parseInt(e.target.value))}
-                  >
-                    {[1, 2, 3, 4, 5].map(count => (
-                      <option key={count} value={count}>{count}개</option>
-                    ))}
-                  </CountSelect>
-                </ButtonContainer>
-              )}
-            </SidebarSection>
-            {type !== '서술형' && <Divider />}
-          </React.Fragment>
-        ))}
-        <GenerateButtonContainer>
-          <GenerateButton onClick={handleGenerateButtonClick}>문제 생성</GenerateButton>
-        </GenerateButtonContainer>
-      </Sidebar>
-
       <PageContainer>
         <InputContainer>
-          <h1 style={{marginBottom:"25px", color:"#20C075", fontWeight:"bold"}}><GiBookmarklet />문제 생성 페이지<GiBookmarklet /></h1>
+          <h1 style={{marginBottom:"25px", color:"#20C075", fontWeight:"bold"}}><MdQuiz />퀴즈 시작<MdQuiz /></h1>
         </InputContainer>
         <InputContainer>
-        <h2>Keyword 선택  - </h2>
-          <KeywordSelect onChange={handleKeywordSelect}>
-            {[' ','입맛돋우기', '파이썬인터프리터사용하기', '파이썬의간략한소개', '기타제어흐름도구',
-             '자료구조', '모듈', '입력과출력', '에러와예외', '클래스', '표준라이브러리둘러보기', 
-             '표준라이브러리둘러보기—부', '가상환경및패키지', '이제뭘하지?', '대화형입력편집및히스토리치환', 
-             '부동소수점산술:문제점및한계', '부록'].map((keyword, index) => (
-              <option key={index} value={keyword}>
-                {keyword}
-              </option>
-            ))}
-          </KeywordSelect>
+            <hr style={{ width: "850px", height: "2px", backgroundColor: "#20C075", border: "none" }} />
         </InputContainer>
-          
-        <InputContainer2>
-          <KeywordCheck>
-            {selectedKeywords.map((keyword, index) => (
-              <span key={index} style={{background:"#20C075", marginRight:"15px", borderRadius:"15px", padding:"3px", color:"white", fontSize:"14px"}}>
-                #{keyword} 
-                <span
-                  className="removeButton"
-                  onClick={() => handleRemoveKeyword(index)} // 삭제 함수 호출
-                  style={{color:"black", fontSize:"16px", fontWeight:"bold"}}
-                >
-                  x
-                </span>
-              </span>
-            ))}
-          </KeywordCheck>
-        </InputContainer2>
 
         {questions && questions.map((questionType, index) => (
           <React.Fragment key={index}>
@@ -585,11 +428,11 @@ function CreateQPage() {
             {index < questions.length - 1 && <QuestionDivider />}
           </React.Fragment>
         ))}
-        <QconfirmButton title="확정 및 퀴즈 시작" action={handleSolveQpage}/>
+        <QconfirmButton  title="퀴즈 마감 제출" margin_top={true} />
 
       </PageContainer>
     </>
   );
 }
 
-export default CreateQPage;
+export default SolveQpage;

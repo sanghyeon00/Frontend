@@ -1,7 +1,8 @@
 import React from "react";
 import styled from "styled-components";
 
-export default function LoginButton({ title, action, border, small,margin_top }) {
+
+export default function LoginButton({ title, action, border, small, margin_top }) {
   return (
     <Wrapper
       onClick={action ? () => action() : null}
