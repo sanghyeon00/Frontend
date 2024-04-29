@@ -57,20 +57,23 @@ const ProClassroom = () => {
     };
 
     const fetchMyCourses = async () => {
-      // 내 강의 목록 요청
-      const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_show/`, {
-          headers: {
-              "Authorization": `Bearer ${accessToken}`
+      try {
+          const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_show/`, {
+              headers: {
+                  "Authorization": `Bearer ${accessToken}`
+              }
+          });
+          const data = await response.json();
+          if (response.ok) {
+              setMyCourses(data.lecture);
+          } else {
+              console.error('Failed to fetch my courses');
           }
-      });
-      const data = await response.json();
-      if (response.ok) {
-          setMyCourses(data.lecture);
-      } else {
-          console.error('Failed to fetch my courses');
-          // 에러 처리 로직을 추가할 수 있습니다.
+      } catch (error) {
+          console.error('Failed to fetch my courses:', error);
       }
   };
+  
 
   const handleCreateClassroom = async (courseName) => {
     try {
@@ -83,19 +86,18 @@ const ProClassroom = () => {
         body: JSON.stringify({ subject: courseName })
       });
       const result = await response.json();
+  
       if (response.ok) {
-        
+        // 성공적으로 강의가 생성된 경우 '내 강의' 목록을 새로고칩니다.
         await fetchMyCourses(); 
-        setShowModal(false); 
-        setView('myCourses'); 
-      } else {
         
-        setShowModal(false); 
+        setShowModal(true); // 모달을 엽니다.
+      } else {
+        // 강의 생성 실패 시 사용자에게 알립니다.
         alert(`강의 생성 실패: ${result.message}`);
       }
     } catch (error) {
-      
-      setShowModal(false); 
+      // 네트워크 에러 처리
       alert("네트워크 에러가 발생했습니다. 다시 시도해주세요.");
       console.error("강의 생성 중 에러 발생:", error);
     }
@@ -103,21 +105,21 @@ const ProClassroom = () => {
   
 
 
-const Modal = ({ closeModal }) => {
-  return (
+  const Modal = ({ closeModal }) => {
+    return (
       <ModalWrapper>
-          <ModalContent>
-              <p>강의실 생성에 성공했습니다!</p>
-              
-              <Button onClick={closeModal}>확인</Button>
-          </ModalContent>
+        <ModalContent>
+          <p>강의실 생성에 성공했습니다!</p>
+          {/* closeModal이 호출되면 모달을 닫고 내 강의 탭으로 이동 */}
+          <Button onClick={closeModal}>확인</Button>
+        </ModalContent>
       </ModalWrapper>
-  );
-};
+    );
+  };
 
   const closeModal = () => {
-      setShowModal(false);
-      setView('myCourses'); // 모달을 닫고 내 강의 탭으로 이동
+    setShowModal(false); // 모달을 닫습니다.
+    setView('myCourses'); // 사용자 인터페이스를 '내 강의' 뷰로 전환합니다.
   };
 
   return (
