@@ -36,7 +36,7 @@ const ProClassroom = () => {
                 if (status === 200) {
                     navigate("/Classroom");
                 } else if (status === 201) {
-                    console.log("Confirmed as professorr.");
+                  navigate("/ProClassroom");
                 } else {
                     console.error('Unexpected status code:', status);
                 }
@@ -50,18 +50,18 @@ const ProClassroom = () => {
     };
     //모든 강의 백엔드로 가져오는 함수
     const fetchCourses = async () => {
-      try {
-          const response = await fetch(`${process.env.REACT_APP_Server_IP}/course_view/`, {
-              headers: {
-                  "Authorization": `Bearer ${accessToken}`
-              }
-          });
-          const data = await response.json();
-          setMyCourses(data.lecture);
-      } catch (error) {
-          console.error('Failed to fetch courses:', error);
-      }
-  };
+        try {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/course_view/`, {
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            });
+            const data = await response.json();
+            setMyCourses(data.lecture);
+        } catch (error) {
+            console.error('Failed to fetch courses:', error);
+        }
+    };
     //백엔드로부터 내 강의 목록 가져오는 함수
     const fetchMyCourses = async () => {
       try {
