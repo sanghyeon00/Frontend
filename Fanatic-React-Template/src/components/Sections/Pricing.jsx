@@ -9,7 +9,7 @@ export default function Pricing() {
       <div className="lightBg" style={{padding:"30px 0"}}>
         <div className="container">
           <HeaderInfo>
-            <h1 className="font40 extraBold">서비스 소개 담당 영역</h1>
+            <h1 className="font40 extraBold">|| 서비스 소개 ||</h1>
             <p className="font13">
               Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut
               <br />
