@@ -5,7 +5,7 @@ import { useAuth } from "../Member/AuthContext";
 
 const Classroom = () => {
     const navigate = useNavigate();
-    const { accessToken } = useAuth();
+    const { cookie } = useAuth();
     const [view, setView] = useState('allCourses');
     const [courses, setCourses] = useState([]);
     const [myCourses, setMyCourses] = useState([]);
@@ -29,7 +29,7 @@ const Classroom = () => {
             const response = await fetch(`${process.env.REACT_APP_Server_IP}/position_check/`, {
                 method: "GET",
                 headers: {
-                    "Authorization": `Bearer ${accessToken}`
+                    "Authorization": `Bearer ${cookie.access_token}`
                 }
             });
 
@@ -55,7 +55,7 @@ const Classroom = () => {
         try {
             const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_view/`, {
                 method: "GET",
-                headers: { "Authorization": `Bearer ${accessToken}` }
+                headers: { "Authorization": `Bearer ${cookie.access_token}` }
             });
 
             if (response.ok) {
@@ -73,7 +73,7 @@ const Classroom = () => {
     const fetchMyCourses = async () => {
       try {
           const response = await fetch(`${process.env.REACT_APP_Server_IP}/my_lecture_show/`, {
-              headers: { "Authorization": `Bearer ${accessToken}` }
+              headers: { "Authorization": `Bearer ${cookie.access_token}` }
           });
           if (response.ok) {
               const data = await response.json();
@@ -93,7 +93,7 @@ const Classroom = () => {
             const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_apply/`, {
                 method: 'POST',
                 headers: {
-                    "Authorization": `Bearer ${accessToken}`,
+                    "Authorization": `Bearer ${cookie.access_token}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ 
