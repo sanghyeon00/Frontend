@@ -3,7 +3,7 @@ import logo from '../../assets/img/Loginout/greenlogo.png';
 import React, { useState, useEffect } from 'react';
 import LoginButton from "../Buttons/LoginButton.jsx";
 import { useNavigate } from "react-router-dom";
-import { useCookies } from 'react-cookie';
+// import { useCookies } from 'react-cookie';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext.jsx';
 
@@ -33,13 +33,13 @@ const Login = () => {
   ////////////////////////////////////////////////////////////////////////////////////
 
 
-    const [cookie, setCookie, removeCookie] = useCookies(['access_token', 'refresh_token']);
+    // const [cookie, setCookie, removeCookie] = useCookies(['access_token', 'refresh_token']);
 
-    const onCookie = (name, token) => {
-      setCookie(name, token, {path: '/'});
-    }
+    // const onCookie = (name, token) => {
+    //   setCookie(name, token, {path: '/'});
+    // }
 
-    const { login, setTokens, userNameGet } = useAuth();
+    const { isLoggedIn, login, setTokens, userNameGet, onCookie, removeTokens } = useAuth();
 
     // 로그인 구현 (프론트)
     const accountAccess = async (id, password, selectedLoginType) => {
@@ -73,10 +73,16 @@ const Login = () => {
     };
 
     //로그아웃 구현
-    const removeTokens = () => {
-      removeCookie('access_token');
-      removeCookie('refresh_token');
-    };
+    // const removeTokens = () => {
+    //   removeCookie('access_token');
+    //   removeCookie('refresh_token');
+    // };
+
+    // useEffect(() => {
+    //   if (!isLoggedIn) {
+    //     removeTokens();
+    //   }
+    // }, [isLoggedIn]);
 
     // 로그인 버튼 클릭이벤트 함수로 사용 >> 토큰 쿠키에 저장 >> access token 만료됐는지 확인 만료됐으면 refreshAccessToken함수 호출해서 기간 연장함.
     const loadLogin = async () => {

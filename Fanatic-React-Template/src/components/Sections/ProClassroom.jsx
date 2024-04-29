@@ -9,7 +9,7 @@ const ProClassroom = () => {
     const [view, setView] = useState('createClassroom'); // 뷰 상태 추가
     const [myCourses, setMyCourses] = useState([]);
     const [showModal, setShowModal] = useState(false);
-    const { isLoggedIn, accessToken, refreshToken} = useAuth();
+    const { isLoggedIn, cookie} = useAuth();
 
     useEffect(() => {
         checkPosition();
@@ -28,7 +28,7 @@ const ProClassroom = () => {
           const response = await fetch(`${process.env.REACT_APP_Server_IP}/position_check/`, { //백엔드 엔드포인트 수정해야함
             method: "GET",
             headers: {
-              "Authorization": `Bearer ${accessToken}`
+              "Authorization": `Bearer ${cookie.access_token}`
             }
           });
             if (response.ok) {
@@ -53,7 +53,7 @@ const ProClassroom = () => {
       try {
           const response = await fetch(`${process.env.REACT_APP_Server_IP}/course_view/`, {
               headers: {
-                  "Authorization": `Bearer ${accessToken}`
+                  "Authorization": `Bearer ${cookie.access_token}`
               }
           });
           const data = await response.json();
@@ -67,7 +67,7 @@ const ProClassroom = () => {
       try {
           const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_show/`, {
               headers: {
-                  "Authorization": `Bearer ${accessToken}`
+                  "Authorization": `Bearer ${cookie.access_token}`
               }
           });
           const data = await response.json();
@@ -86,7 +86,7 @@ const ProClassroom = () => {
         const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_generate/`, {
             method: 'POST',
             headers: {
-                "Authorization": `Bearer ${accessToken}`,
+                "Authorization": `Bearer ${cookie.access_token}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ subject: courseName })

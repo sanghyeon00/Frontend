@@ -1,5 +1,6 @@
 // AuthContext.js
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useCookies } from 'react-cookie';
 
 const AuthContext = createContext();
 
@@ -10,10 +11,11 @@ export const AuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(null);
   const [refreshToken, setRefreshToken] = useState(null);
   const [user, setUser] = useState(null);
+  const [cookie, setCookie, removeCookie] = useCookies(['access_token', 'refresh_token']);
 
   useEffect(() => {
     userNameGet();
-  }, [accessToken]);
+  }, [cookie.access_token]);
 
   const login = async () => {
     // 로그인 로직 성공 시
@@ -23,6 +25,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     // 로그아웃 로직
     setIsLoggedIn(false);
+    removeTokens();
   };
 
   const setTokens = (access, refresh) => {
@@ -30,14 +33,23 @@ export const AuthProvider = ({ children }) => {
     setRefreshToken(refresh);
   };
 
+  const onCookie = (name, token) => {
+    setCookie(name, token, {path: '/'});
+  }
+
+  const removeTokens = () => {
+    removeCookie('access_token');
+    removeCookie('refresh_token');
+  };
+
   const userNameGet = async () => {
 
-    if(accessToken != null){
+    if(cookie.access_token != null){
       try {
         const response = await fetch(`${process.env.REACT_APP_Server_IP}/name_check/`, { 
           method: "GET",
           headers: {
-            "Authorization": `Bearer ${accessToken}`
+            "Authorization": `Bearer ${cookie.access_token}`
           }
         });
         if (response.ok) {
@@ -58,7 +70,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, accessToken, refreshToken, user, login, logout, setTokens, userNameGet}}>
+    <AuthContext.Provider value={{ isLoggedIn, accessToken, refreshToken, user, cookie, login, logout, setTokens, userNameGet, onCookie, removeTokens}}>
       {children}
     </AuthContext.Provider>
   );

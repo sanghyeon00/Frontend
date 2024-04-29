@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-export default function QconfirmButton({ title, action, border, small,margin_top, margin_left }) {
+export default function QconfirmButton({ title, action, border, small, margin_top, margin_left }) {
   return (
     <Wrapper
       onClick={action ? () => action() : null}
@@ -20,8 +20,8 @@ const Wrapper = styled.button`
   background-color: ${props => props.border ? "transparent" : "#20C075"};
   width: 190px; // 버튼의 너비를 줄입니다.
   height: 40px;
-  margin-top: ${props => props.margin_top ? "45px" : "20px"};
-  margin-left: ${props => props.margin_top ? "300px" : "1000px"};
+  margin-top: ${props => props.margin_top ? "60px" : "20px"};
+  margin-left: ${props => props.margin_left ? "300px" : "1000px"};
   margin-bottom: 50px;
   align-self: ${props => props.small ? "flex-end" : "auto"};
   padding: ${props => props.small ? "8px 12px" : "15px 30px"};
