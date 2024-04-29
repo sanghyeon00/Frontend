@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import Sidebar from './Sidebar'; // 사이드바 컴포넌트를 임포트합니다.
+import QconfirmButton from "../Buttons/QconfirmButton";
 
 
 const PageContainer = styled.div`
@@ -13,7 +14,6 @@ const PageContainer = styled.div`
 
 const SidebarSection = styled.div`
   margin: 20px 0 ;
-
 `;
 
 const Section = styled.div`
@@ -28,7 +28,7 @@ const ButtonContainer = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 5px; /* 버튼 간격 조정 */
+  margin-bottom: 5px; /* 버튼 간격 조정 */;
 `;
 
 const Divider = styled.div`
@@ -77,7 +77,13 @@ const TypeButton = styled.button`
   `}
 `;
 
-const CountSelect = styled.select`${buttonStyles}`; // 드롭다운 메뉴에도 버튼 스타일 적용
+const CountSelect = styled.select`
+  ${buttonStyles}
+  ${({ disabled }) => disabled && `
+    opacity: 0.5; // 비활성화 시 투명도 조정
+    pointer-events: none; // 비활성화 시 클릭 이벤트 막기
+  `}
+`;
 
 const GenerateButtonContainer = styled.div`
   margin-top: 20px;
@@ -91,12 +97,6 @@ const GenerateButton = styled.button`
   color: white;
 `;
 
-const InputContainer = styled.div`
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-`;
 
 const Input = styled.input`
   width: 60%;
@@ -104,6 +104,62 @@ const Input = styled.input`
   margin-right: 10px;
   border: 1px solid #ccc;
   border-radius: 4px;
+`;
+
+const InputContainer = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  position: relative; /* 부모 위치 지정 */
+`;
+
+const KeywordSelect = styled.select`
+  padding: 5px 10px;
+  margin: 0 5px;
+  margin-left: 20px;
+  font-size: 18px;
+  cursor: pointer;
+  border: 2px solid #4CAF50; /* 버튼 테두리 색상 추가 */
+  background-color: white; /* 배경색을 흰색으로 설정 */
+  color: black; /* 글자색을 검정색으로 설정 */
+  border-radius: 5px;
+  transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s, border-radius 0.3s;
+
+  &:hover {
+    transform: scale(1.05); /* 버튼이 조금 커지는 효과 */
+    box-shadow: 0px 8px 15px rgba(0,0,0,0.2); /* 그림자를 진하게 */
+    background: linear-gradient(145deg, #4caf50, #66bb6a); /* 그라디언트 배경 */
+    border-radius: 8px; /* 모서리가 더 둥글게 */
+  }
+
+  ${({ active }) => active && `
+    background-color: #007BFF; /* 활성화됐을 때의 배경색 */
+    color: white; /* 활성화됐을 때의 글자색 */
+    border-color: #007BFF; /* 활성화됐을 때의 테두리 색상 */
+  `}
+`;
+
+const KeywordCheck = styled.div`
+  background-color: #f4f4f4;
+  border: 1px solid #ccc;
+  padding: 5px;
+  font-size: 18px;
+  width: 500px;
+  height:60px;
+  min-height: 60px;
+  word-wrap: break-word;
+  border-radius: 8px;
+  margin-top: 0px;
+  box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  .removeButton {
+    margin-left: 5px;
+    cursor: pointer;
+  }
 `;
 
 const SubmitButton = styled.button`${buttonStyles}`;
@@ -216,6 +272,7 @@ function CreateQPage() {
   const [questions, setQuestions] = useState([]); // 서버로부터 받은 문제 데이터
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [selectedAnswers, setSelectedAnswers] = useState({});
+  const [selectedKeywords, setSelectedKeywords] = useState([]); //선택된 키워드 배열 
 
   // 선택된 옵션 변겅 시 로그 출력을 위한 useEffect 훅 사용
   useEffect(() => {
@@ -237,14 +294,14 @@ function CreateQPage() {
   // 문제의 개수를 선택하면, 해당 문제 유형(key)과 선택된 개수(count)를
   //selections 객체에 저장하거나 업데이트
   const handleSelectionChange = (key, count) => {
-    if (selectedTypes.includes(key)) {
+    // if (selectedTypes.includes(key)) {
       setSelections(prev => ({
         ...prev,
         [key]: count
       }));
-    } else {
-      alert("먼저 문제 유형을 선택해주세요.");
-    }
+    // } else {
+    //   alert("먼저 문제 유형을 선택해주세요.");
+    // }
   };
 
   const handleAnswerSelect = (questionId, answer) => {
@@ -277,6 +334,55 @@ function CreateQPage() {
       });
     }
   };
+
+
+  const kkkk = () => {
+    // 활성화된 문제 유형 가져오기
+    const activeTypes = selectedTypes.filter(type => selections[type]);
+  
+    // 활성화된 문제 유형이 없다면 selections 객체 초기화
+    if (activeTypes.length === 0) {
+      setSelections({});
+      return;
+    }
+  
+    // 활성화된 문제 유형이 있을 때 selections 객체 업데이트
+    const updatedSelections = { ...selections };
+  
+    // 활성화되지 않은 문제 유형에 대한 key 삭제
+    Object.keys(selections).forEach(key => {
+      if (!activeTypes.includes(key)) {
+        delete updatedSelections[key];
+      }
+    });
+  
+    // 업데이트된 selections로 설정
+    setSelections(updatedSelections);
+  
+    // 선택된 문제 유형과 개수 출력
+    alert(Object.entries(updatedSelections).map(([key, value]) => `${key}: ${value}`).join('\n'));
+  };
+
+  const handleGenerateButtonClick = () => {
+    kkkk();
+    fetchQuestions();
+  };
+
+  const handleKeywordSelect = (e) => {
+    const selectedKeyword = e.target.value; // 선택된 키워드 값
+    // 이미 선택된 키워드인지 확인 후 선택 배열에 추가
+    if (!selectedKeywords.includes(selectedKeyword)) {
+      setSelectedKeywords([...selectedKeywords, selectedKeyword]);
+    }
+  };
+
+  const handleRemoveKeyword = (indexToRemove) => {
+    setSelectedKeywords((prevKeywords) => {
+      // 선택된 키워드 배열에서 특정 인덱스의 키워드를 제외한 새 배열 반환
+      return prevKeywords.filter((_, index) => index !== indexToRemove);
+    });
+  };
+
 
   const handleQuestionClick = (id) => {
     setSelectedQuestionId(id);
@@ -366,17 +472,21 @@ function CreateQPage() {
               {questionTypes[type].length > 0 ? (
                 questionTypes[type].map(subType => {
                   const subTypeKey = `${type}-${subType}`;
+                  const isActive = selectedTypes.includes(subTypeKey);
                   return (
                     <ButtonContainer key={subType}>
                       <TypeButton
-                        active={selectedTypes.includes(subTypeKey)}
-                        onClick={() => toggleSelection(subTypeKey)}
+                        active={isActive}
+                        onClick={() => {toggleSelection(subTypeKey);
+                                        handleSelectionChange(subTypeKey, 1);
+                        }}
                       >
                         {subType}
                       </TypeButton>
                       <CountSelect
-                        value={selections[subTypeKey] || 0}
+                        value={isActive ? (selections[subTypeKey] || 1) : ''}
                         onChange={(e) => handleSelectionChange(subTypeKey, parseInt(e.target.value))}
+                        disabled={!isActive}
                       >
                         {[1, 2, 3, 4, 5].map(count => (
                           <option key={count} value={count}>{count}개</option>
@@ -389,7 +499,7 @@ function CreateQPage() {
                 <ButtonContainer>
                   <Label style={{visibility: 'hidden'}}>O/X</Label>
                   <CountSelect
-                    value={selections['OX선택형'] || 0}
+                    value={selections['OX선택형'] || 1}
                     onChange={(e) => handleSelectionChange('OX선택형', parseInt(e.target.value))}
                   >
                     {[1, 2, 3, 4, 5].map(count => (
@@ -403,25 +513,43 @@ function CreateQPage() {
           </React.Fragment>
         ))}
         <GenerateButtonContainer>
-          <GenerateButton onClick={fetchQuestions}>문제 생성</GenerateButton>
+          <GenerateButton onClick={handleGenerateButtonClick}>문제 생성</GenerateButton>
         </GenerateButtonContainer>
       </Sidebar>
 
       <PageContainer>
+        
         <InputContainer>
-          <form onSubmit={handleSubmit}>
-            <Input
-              type="text"
-              placeholder="프롬프트를 입력하세요."
-              value={question}
-              onChange={(e) => setQuestion(e.target.value)}
-            />
-            <SubmitButton type="submit">제출</SubmitButton>
-          </form>
+        <h2>Keyword 선택  - </h2>
+          <KeywordSelect onChange={handleKeywordSelect}>
+            {[' ','입맛돋우기', '파이썬인터프리터사용하기', '파이썬의간략한소개', '기타제어흐름도구',
+             '자료구조', '모듈', '입력과출력', '에러와예외', '클래스', '표준라이브러리둘러보기', 
+             '표준라이브러리둘러보기—부', '가상환경및패키지', '이제뭘하지?', '대화형입력편집및히스토리치환', 
+             '부동소수점산술:문제점및한계', '부록'].map((keyword, index) => (
+              <option key={index} value={keyword}>
+                {keyword}
+              </option>
+            ))}
+          </KeywordSelect>
         </InputContainer>
-        <DownloadButtonContainer>
-          <DownloadButton onClick={() => alert('PDF 다운로드 시작.....')}>PDF 다운로드</DownloadButton>
-        </DownloadButtonContainer>
+          
+        <InputContainer>
+          <KeywordCheck>
+            {selectedKeywords.map((keyword, index) => (
+              <span key={index} style={{background:"#20C075", marginRight:"15px", borderRadius:"15px", padding:"3px", color:"white", fontSize:"14px"}}>
+                #{keyword} 
+                <span
+                  className="removeButton"
+                  onClick={() => handleRemoveKeyword(index)} // 삭제 함수 호출
+                  style={{color:"black", fontSize:"16px", fontWeight:"bold"}}
+                >
+                  x
+                </span>
+              </span>
+            ))}
+          </KeywordCheck>
+        </InputContainer>
+
         {questions && questions.map((questionType, index) => (
           <React.Fragment key={index}>
             <Section>
@@ -442,6 +570,8 @@ function CreateQPage() {
             {index < questions.length - 1 && <QuestionDivider />}
           </React.Fragment>
         ))}
+        <QconfirmButton title="확정 및 퀴즈 시작" action={kkkk}/>
+
       </PageContainer>
     </>
   );
