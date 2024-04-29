@@ -17,6 +17,12 @@ const ProClassroom = () => {
         fetchMyCourses();
     }, []);
 
+    useEffect(() => {
+      if (view === 'myCourses') {
+          fetchMyCourses();
+      }
+  }, [view]);
+
     const checkPosition = async () => {
         try {
           const response = await fetch(`${process.env.REACT_APP_Server_IP}/position_check/`, { //백엔드 엔드포인트 수정해야함
@@ -45,20 +51,19 @@ const ProClassroom = () => {
     //모든 강의 백엔드로 가져오는 함수
     const fetchCourses = async () => {
       try {
-        const response = await fetch(`${process.env.REACT_APP_Server_IP}/course_view/`, {
-            headers: {
-                "Authorization": `Bearer ${accessToken}`
-            }
-        });
-            const data = await response.json();
-            setMyCourses(data.lecture);
-        } catch (error) {
-            console.error('Failed to fetch courses:', error);
-        }
-    };
+          const response = await fetch(`${process.env.REACT_APP_Server_IP}/course_view/`, {
+              headers: {
+                  "Authorization": `Bearer ${accessToken}`
+              }
+          });
+          const data = await response.json();
+          setMyCourses(data.lecture);
+      } catch (error) {
+          console.error('Failed to fetch courses:', error);
+      }
+  };
     //백엔드로부터 내 강의 목록 가져오는 함수
     const fetchMyCourses = async () => {
-      //get 요청 보내서 내 강의 정보 가져오기
       try {
           const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_show/`, {
               headers: {
@@ -66,94 +71,97 @@ const ProClassroom = () => {
               }
           });
           const data = await response.json();
-          if (response.ok) { 
-              setMyCourses(data.lecture);     //응답 성공적이면 data.lecture에서 얻은 강의 데이터 myCourses 상태에 저장
-          } else {                            //setMyCourses는 data.lecture에서 가져온 내 강의 데이터 myCourses 상태에
+          if (response.ok) {
+              setMyCourses(data.lecture);
+          } else {
               console.error('Failed to fetch my courses');
           }
       } catch (error) {
           console.error('Failed to fetch my courses:', error);
       }
   };
-  
-  //강의실 생성하고 내 강의 목록 새로 고치는 함수
+
   const handleCreateClassroom = async (courseName) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_generate/`, { //post 요청 보내서 강의 생성
-        method: 'POST',
-        headers: {
-          "Authorization": `Bearer ${accessToken}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ subject: courseName }) //강의명 데이터로 보냄
-      });
-      const result = await response.json(); //응답 json으로 파싱해 result에 저장
-  
-      if (response.ok) {
-        // 성공적으로 강의가 생성된 경우
-        await fetchMyCourses(); // "내 강의" 목록을 새로고칩니다.
-        setShowModal(true); // 모달을 엽니다.
-      } else {
-        alert(`강의 생성 실패: ${result.message}`);
-      }
-    } catch (error) {
-      alert("네트워크 에러가 발생했습니다. 다시 시도해주세요.");
-      console.error("강의 생성 중 에러 발생:", error);
-    }
-  };
-  
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_generate/`, {
+            method: 'POST',
+            headers: {
+                "Authorization": `Bearer ${accessToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ subject: courseName })
+        });
+        const result = await response.json();
 
+        if (response.ok) {
+            await fetchMyCourses(); // 강의 생성 후에 내 강의 목록을 다시 불러옵니다.
+            setShowModal(true);
+            setView('myCourses'); // 이 부분은 뷰를 변경하는 것이므로 뷰 상태를 변경할 필요가 없습니다.
+        } else {
+            alert(`강의 생성 실패: ${result.message}`);
+        }
+    } catch (error) {
+        alert("네트워크 에러가 발생했습니다. 다시 시도해주세요.");
+        console.error("강의 생성 중 에러 발생:", error);
+    }
+};
+
+
+  const handleCreateQuestion = () => {
+      navigate(`/Create_question/`);
+  };
 
   const Modal = ({ closeModal }) => {
-    return (
-      <ModalWrapper>
-        <ModalContent>
-          <p>강의실 생성에 성공했습니다!</p>
-          {/* closeModal이 호출되면 모달을 닫고 내 강의 탭으로 이동 */}
-          <Button onClick={closeModal}>확인</Button>
-        </ModalContent>
-      </ModalWrapper>
-    );
+      return (
+          <ModalWrapper>
+              <ModalContent>
+                  <p>강의실 생성에 성공했습니다!</p>
+                  <Button onClick={closeModal}>확인</Button>
+              </ModalContent>
+          </ModalWrapper>
+      );
   };
 
-  const closeModal = () => {
-    setShowModal(false); // 모달을 닫습니다.
-    setView('myCourses'); // 사용자 인터페이스를 '내 강의' 뷰로 전환합니다.
+  const closeModal = async () => {
+      setShowModal(false);
+      setView('myCourses');
   };
 
   return (
-    <ClassroomWrapper>
-        {showModal && <Modal closeModal={closeModal} />}
-        <CoursesBox>
-            <Nav>
-                <NavLink 
-                    onClick={() => setView('myCourses')}
-                    active={view === 'myCourses'}
-                >
-                    내 강의
-                </NavLink>
-                <NavLink 
-                    onClick={() => { setView('createClassroom'); fetchCourses(); }}
-                    active={view === 'createClassroom'}
-                >
-                    강의실 생성
-                </NavLink>
-            </Nav>
-            {/* 여기에서 myCourses가 배열인 경우에만 map 함수를 호출합니다. */}
-            {view === 'createClassroom' && Array.isArray(myCourses) && myCourses.map(course => (
-                <CourseCard key={course.key}>
-                    <CourseInfo>
-                        <CourseTitle>{course.name}</CourseTitle>
-                        <ProfessorName>교수명 입력</ProfessorName>
-                    </CourseInfo>
-                    <Button onClick={() => handleCreateClassroom(course.name)}>생성하기</Button>
-                </CourseCard>
-            ))}
-            {/* ... */}
-        </CoursesBox>
-    </ClassroomWrapper>
-);
+      <ClassroomWrapper>
+          {showModal && <Modal closeModal={closeModal} />}
+          <CoursesBox>
+              <Nav>
+                  <NavLink 
+                      onClick={() => setView('myCourses')}
+                      active={view === 'myCourses'}
+                  >
+                      내 강의
+                  </NavLink>
+                  <NavLink 
+                      onClick={() => { setView('createClassroom'); fetchCourses(); }}
+                      active={view === 'createClassroom'}
+                  >
+                      강의실 생성
+                  </NavLink>
+              </Nav>
+              {(view === 'createClassroom' || view === 'myCourses') && Array.isArray(myCourses) && myCourses.map(course => (
+    <CourseCard key={course.key}>
+        <CourseInfo>
+            <CourseTitle>{course.name}</CourseTitle>
+            <ProfessorName>교수명 입력</ProfessorName>
+        </CourseInfo>
+        {/* 내 강의 목록에 있는 경우는 문제 생성 버튼을 노출하고, 생성된 강의 목록에 있는 경우는 생성하기 버튼을 노출합니다. */}
+        <Button onClick={() => view === 'myCourses' ? handleCreateQuestion(course.name) : handleCreateClassroom(course.name)}>
+            {view === 'myCourses' ? '문제 생성' : '생성하기'}
+        </Button>
+    </CourseCard>
+))}
+          </CoursesBox>
+      </ClassroomWrapper>
+  );
 };
+
 export default ProClassroom;
 
 const ClassroomWrapper = styled.div`
