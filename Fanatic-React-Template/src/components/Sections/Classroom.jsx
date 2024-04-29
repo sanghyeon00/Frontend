@@ -19,10 +19,10 @@ const Classroom = () => {
     }, []);
 
     useEffect(() => {
-        if (view === 'myCourses') {
-            fetchMyCourses();
-        }
-    }, [view]);
+      if (view === 'myCourses') {
+          fetchMyCourses();
+      }
+  }, [view]);
 
     const checkPosition = async () => {
         try {
@@ -60,7 +60,10 @@ const Classroom = () => {
 
             if (response.ok) {
                 const data = await response.json();
-                setCourses(data.lecture || []);
+
+                const uniqueCourses = data.lecture.filter(course => !myCourses.find(c => c.lecture_id == course.lecture_id));
+                
+                setCourses(uniqueCourses || []);
             } else {
                 console.error('Failed to fetch courses');
             }
@@ -71,6 +74,7 @@ const Classroom = () => {
     };
 
     const fetchMyCourses = async () => {
+
       try {
           const response = await fetch(`${process.env.REACT_APP_Server_IP}/my_lecture_show/`, {
               headers: { "Authorization": `Bearer ${cookie.access_token}` }
@@ -102,20 +106,50 @@ const Classroom = () => {
                 })
             });
 
-            const result = await response.json();
-
-            if (response.ok) {
-                await fetchMyCourses(); // 신청 후 내 강의 목록 갱신
-                setShowModal(true);
-                setView('myCourses');
+            const data = await response.json();
+          if (response.ok) {
+              console.log(data);
+              setMyCourses(data.lecture);
             } else {
-                alert(`신청 실패: ${result.message}`);
+                console.error('Failed to fetch my courses');
             }
         } catch (error) {
-            alert("네트워크 에러가 발생했습니다. 다시 시도해주세요.");
-            console.error("신청 중 에러 발생:", error);
+            console.error('Failed to fetch my courses:', error);
+            
         }
     };
+
+    // handleEnroll 함수 내의 강의 신청 부분 수정
+const handleEnroll = async (course) => {
+  try {
+      const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_apply/`, {
+          method: 'POST',
+          headers: {
+              "Authorization": `Bearer ${accessToken}`,
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+              course: course.course,
+              lecture_id: course.lecture_id 
+          })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+          // 서버로부터 강의 목록을 받아와 state를 업데이트합니다.
+          setMyCourses(result.courses);
+          setShowModal(true);
+          setView('myCourses');
+      } else {
+          alert(`신청 실패: ${result.message}`);
+      }
+  } catch (error) {
+      alert("네트워크 에러가 발생했습니다. 다시 시도해주세요.");
+      console.error("신청 중 에러 발생:", error);
+  }
+};
+
 
     const Modal = ({ closeModal }) => {
         return (
@@ -129,9 +163,9 @@ const Classroom = () => {
     };
 
     const closeModal = async () => {
-        setShowModal(false);
-        setView('myCourses');
-    };
+      setShowModal(false);
+      setView('myCourses');
+  };
 
     const coursesPerPage = 4;
     const totalPages = Math.ceil(courses.length / coursesPerPage);
@@ -162,23 +196,25 @@ const Classroom = () => {
                         내 강의
                     </NavLink>
                 </Nav>
-                {view === 'allCourses' && courses.slice(courseStart, courseEnd).map(course => (
+                {(view === 'allCourses' || view === 'myCourse') && courses.slice(courseStart, courseEnd).map(course => (
                     <CourseCard key={course.lecture_id}>
                         <CourseInfo>
                             <CourseTitle>{course.course}</CourseTitle>
                             <ProfessorName>{course.professor}</ProfessorName>
+                            <LectureID>{course.lecture_id}</LectureID>
                         </CourseInfo>
                         <Button onClick={() => handleEnroll(course)}>신청</Button>
                     </CourseCard>
                 ))}
-                {view === 'myCourses' && myCourses.length > 0 && myCourses.map(course => (
-                    <CourseCard key={course.lecture_id}>
-                        <CourseInfo>
-                            <CourseTitle>{course.course}</CourseTitle>
-                            <ProfessorName>{course.professor}</ProfessorName>
-                        </CourseInfo>
-                    </CourseCard>
-                ))}
+                {view === 'myCourses' && myCourses && myCourses.map(course => (
+    <CourseCard key={course.lecture_id}>
+        <CourseInfo>
+            <CourseTitle>{course.course}</CourseTitle>
+            <ProfessorName>{course.professor}</ProfessorName>
+            <LectureID>{course.lecture_id}</LectureID>
+        </CourseInfo>
+    </CourseCard>
+))}
                 {view === 'allCourses' && (
                     <PageNav>
                         {Array.from({ length: totalPages }, (_, index) => (
@@ -198,6 +234,12 @@ const Classroom = () => {
 };
 
 export default Classroom;
+
+const LectureID = styled.p`
+  text-align: right;
+  font-size: 12px;
+  color: #888;
+`;
 
 const Wrapper = styled.div`
   display: flex;
