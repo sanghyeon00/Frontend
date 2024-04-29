@@ -11,11 +11,11 @@ export default function Header() {
   const navigate = useNavigate();
   const { isLoggedIn, accessToken, refreshToken} = useAuth(); // 수정된 부분
 
-  useEffect(() => {
-    if (isLoggedIn) {
-      checkPosition();
-    }
-  }, [isLoggedIn]);
+  // useEffect(() => {
+  //   if (accessToken) {
+  //     checkPosition();
+  //   }
+  // }, [isLoggedIn]);
 
   const checkPosition = async () => {
     try {

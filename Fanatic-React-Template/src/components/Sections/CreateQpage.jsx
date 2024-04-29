@@ -114,6 +114,15 @@ const InputContainer = styled.div`
   position: relative; /* 부모 위치 지정 */
 `;
 
+const InputContainer2 = styled.div`
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  position: relative; /* 부모 위치 지정 */
+  margin-bottom:30px;
+`;
+
 const KeywordSelect = styled.select`
   padding: 5px 10px;
   margin: 0 5px;
@@ -533,7 +542,7 @@ function CreateQPage() {
           </KeywordSelect>
         </InputContainer>
           
-        <InputContainer>
+        <InputContainer2>
           <KeywordCheck>
             {selectedKeywords.map((keyword, index) => (
               <span key={index} style={{background:"#20C075", marginRight:"15px", borderRadius:"15px", padding:"3px", color:"white", fontSize:"14px"}}>
@@ -548,7 +557,7 @@ function CreateQPage() {
               </span>
             ))}
           </KeywordCheck>
-        </InputContainer>
+        </InputContainer2>
 
         {questions && questions.map((questionType, index) => (
           <React.Fragment key={index}>

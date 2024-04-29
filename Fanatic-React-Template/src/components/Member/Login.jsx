@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import logo from '../../assets/img/Loginout/greenlogo.png';
 import React, { useState, useEffect } from 'react';
-import LoginButton from "../Buttons/LoginButon";
+import LoginButton from "../Buttons/LoginButton.jsx";
 import { useNavigate } from "react-router-dom";
 import { useCookies } from 'react-cookie';
 import { Link } from 'react-router-dom';
@@ -39,7 +39,7 @@ const Login = () => {
       setCookie(name, token, {path: '/'});
     }
 
-    const { login, setTokens } = useAuth();
+    const { login, setTokens, userNameGet } = useAuth();
 
     // 로그인 구현 (프론트)
     const accountAccess = async (id, password, selectedLoginType) => {
@@ -84,6 +84,7 @@ const Login = () => {
       onCookie('access_token', access);
       onCookie('refresh_token', refresh);
       setTokens(access, refresh);
+      // userNameGet();
       
       try {
         const response = await fetch(`${process.env.REACT_APP_Server_IP}/access_token_check/`, { //백엔드 엔드포인트 수정해야함

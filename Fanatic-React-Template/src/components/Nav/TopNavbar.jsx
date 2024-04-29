@@ -17,6 +17,7 @@ import logoo from '../../assets/img/Loginout/isodagreen_nonback.png';
 import { useAuth } from '../Member/AuthContext';
 import Login from "../Member/Login";
 import { useNavigate } from "react-router-dom";
+import LogoutButton from "../Buttons/LogoutButton";
 
 export default function TopNavbar() {
   const [y, setY] = useState(window.scrollY);
@@ -50,7 +51,8 @@ export default function TopNavbar() {
   };
 
 
-  const { isLoggedIn, logout } = useAuth();
+  const { user, isLoggedIn, logout} = useAuth();
+
   const navigate = useNavigate();
   const handleLogout = () => {
     Login.removeTokens();
@@ -106,8 +108,12 @@ export default function TopNavbar() {
               </ScrollLink>
             </li>
           </UlWrapper>
+          
           <UlWrapperRight className="flexNullCenter">
-            {isLoggedIn ?(<li><button onClick={handleLogout} style={{width:"30px"}}>로그아웃</button></li>)
+            {isLoggedIn ?(<li className="semiBold font15 pointer">
+              환영합니다. {user}님! 
+              <LogoutButton title="로그아웃" action={handleLogout}/>
+              </li>)
             :
             (<>
               <li className="semiBold font15 pointer">
