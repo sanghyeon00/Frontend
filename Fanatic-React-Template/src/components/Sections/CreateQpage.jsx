@@ -5,6 +5,7 @@ import Sidebar from './Sidebar'; // 사이드바 컴포넌트를 임포트합니
 import QconfirmButton from "../Buttons/QconfirmButton";
 import {GiBookmarklet} from 'react-icons/gi';
 import { useParams } from 'react-router-dom';
+import { useAuth } from "../Member/AuthContext";
 
 
 const PageContainer = styled.div`
@@ -286,6 +287,8 @@ function CreateQPage() {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [selectedKeywords, setSelectedKeywords] = useState([]); //선택된 키워드 배열 
 
+  const {cookie} = useAuth();
+
   const { course_name } = useParams();
   console.log("course_name:", course_name);
 
@@ -342,6 +345,7 @@ function CreateQPage() {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
+          "Authorization": `Bearer ${cookie.access_token}`
         },
         body: JSON.stringify({ 
           selections: selections,
