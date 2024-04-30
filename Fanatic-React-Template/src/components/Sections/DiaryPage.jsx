@@ -217,30 +217,30 @@ function DiaryPage() {
     };
 
     try {
-      const response = await fetch(`${process.env.REACT_APP_SERVER_IP}/generate_daily/`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(diaryData) //diaryData 객체를 JSON 문자열로 변환해 요청의 본문으로 보냄
+      const response = await fetch(`${process.env.REACT_APP_Server_IP}/generate_daily/`, {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(diaryData),
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
 
-      // 각 원소를 개행으로 구분하여 변환
-      const formattedText = data.diaryText.map(line => line + "\n").join("");
+      // 응답 텍스트를 적절한 개행으로 변환
+      const formattedText = data.diaryText.replace(/\n/g, "<br/>");
 
-      // 변환된 텍스트를 상태로 저장하여 UI에 표시
-      setEditorText(formattedText);
-      setShowGuideline(false); // 가이드라인을 감추고, 생성된 일기를 표시합니다.
-    } catch (error) {
-      console.error("Error Create Diary:", error);
-    }
-  };
+      setEditorText(formattedText); // 이 부분에서 개행 추가
+
+      setShowGuideline(false);
+  } catch (error) {
+      console.error("Error creating diary:", error);
+  }
+};
 
   const handleUpload = () => {
     setUploading(true);
