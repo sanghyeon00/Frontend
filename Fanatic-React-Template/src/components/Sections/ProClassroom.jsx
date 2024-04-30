@@ -107,8 +107,11 @@ const ProClassroom = () => {
 };
 
 
-  const handleCreateQuestion = () => {
-      navigate(`/Create_question/`);
+  const handleCreateQuestion = (course_name) => {
+      console.log("course_name:", course_name);
+      const decodedCourseName = decodeURIComponent(course_name);
+      console.log("decodedCourseName:", decodedCourseName);
+      navigate(`/Create_question/${decodeURIComponent(course_name)}`);
   };
 
   const Modal = ({ closeModal }) => {
