@@ -37,6 +37,12 @@ export const AuthProvider = ({ children }) => {
     setCookie(name, token, {path: '/'});
   }
 
+  const onCookie24 = (name, token) => {
+    const expires = new Date();
+    expires.setTime(expires.getTime() + (24 * 60 * 60 * 1000));
+    setCookie(name, token, {path: '/', expires});
+  }
+
   const removeTokens = () => {
     removeCookie('access_token');
     removeCookie('refresh_token');
@@ -70,7 +76,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, accessToken, refreshToken, user, cookie, login, logout, setTokens, userNameGet, onCookie, removeTokens}}>
+    <AuthContext.Provider value={{ isLoggedIn, accessToken, refreshToken, user, cookie, login, logout, setTokens, userNameGet, onCookie, removeTokens, onCookie24}}>
       {children}
     </AuthContext.Provider>
   );

@@ -4,6 +4,7 @@ import styled, { css } from 'styled-components';
 import Sidebar from './Sidebar'; // 사이드바 컴포넌트를 임포트합니다.
 import QconfirmButton from "../Buttons/QconfirmButton";
 import {GiBookmarklet} from 'react-icons/gi';
+import { useParams } from 'react-router-dom';
 
 
 const PageContainer = styled.div`
@@ -285,6 +286,9 @@ function CreateQPage() {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [selectedKeywords, setSelectedKeywords] = useState([]); //선택된 키워드 배열 
 
+  const { course_name } = useParams();
+  console.log("course_name:", course_name);
+
   const navigate = useNavigate();
 
   const handleSolveQpage = () => {
@@ -296,6 +300,7 @@ function CreateQPage() {
   useEffect(() => {
     console.log(selections);
   }, [selections]); // selections 상태가 변경될 때마다 실행됩니다.
+
 
   const toggleSelection = (key) => {
     setSelectedTypes(prev => 
@@ -338,7 +343,12 @@ function CreateQPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ selections: selections })
+        body: JSON.stringify({ 
+          selections: selections,
+          selectedKeywords: selectedKeywords,
+          course_name: course_name 
+        })
+        
       })
       .then(response => response.json())
       .then(data => {
@@ -399,6 +409,26 @@ function CreateQPage() {
       // 선택된 키워드 배열에서 특정 인덱스의 키워드를 제외한 새 배열 반환
       return prevKeywords.filter((_, index) => index !== indexToRemove);
     });
+  };
+
+
+  let keyword_list = [];
+
+  if (course_name == "파이썬프로그래밍"){
+    keyword_list = [' ','입맛돋우기', '파이썬인터프리터사용하기', '파이썬의간략한소개', '기타제어흐름도구',
+    '자료구조', '모듈', '입력과출력', '에러와예외', '클래스', '표준라이브러리둘러보기', 
+    '표준라이브러리둘러보기—부', '가상환경및패키지', '이제뭘하지?', '대화형입력편집및히스토리치환', 
+    '부동소수점산술:문제점및한계', '부록'];
+  }
+  else if(course_name == "C++프로그래밍"){
+    keyword_list = [' ', '토큰 및 문자 집합', '식별자', '리터럴', 'C++ 형식 시스템', 'Lvalue 및 Rvalue', 
+    '표준 변환', '기본 제공 형식', '데이터 형식 범위', '선언 및 정의', '(const / constexpr)', '이니셜라이저', 
+    '연산자', '캐스팅', '선택문', '반복문', '네임스페이스', '열거형', 'union', '함수', '함수 오버로드', 
+    '연산자 오버로드', '클래스 및 구조체', '멤버 액세스 제어', '생성자', '소멸자', '상속', '멤버에 대한 포인터',
+     'this 포인터', '람다식', '포인터', '예외처리'];
+  }
+  else if(course_name == "자바프로그래밍"){
+    keyword_list = [' ', "변수", "연산자", "조건제어문", "클래스 객체", "클래스 심화", "중첩클래스", "인터페이스", "상속", "숫자클래스", "문자열"];
   };
 
 
@@ -532,15 +562,12 @@ function CreateQPage() {
 
       <PageContainer>
         <InputContainer>
-          <h1 style={{marginBottom:"25px", color:"#20C075", fontWeight:"bold"}}><GiBookmarklet />문제 생성 페이지<GiBookmarklet /></h1>
+          <h1 style={{marginBottom:"25px", color:"#20C075", fontWeight:"bold"}}><GiBookmarklet />&nbsp;<em style={{color:"red"}}>{course_name}</em> &nbsp; 문제 생성 페이지&nbsp;<GiBookmarklet /></h1>
         </InputContainer>
         <InputContainer>
         <h2>Keyword 선택  - </h2>
           <KeywordSelect onChange={handleKeywordSelect}>
-            {[' ','입맛돋우기', '파이썬인터프리터사용하기', '파이썬의간략한소개', '기타제어흐름도구',
-             '자료구조', '모듈', '입력과출력', '에러와예외', '클래스', '표준라이브러리둘러보기', 
-             '표준라이브러리둘러보기—부', '가상환경및패키지', '이제뭘하지?', '대화형입력편집및히스토리치환', 
-             '부동소수점산술:문제점및한계', '부록'].map((keyword, index) => (
+            {keyword_list.map((keyword, index) => (
               <option key={index} value={keyword}>
                 {keyword}
               </option>
