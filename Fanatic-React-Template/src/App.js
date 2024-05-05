@@ -44,6 +44,15 @@ export default function App() {
           <Route path="/diary" element={<DiaryPage />} />
           <Route path="/proClassroom" element={<ProClassroom />} />
         </Routes>
+
+      <>
+        <AuthProvider>
+          <TopNavbar />
+
+       
+          
+        </AuthProvider>
+
         <Footer />
       </AuthProvider>
     </Router>

@@ -39,7 +39,13 @@ const Login = () => {
     //   setCookie(name, token, {path: '/'});
     // }
 
-    const { isLoggedIn, login, setTokens, userNameGet, onCookie, removeTokens } = useAuth();
+    const { isLoggedIn, login, setTokens, userNameGet, onCookie, removeTokens, onCookie24 } = useAuth();
+
+    const [isAutoLogin, setIsAutoLogin] = useState(false);
+
+    const handleAutoLoginChange = () => {
+      setIsAutoLogin(!isAutoLogin);
+    };
 
     // 로그인 구현 (프론트)
     const accountAccess = async (id, password, selectedLoginType) => {
@@ -87,8 +93,16 @@ const Login = () => {
     // 로그인 버튼 클릭이벤트 함수로 사용 >> 토큰 쿠키에 저장 >> access token 만료됐는지 확인 만료됐으면 refreshAccessToken함수 호출해서 기간 연장함.
     const loadLogin = async () => {
       const { access, refresh } = await accountAccess(id, password, selectedLoginType);
-      onCookie('access_token', access);
-      onCookie('refresh_token', refresh);
+      if (isAutoLogin) {
+        onCookie24('access_token', access);
+        onCookie24('refresh_token', refresh);
+        console.log("24시간 토큰 ========")
+      } 
+      else {
+        onCookie('access_token', access);
+        onCookie('refresh_token', refresh);
+        console.log("일반 토큰 ========")
+      }
       setTokens(access, refresh);
       // userNameGet();
       
@@ -109,7 +123,12 @@ const Login = () => {
             }
           });
           const newData = await newResponse.json();
-          onCookie('access_token', newData);
+          if (isAutoLogin) {
+            onCookie24('access_token', newData);
+          } 
+          else {
+            onCookie('access_token', newData);
+          }
           setTokens(newData, refresh);
 
           console.log(newData);
@@ -186,7 +205,7 @@ const Login = () => {
                     placeholder="비밀번호를 입력해주세요." 
                 />
                 <div style={{fontSize:"13px", marginTop:"10px", fontWeight:"bold"}}>
-                    <Checkbox type="checkbox" id="checkbox" name="checkbox" />자동 로그인
+                    <Checkbox type="checkbox" id="checkbox" name="checkbox" checked={isAutoLogin} onChange={handleAutoLoginChange} />자동 로그인
                     <a style={{fontSize:"13px", fontWeight:"bold", marginLeft:"160px"}}>아이디 찾기</a> | <a style={{fontSize:"13px", fontWeight:"bold"}}>비밀번호 찾기</a>
                 </div>
 
