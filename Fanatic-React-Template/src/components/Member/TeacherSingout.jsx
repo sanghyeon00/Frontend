@@ -12,6 +12,7 @@ const StudentSingout = () => {
     const [passwordcheack, setpasswordcheack] = useState('');
     const [name, setname] = useState('');
     const [studentid, setstudentid] = useState('');
+    const grade = 0;
     const [email, setemail] = useState('');
     const [phone, setphone] = useState('');
     const [phoneid, setphoneid] = useState('');
@@ -118,7 +119,7 @@ const StudentSingout = () => {
     const usertype = "professor";
 
     // 회원가입을 위해 django로 넘겨줄 데이터들
-    const registerUser = async (id, password, passwordcheack, name, studentid, email, phone, year, month, day, gender, usertype) => {
+    const registerUser = async (id, password, passwordcheack, name, studentid, grade, email, phone, year, month, day, gender, usertype) => {
         const response = await fetch(`${process.env.REACT_APP_Server_IP}/sign_up/`, {
           method: "POST",
           headers: {
@@ -130,6 +131,7 @@ const StudentSingout = () => {
             passwordcheack, 
             name, 
             studentid, 
+            grade,
             email, 
             phone,
             year,
@@ -150,7 +152,7 @@ const StudentSingout = () => {
 
       // 사용자 정보 서버로 전달할거임 가입하기 버튼 누르면 
       const handleJoin = () => {
-        registerUser(id, password, passwordcheack, name, studentid, email, phone, year, month, day, gender, usertype);
+        registerUser(id, password, passwordcheack, name, studentid, grade, email, phone, year, month, day, gender, usertype);
       };
 
 
@@ -188,7 +190,26 @@ const StudentSingout = () => {
       const [idCheckResult, setIdCheckResult] = useState(''); //중복확인 텍스트임.
 
 
+      const displayFormattedPhoneNumber = (numbers) => {
+        if (numbers.length <= 3) {
+          return numbers;
+        } else if (numbers.length <= 7) {
+          return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+        } else {
+          return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(
+            7
+          )}`;
+        }
+      };
 
+      const PHONE_NUMBER_LENGTH = 11;
+
+      const handleChange = (e) => {
+        const numbersOnly = e.target.value.replace(/\D/g, "");
+        if (numbersOnly.length <= PHONE_NUMBER_LENGTH) {
+          setphone(numbersOnly);
+        }
+      };
 
 
     return (
@@ -271,8 +292,8 @@ const StudentSingout = () => {
                     <strong style={{ fontSize:"15px", fontWeight:"bold", marginLeft:"25px"}} className="font15 extraBold">휴대폰</strong> 
                 <InputBox3
                     type="text" 
-                    value={phone} 
-                    onChange={phoneUpdate} 
+                    value={displayFormattedPhoneNumber(phone)} 
+                    onChange={handleChange} 
                     placeholder="숫자만 입력해주세요." 
                 />
                 <CheckButton>인증번호 받기</CheckButton>

@@ -62,7 +62,7 @@ const Classroom = () => {
                 const data = await response.json();
                 setCourses(data.lecture || []);
             } else {
-                console.error('Failed to fetch courses');
+                console.error(' ourses');
             }
         } catch (error) {
             console.error('Error fetching courses:', error);
@@ -200,6 +200,7 @@ const Classroom = () => {
 export default Classroom;
 
 const Wrapper = styled.div`
+  margin-top:30px;
   display: flex;
   justify-content: center;
   align-items: center;

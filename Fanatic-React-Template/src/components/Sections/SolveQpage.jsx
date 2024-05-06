@@ -280,8 +280,7 @@ function SolveQpage() {
   const [question, setQuestion] = useState('');
   const [questions, setQuestions] = useState([]); // 서버로부터 받은 문제 데이터
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
-  const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [selectedKeywords, setSelectedKeywords] = useState([]); //선택된 키워드 배열 
+  const [selectedAnswers, setSelectedAnswers] = useState({}); 
 
 
   // 선택된 옵션 변겅 시 로그 출력을 위한 useEffect 훅 사용
@@ -301,9 +300,8 @@ function SolveQpage() {
 
   // 문제 데이터를 서버로부터 가져오는 함수
   const fetchQuestions = () => {
-    if (Object.keys(selections).some(key => selections[key] > 0 && selectedTypes.includes(key))) {
       setLoading(true);
-      fetch(`${process.env.REACT_APP_Server_IP}/GenerateQuestion/`, {
+      fetch(`${process.env.REACT_APP_Server_IP}/??/`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
@@ -320,7 +318,6 @@ function SolveQpage() {
         setError(error.message);
         setLoading(false);
       });
-    }
   };
 
 
@@ -428,6 +425,7 @@ function SolveQpage() {
             {index < questions.length - 1 && <QuestionDivider />}
           </React.Fragment>
         ))}
+
         <QconfirmButton  title="퀴즈 마감 제출" margin_top={true} />
 
       </PageContainer>
