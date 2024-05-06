@@ -1,11 +1,19 @@
 import React from "react";
 import styled from "styled-components";
+import { useNavigate } from "react-router-dom";
 // Components
 import BlogBox from "../Elements/BlogBox";
 import FullButton from "../Buttons/FullButton";
 import TestimonialSlider from "../Elements/TestimonialSlider";
 
 export default function Blog() {
+
+  const navigate = useNavigate(); // navigate 함수 사용
+
+  const goToCommunity = () => {
+    navigate("/community"); // 커뮤니티 페이지로 이동
+  };
+
   return (
     <Wrapper id="blog">
       <div className="whiteBg" style={{padding:"30px 0"}}>
@@ -78,7 +86,7 @@ export default function Blog() {
           </div>
           <div className="row flexCenter">
             <div style={{ margin: "50px 0", width: "200px" }}>
-              <FullButton title="Load More" action={() => alert("clicked")} />
+              <FullButton title="커뮤니티 바로가기" action={goToCommunity} />
             </div>
           </div>
         </div>
