@@ -9,7 +9,7 @@ const ProClassroom = () => {
     const [view, setView] = useState('createClassroom'); // 뷰 상태 추가
     const [myCourses, setMyCourses] = useState([]);
     const [showModal, setShowModal] = useState(false);
-    const { isLoggedIn, cookie} = useAuth();
+    const { user, isLoggedIn, cookie} = useAuth();
 
     useEffect(() => {
         checkPosition();
@@ -152,7 +152,7 @@ const ProClassroom = () => {
     <CourseCard key={course.key}>
         <CourseInfo>
             <CourseTitle>{course.name}</CourseTitle>
-            <ProfessorName>교수명 입력</ProfessorName>
+            <ProfessorName>교수명 : {user}</ProfessorName>
         </CourseInfo>
         {/* 내 강의 목록에 있는 경우는 문제 생성 버튼을 노출하고, 생성된 강의 목록에 있는 경우는 생성하기 버튼을 노출합니다. */}
         <Button onClick={() => view === 'myCourses' ? handleCreateQuestion(course.name) : handleCreateClassroom(course.name)}>
