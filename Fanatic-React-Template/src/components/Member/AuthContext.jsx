@@ -11,6 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [accessToken, setAccessToken] = useState(null);
   const [refreshToken, setRefreshToken] = useState(null);
   const [user, setUser] = useState(null);
+  const [usertype, setUserTpye] = useState(null);
   const [cookie, setCookie, removeCookie] = useCookies(['access_token', 'refresh_token']);
 
   useEffect(() => {
@@ -18,12 +19,12 @@ export const AuthProvider = ({ children }) => {
   }, [cookie.access_token]);
 
   const login = async () => {
-    // ·Î±×ÀÎ ·ÎÁ÷ ¼º°ø ½Ã
+    // ë¡œê·¸ì¸ ë¡œì§ ì„±ê³µ ì‹œ
     setIsLoggedIn(true);
   };
 
   const logout = () => {
-    // ·Î±×¾Æ¿ô ·ÎÁ÷
+    // ë¡œê·¸ì•„ì›ƒ ë¡œì§
     setIsLoggedIn(false);
     removeTokens();
   };
@@ -61,6 +62,7 @@ export const AuthProvider = ({ children }) => {
         if (response.ok) {
           const data = await response.json();
           setUser(data.name);
+          if(data.usertype === "professor" ? setUserTpye("êµìˆ˜") : setUserTpye("í•™ìƒ"));
         } 
         else {
           console.error("Failed to fetch userName:", response.statusText);
@@ -76,9 +78,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, accessToken, refreshToken, user, cookie, login, logout, setTokens, userNameGet, onCookie, removeTokens, onCookie24}}>
+    <AuthContext.Provider value={{ isLoggedIn, accessToken, refreshToken, user, usertype, cookie, login, logout, setTokens, userNameGet, onCookie, removeTokens, onCookie24}}>
       {children}
     </AuthContext.Provider>
   );
 };
-//¿©±â¼­ Àü¿ªÀ¸·Î ÅäÅ« and ·Î±×ÀÎÁ¤º¸ »ç¿ë
+//ì—¬ê¸°ì„œ ì „ì—­ìœ¼ë¡œ í† í° and ë¡œê·¸ì¸ì •ë³´ ì‚¬ìš©

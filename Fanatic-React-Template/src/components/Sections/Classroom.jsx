@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../Member/AuthContext";
+import { MdReportProblem } from "react-icons/md";
+import { FaCircleCheck } from "react-icons/fa6";
 
 const Classroom = () => {
     const navigate = useNavigate();
@@ -78,6 +80,7 @@ const Classroom = () => {
           if (response.ok) {
               const data = await response.json();
               setMyCourses(data.lecture || []);
+              
           } else {
               console.error('Failed to fetch my courses');
           }
@@ -117,6 +120,13 @@ const Classroom = () => {
         }
     };
 
+    const handleQuestionStart = (course_name) =>{
+        console.log(course_name);
+        navigate(`/solve_question/${decodeURIComponent(course_name)}`);
+    }
+
+
+
     const Modal = ({ closeModal }) => {
         return (
             <ModalWrapper>
@@ -146,6 +156,7 @@ const Classroom = () => {
                     <NavLink 
                         onClick={() => {
                             setView('allCourses');
+                            fetchCourses();
                             setPage(1);
                         }}
                         active={view === 'allCourses'}
@@ -168,15 +179,32 @@ const Classroom = () => {
                             <CourseTitle>{course.course}</CourseTitle>
                             <ProfessorName>{course.professor}</ProfessorName>
                         </CourseInfo>
+
                         <Button onClick={() => handleEnroll(course)}>신청</Button>
+
                     </CourseCard>
                 ))}
                 {view === 'myCourses' && myCourses.length > 0 && myCourses.map(course => (
                     <CourseCard key={course.lecture_id}>
                         <CourseInfo>
                             <CourseTitle>{course.course}</CourseTitle>
-                            <ProfessorName>{course.professor}</ProfessorName>
+                            <ProfessorName>교수명 : {course.professor}</ProfessorName>
+                            {course.check === 1 ? (
+                                <p style={{fontSize:"13px", fontWeight:"bold"}}> <FaCircleCheck style={{fontSize:"11px"}}/> 퀴즈가 생성 되었습니다.</p>
+                                ) : (
+                                <p style={{fontSize:"13px", fontWeight:"bold", color:"#A9A9A9"}}> <MdReportProblem style={{fontSize:"11px"}}/> 퀴즈가 아직 생성 되지 않았습니다.</p>
+                            )}
                         </CourseInfo>
+
+                        {course.check === 0 ? (
+                            <Button onClick={() => handleQuestionStart(course.course)}>퀴즈 시작</Button>
+                            ) : (
+                            <>
+                                <Button disabled>퀴즈 시작</Button>
+                                
+                            </>
+                        )}
+
                     </CourseCard>
                 ))}
                 {view === 'allCourses' && (
@@ -209,7 +237,7 @@ const Wrapper = styled.div`
 `;
 
 const Content = styled.div`
-  width: 60%;
+  width: 45%;
   min-height: 80%;
   background-color: white;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -273,14 +301,14 @@ const ProfessorName = styled.p`
 `;
 
 const Button = styled.button`
-  background: #4CAF50;
-  color: white;
+  background: ${props => props.disabled ? '#ccc' : '#4CAF50'};
+  color: ${props => props.disabled ? '#666' : 'white'};
   border: none;
   padding: 10px 20px;
-  cursor: pointer;
+  cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
 
   &:hover {
-    background: #367c39;
+    background: ${props => props.disabled ? '#ccc' : '#367c39'};
   }
 `;
 

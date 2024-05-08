@@ -62,13 +62,13 @@ const Login = () => {
       });
 
       if (response.status === 200) {
-        alert("가입 성공");
+        alert("로그인 성공");
         login();
         navigate('/');
       } 
       else {
-        console.error('가입 에러');
-        alert("가입 실패");
+        console.error('로그인 실패');
+        alert("로그인 실패");
       }
 
       const data = await response.json();

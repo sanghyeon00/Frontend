@@ -49,7 +49,7 @@ export default function TopNavbar() {
   };
 
 
-  const { user, isLoggedIn, logout, cookie} = useAuth();
+  const { user, usertype, isLoggedIn, logout, cookie} = useAuth();
 
   const navigate = useNavigate();
   const handleLogout = () => {
@@ -108,7 +108,7 @@ export default function TopNavbar() {
           
           <UlWrapperRight className="flexNullCenter">
             {cookie.access_token ?(<li className="semiBold font15 pointer">
-              환영합니다. {user}님! 
+              환영합니다. {user} {usertype}님! 
               <LogoutButton title="로그아웃" action={handleLogout}/>
               </li>)
             :

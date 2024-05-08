@@ -287,17 +287,64 @@ function CreateQPage() {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [selectedKeywords, setSelectedKeywords] = useState([]); //선택된 키워드 배열 
 
-  const {cookie} = useAuth();
+  const {cookie, user} = useAuth();
 
   const { course_name } = useParams();
   console.log("course_name:", course_name);
 
+  
   const navigate = useNavigate();
 
+
   const handleSolveQpage = () => {
-    navigate("/solve_question");
-    // 문제 생성 로직 구현
+    sendQuertions(questions);
   };
+
+
+  const sendQuertions = async (re_questions) => {
+    if (Object.keys(selections).some(key => selections[key] > 0 && selectedTypes.includes(key))) {
+      try {
+        const questionData = re_questions.map((questionType, index) => ({
+          type: questionType.type,
+          items: questionType.items.map((item, itemIndex) => ({
+            id: `question-${index}-${itemIndex}`,
+            content: item.content,
+          })),
+        }));
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/??/`, {
+          method: 'POST',
+          headers: {
+              "Authorization": `Bearer ${cookie.access_token}`,
+              'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ 
+            questions: questionData,
+            course_name: course_name,
+            username: user
+          })
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        console.log("문제 보내기 성공");
+        console.log(user);
+        console.log(course_name);
+      } 
+      else {
+          alert(`신청 실패: ${result.message}`);
+      }
+    }catch (error) {
+        console.error('문제 보내는 중 에러 :', error);
+        setError(error.message);
+      }
+    }
+    else{
+      console.log("selections 데이터 없음.");
+    }
+  };
+
+
 
   // 선택된 옵션 변겅 시 로그 출력을 위한 useEffect 훅 사용
   useEffect(() => {
@@ -350,7 +397,7 @@ function CreateQPage() {
         body: JSON.stringify({ 
           selections: selections,
           selectedKeywords: selectedKeywords,
-          course_name: course_name 
+          course_name: course_name
         })
         
       })
