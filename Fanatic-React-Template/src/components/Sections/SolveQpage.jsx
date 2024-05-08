@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import QconfirmButton from "../Buttons/QconfirmButton";
 import { MdQuiz } from "react-icons/md";
+import { useParams } from 'react-router-dom';
 
 
 const PageContainer = styled.div`
@@ -282,6 +283,8 @@ function SolveQpage() {
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [selectedAnswers, setSelectedAnswers] = useState({}); 
 
+  const { course_name } = useParams();
+
 
   // 선택된 옵션 변겅 시 로그 출력을 위한 useEffect 훅 사용
   useEffect(() => {
@@ -399,7 +402,7 @@ function SolveQpage() {
     <>
       <PageContainer>
         <InputContainer>
-          <h1 style={{marginBottom:"25px", color:"#20C075", fontWeight:"bold"}}><MdQuiz />퀴즈 시작<MdQuiz /></h1>
+          <h1 style={{marginBottom:"25px", color:"#20C075", fontWeight:"bold"}}><MdQuiz /> {course_name} 퀴즈 시작<MdQuiz /></h1>
         </InputContainer>
         <InputContainer>
             <hr style={{ width: "850px", height: "2px", backgroundColor: "#20C075", border: "none" }} />
