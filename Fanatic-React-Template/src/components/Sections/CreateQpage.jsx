@@ -306,7 +306,7 @@ function CreateQPage() {
   const sendQuertions = async () => {
     if (Object.keys(selections).some(key => selections[key] > 0 && selectedTypes.includes(key))) {
       try {
-        const response = await fetch(`${process.env.REACT_APP_Server_IP}/??/`, {
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/problem_save/`, {
           method: 'POST',
           headers: {
               "Authorization": `Bearer ${cookie.access_token}`,

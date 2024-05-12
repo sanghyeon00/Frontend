@@ -312,7 +312,7 @@ function SolveQpage() {
   // 문제 데이터를 서버로부터 가져오는 함수
   const fetchQuestions = () => {
       setLoading(true);
-      fetch(`${process.env.REACT_APP_Server_IP}/??/`, {
+      fetch(`${process.env.REACT_APP_Server_IP}/student_problem/`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
@@ -353,7 +353,7 @@ function SolveQpage() {
     });
   
     // 생성한 답안을 쟝고로 전송합니다.
-    fetch(`${process.env.REACT_APP_Server_IP}/??`, {
+    fetch(`${process.env.REACT_APP_Server_IP}/student_answer/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
