@@ -6,6 +6,8 @@ import QconfirmButton from "../Buttons/QconfirmButton";
 import {GiBookmarklet} from 'react-icons/gi';
 import { useParams } from 'react-router-dom';
 import { useAuth } from "../Member/AuthContext";
+import timeloding from '../../assets/img/loding/time.gif';
+import isodaloding from '../../assets/img/loding/isodaloding.png';
 
 
 const PageContainer = styled.div`
@@ -297,20 +299,13 @@ function CreateQPage() {
 
 
   const handleSolveQpage = () => {
-    sendQuertions(questions);
+    sendQuertions();
   };
 
 
-  const sendQuertions = async (re_questions) => {
+  const sendQuertions = async () => {
     if (Object.keys(selections).some(key => selections[key] > 0 && selectedTypes.includes(key))) {
       try {
-        const questionData = re_questions.map((questionType, index) => ({
-          type: questionType.type,
-          items: questionType.items.map((item, itemIndex) => ({
-            id: `question-${index}-${itemIndex}`,
-            content: item.content,
-          })),
-        }));
         const response = await fetch(`${process.env.REACT_APP_Server_IP}/??/`, {
           method: 'POST',
           headers: {
@@ -318,7 +313,7 @@ function CreateQPage() {
               'Content-Type': 'application/json'
           },
           body: JSON.stringify({ 
-            questions: questionData,
+            questions: questions,
             course_name: course_name,
             username: user
           })
@@ -628,8 +623,20 @@ function CreateQPage() {
         </GenerateButtonContainer>
       </Sidebar>
 
+
+
       <PageContainer>
-        <InputContainer>
+      {loading ? (
+        <>
+          <InputContainer>
+            <h1 style={{marginBottom:"25px", color:"#20C075", fontWeight:"bold"}}><GiBookmarklet />&nbsp;<em style={{color:"red"}}>{course_name}</em> &nbsp; 문제 생성 페이지&nbsp;<GiBookmarklet /></h1>
+          </InputContainer>
+          <img src={isodaloding} alt={"로딩 중"} style={{marginTop:"15px"}}/>
+          <h2 style={{marginTop:"25px", color:"#20C075", fontWeight:"bold"}}>퀴즈가 생성 중입니다.</h2>
+        </>
+      ):(
+        <>
+          <InputContainer>
           <h1 style={{marginBottom:"25px", color:"#20C075", fontWeight:"bold"}}><GiBookmarklet />&nbsp;<em style={{color:"red"}}>{course_name}</em> &nbsp; 문제 생성 페이지&nbsp;<GiBookmarklet /></h1>
         </InputContainer>
         <InputContainer>
@@ -660,6 +667,7 @@ function CreateQPage() {
           </KeywordCheck>
         </InputContainer2>
 
+        
         {questions && questions.map((questionType, index) => (
           <React.Fragment key={index}>
             <Section>
@@ -681,7 +689,8 @@ function CreateQPage() {
           </React.Fragment>
         ))}
         <QconfirmButton title="확정 및 퀴즈 시작" action={handleSolveQpage}/>
-
+        </>
+      )}
       </PageContainer>
     </>
   );
