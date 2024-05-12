@@ -120,9 +120,10 @@ const Classroom = () => {
         }
     };
 
-    const handleQuestionStart = (course_name) =>{
-        console.log(course_name);
-        navigate(`/solve_question/${decodeURIComponent(course_name)}`);
+    const handleQuestionStart = (course) =>{
+        console.log(course);
+        const course_imformation = course.course + "$$" + course.professor;
+        navigate(`/solve_question/${decodeURIComponent(course_imformation)}`);
     }
 
 
@@ -197,7 +198,7 @@ const Classroom = () => {
                         </CourseInfo>
 
                         {course.check === 0 ? (
-                            <Button onClick={() => handleQuestionStart(course.course)}>퀴즈 시작</Button>
+                            <Button onClick={() => handleQuestionStart(course)}>퀴즈 시작</Button>
                             ) : (
                             <>
                                 <Button disabled>퀴즈 시작</Button>

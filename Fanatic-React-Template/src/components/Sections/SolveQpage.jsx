@@ -3,7 +3,9 @@ import styled, { css } from 'styled-components';
 import QconfirmButton from "../Buttons/QconfirmButton";
 import { MdQuiz } from "react-icons/md";
 import { useParams } from 'react-router-dom';
-
+import timeloding from '../../assets/img/loding/time.gif';
+import isodaloding from '../../assets/img/loding/isodaloding.png';
+import { useAuth } from '../Member/AuthContext';
 
 const PageContainer = styled.div`
   padding-top: 120px;
@@ -283,13 +285,19 @@ function SolveQpage() {
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [selectedAnswers, setSelectedAnswers] = useState({}); 
 
-  const { course_name } = useParams();
 
+  const {course_imformation} = useParams();
 
-  // 선택된 옵션 변겅 시 로그 출력을 위한 useEffect 훅 사용
-  useEffect(() => {
-    console.log(selections);
-  }, [selections]); // selections 상태가 변경될 때마다 실행됩니다.
+  const parts = course_imformation.split("$$");
+  const course_name = parts[0];
+  const course_professor = parts[1];
+
+  const {cookie} = useAuth();
+
+  // // 선택된 옵션 변겅 시 로그 출력을 위한 useEffect 훅 사용
+  // useEffect(() => {
+  //   console.log(selections);
+  // }, [selections]); // selections 상태가 변경될 때마다 실행됩니다.
 
 
   const handleAnswerSelect = (questionId, answer) => {
@@ -308,8 +316,13 @@ function SolveQpage() {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
+          "Authorization": `Bearer ${cookie.access_token}`
         },
-        body: JSON.stringify({ selections: selections })
+        body: JSON.stringify({ 
+          course_name : course_name,
+          course_professor : course_professor
+
+        })
       })
       .then(response => response.json())
       .then(data => {
@@ -317,9 +330,9 @@ function SolveQpage() {
         setQuestions(data.questions);
       })
       .catch(error => {
-        console.error('Fetching questions failed:', error);
+        console.error('문제를 받아오는중 에러:', error);
         setError(error.message);
-        setLoading(false);
+        setLoading(true);
       });
   };
 
@@ -344,6 +357,9 @@ function SolveQpage() {
 
 
 
+
+
+//문제 유형별로 view 설정/////////////////////////////////////////////////////////////////////////////////////////////////////////
   const renderQuestionUI = (type, item, questionId) => {
     switch (type) {
       case 1: // 객관식-빈칸
@@ -400,6 +416,19 @@ function SolveQpage() {
 
   return (
     <>
+      {loading ? (
+        <PageContainer>
+          <InputContainer>
+            <h1 style={{marginBottom:"25px", color:"#20C075", fontWeight:"bold"}}><MdQuiz /> {course_name} 퀴즈 시작<MdQuiz /></h1>
+          </InputContainer>
+          <InputContainer>
+            <hr style={{ width: "850px", height: "2px", backgroundColor: "#20C075", border: "none" }} />
+          </InputContainer>
+
+        <img src={isodaloding} alt={"로딩 중"} style={{marginTop:"15px"}}/>
+        <h2 style={{marginTop:"25px", color:"#20C075", fontWeight:"bold"}}>퀴즈가 생성 중입니다.</h2>
+        </PageContainer>
+      ) : (
       <PageContainer>
         <InputContainer>
           <h1 style={{marginBottom:"25px", color:"#20C075", fontWeight:"bold"}}><MdQuiz /> {course_name} 퀴즈 시작<MdQuiz /></h1>
@@ -432,6 +461,7 @@ function SolveQpage() {
         <QconfirmButton  title="퀴즈 마감 제출" margin_top={true} />
 
       </PageContainer>
+      )}
     </>
   );
 }
