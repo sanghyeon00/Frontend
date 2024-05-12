@@ -338,9 +338,45 @@ function SolveQpage() {
 
 
 
-  const handleGenerateButtonClick = () => {
-    fetchQuestions();
+  const sendAnswer = () => {
+    let answers = {"answer1":'', "answer2":'', "answer3":'', "answer4":'', "answer5":'',
+                   "answer6":'', "answer7":'', "answer8":'', "answer9":'', "answer10":''};
+    let num = 0;
+
+    questions.forEach((questionType, index) => {
+      // 문제 유형별로 답안을 생성합니다.
+      questionType.items.forEach((item, itemIndex) => {
+        const questionId = `question-${index}-${itemIndex}`;
+        answers[`answer${num}`] = selectedAnswers[questionId] || '';
+        num ++;
+      });
+    });
+  
+    // 생성한 답안을 쟝고로 전송합니다.
+    fetch(`${process.env.REACT_APP_Server_IP}/??`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": `Bearer ${cookie.access_token}`
+      },
+      body: JSON.stringify({
+        course_name: course_name,
+        course_professor: course_professor,
+        answers: answers,
+      }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          console.log("답안 보내기 성공.");
+        }
+        return response.json();
+      })
+
+      .catch((error) => {
+        console.error('답안을 전송하는 중 에러:', error);
+      });
   };
+
 
 
 
@@ -458,7 +494,7 @@ function SolveQpage() {
           </React.Fragment>
         ))}
 
-        <QconfirmButton  title="퀴즈 마감 제출" margin_top={true} />
+        <QconfirmButton  title="퀴즈 마감 제출" margin_top={true} action={sendAnswer}/>
 
       </PageContainer>
       )}

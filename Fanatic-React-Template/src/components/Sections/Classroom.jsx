@@ -64,7 +64,7 @@ const Classroom = () => {
                 const data = await response.json();
                 setCourses(data.lecture || []);
             } else {
-                console.error(' ourses');
+                console.error('courses');
             }
         } catch (error) {
             console.error('Error fetching courses:', error);
@@ -190,14 +190,14 @@ const Classroom = () => {
                         <CourseInfo>
                             <CourseTitle>{course.course}</CourseTitle>
                             <ProfessorName>교수명 : {course.professor}</ProfessorName>
-                            {course.check === 1 ? (
+                            {myCourses[0].check === 1 ? (
                                 <p style={{fontSize:"13px", fontWeight:"bold"}}> <FaCircleCheck style={{fontSize:"11px"}}/> 퀴즈가 생성 되었습니다.</p>
                                 ) : (
                                 <p style={{fontSize:"13px", fontWeight:"bold", color:"#A9A9A9"}}> <MdReportProblem style={{fontSize:"11px"}}/> 퀴즈가 아직 생성 되지 않았습니다.</p>
                             )}
                         </CourseInfo>
 
-                        {course.check === 0 ? (
+                        {myCourses[0].check === 1 ? (
                             <Button onClick={() => handleQuestionStart(course)}>퀴즈 시작</Button>
                             ) : (
                             <>
