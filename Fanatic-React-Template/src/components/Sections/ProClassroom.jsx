@@ -106,6 +106,11 @@ const ProClassroom = () => {
     }
 };
 
+  const handleFeedback = (course_name, user_name) =>{
+    console.log(course_name + "|" + user_name);
+    const course_imformation = course_name + "$$" + user_name;
+    navigate(`/feedback/${decodeURIComponent(course_imformation)}`);
+  }
 
   const handleCreateQuestion = (course_name) => {
       console.log("course_name:", course_name);
@@ -129,6 +134,10 @@ const ProClassroom = () => {
       setShowModal(false);
       setView('myCourses');
   };
+
+  const hhh = () => {
+    console.log(user);
+};
 
   return (
       <ClassroomWrapper>
@@ -155,9 +164,17 @@ const ProClassroom = () => {
             <ProfessorName>교수명 : {user}</ProfessorName>
         </CourseInfo>
         {/* 내 강의 목록에 있는 경우는 문제 생성 버튼을 노출하고, 생성된 강의 목록에 있는 경우는 생성하기 버튼을 노출합니다. */}
-        <Button onClick={() => view === 'myCourses' ? handleCreateQuestion(course.name) : handleCreateClassroom(course.name)}>
-            {view === 'myCourses' ? '문제 생성' : '생성하기'}
-        </Button>
+        <div>
+            {view === 'myCourses' ? (
+              <Button onClick={() => view === 'myCourses' ? handleFeedback(course.name, user) : hhh}>
+                피드백
+              </Button>
+            ) : (<></>)}
+        
+          <Button onClick={() => view === 'myCourses' ? handleCreateQuestion(course.name) : handleCreateClassroom(course.name)}>
+              {view === 'myCourses' ? '문제 생성' : '생성하기'}
+          </Button>
+        </div>
     </CourseCard>
 ))}
           </CoursesBox>
@@ -248,6 +265,7 @@ const Button = styled.button`
   padding: 8px 16px;
   cursor: pointer;
   transition: background 0.3s;
+  margin-left: 10px;
 
   &:hover {
     background: #367c39;

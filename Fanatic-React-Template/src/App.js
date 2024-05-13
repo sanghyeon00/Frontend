@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Helmet } from "react-helmet";
+
 // Screens
 import Landing from "./screens/Landing.jsx";
 import CreateQpage from "./components/Sections/CreateQpage.jsx";
@@ -11,6 +12,7 @@ import Footer from "./components/Sections/Footer.jsx";
 import ProClassroom from "./components/Sections/ProClassroom.jsx";
 import Community from "./components/Sections/Community.jsx";
 import DiaryPage from "./components/Sections/DiaryPage.jsx";
+import Feedback from "./components/Sections/Feedback.jsx";
 
 //Member
 import Login from "./components/Member/Login.jsx";
@@ -48,6 +50,7 @@ export default function App() {
             <Route path="/diary" element={<DiaryPage />} />
             <Route path="/proClassroom" element={<ProClassroom/>} />
             <Route path="/community" element={<Community/>} />
+            <Route path="/feedback/:course_imformation" element={<Feedback/>} />
           </Routes >
           
         </AuthProvider>
