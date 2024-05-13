@@ -58,9 +58,35 @@ export default function Header() {
     // 문제 생성 로직 구현
   };
   const handleSolveQpage = () => {
-    navigate("/solve_question");
-    // 문제 생성 로직 구현
+    test();
   };
+
+  const test = () => {
+    fetch(`${process.env.REACT_APP_Server_IP}/??/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": `Bearer ${cookie.access_token}`
+      },
+      // body: JSON.stringify({
+      //   course_name: course_name,
+      //   course_professor: course_professor,
+      //   answers: answers,
+      // }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          console.log("response nice good!!");
+        }
+        return response.json();
+      })
+
+      .catch((error) => {
+        console.error('에러 발생이요 : ', error);
+      });
+  };
+
+
 
   const TypingEffect = ({ text, speed, type }) => {
     const [displayText, setDisplayText] = useState('');

@@ -341,7 +341,7 @@ function SolveQpage() {
   const sendAnswer = () => {
     let answers = {"answer1":'', "answer2":'', "answer3":'', "answer4":'', "answer5":'',
                    "answer6":'', "answer7":'', "answer8":'', "answer9":'', "answer10":''};
-    let num = 0;
+    let num = 1;
 
     questions.forEach((questionType, index) => {
       // 문제 유형별로 답안을 생성합니다.
@@ -376,7 +376,6 @@ function SolveQpage() {
         console.error('답안을 전송하는 중 에러:', error);
       });
   };
-
 
 
 

@@ -1,19 +1,21 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
+import styled, { css, keyframes  } from 'styled-components';
 
 export default function ChatBot() {
   return (
-    <div className="chatbot-container">
-      {/* Ã¤ÆÃ ¸Ş½ÃÁö */}
+    <ContainerBox>
       <div className="chat-messages">
-        {/* ¿©±â¿¡ Ã¤ÆÃ ¸Ş½ÃÁö¸¦ ³ªÅ¸³»´Â ÄÄÆ÷³ÍÆ® ¶Ç´Â ¿ä¼Ò¸¦ ³ÖÀ¸¼¼¿ä */}
-        <div className="message">¾È³çÇÏ¼¼¿ä! ¾î¶»°Ô µµ¿Íµå¸±±î¿ä?</div>
+        <div className="message" style={{fontWeight:"bold"}}>ì•ˆë…•í•˜ì„¸ìš”! ì–´ë–»ê²Œ ë„ì™€ë“œë¦´ê¹Œìš”?</div>
       </div>
-
-      {/* ÀÔ·ÂÃ¢ */}
-      <div className="chat-input">
-        <input type="text" placeholder="¸Ş½ÃÁö¸¦ ÀÔ·ÂÇÏ¼¼¿ä..." />
-        <button>Àü¼Û</button>
-      </div>
-    </div>
+    </ContainerBox>
   );
 }
+
+const ContainerBox = styled.div`
+  width: 300px;
+  height: auto;
+  min-height: 30px;
+  background: #EDEEED;
+  border-radius: 15px 15px 15px 0px;
+  padding: 8px;
+`;
