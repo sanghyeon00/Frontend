@@ -53,7 +53,7 @@ const Write = ({ addPost }) => {
                 <Label>내용</Label>
                 <StyledReactQuill value={content} onChange={setContent} />
                 <ButtonContainer>
-                    <Button type="submit">올리기</Button>
+                    <Button type="submit">업로드</Button>
                 </ButtonContainer>
             </Form>
         </Container>
