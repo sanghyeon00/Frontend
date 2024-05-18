@@ -1,33 +1,54 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
+import emptyHeart from '../../../src/assets/img/emptyheart.png';
+import heart from '../../../src/assets/img/heart.png';
+import watch from '../../../src/assets/img/watch.png';
+import { useAuth } from '../Member/AuthContext';
 
 const PostDetail = ({ posts }) => {
-    const { postId } = useParams();
-    const post = posts.find(p => p.id === parseInt(postId));
-    const [comments, setComments] = useState(post.comments || []);
-    const [commentText, setCommentText] = useState('');
+    const { postId } = useParams(); //postId 게시글 고유 id
+    const post = posts.find(p => p.id === parseInt(postId)); //URL에서 postID 가져옴
+    const [comments, setComments] = useState(post.comments || []); //posts 배열에서 현재 postId와 일치하는 게시글 찾기
+    const [commentText, setCommentText] = useState(''); // 댓글 입력 상태
+    const [likes, setLikes] = useState(post.like || 0); // 초기 좋아요 수
+    const [liked, setLiked] = useState(false); // 좋아요 눌렀는지 여부
+    const { user } = useAuth(); // 로그인한 사용자 정보 가져오기
+    const [views, setViews] = useState(post.watch || 0); // 초기 조회수 설정
 
     useEffect(() => {
         // 댓글 가져오기
         const fetchComments = async () => {
-            const response = await fetch(`/api/posts/${postId}/comments/`);
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/comments/${postId}/`); //postId 변경될 때마다 특정 작업 수행
             const data = await response.json();
             setComments(data);
         };
 
-        fetchComments();
+        // 조회수 증가
+        const increaseViews = async () => {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/content_view/${postId}/`, {
+                method: 'POST'
+            });
+            if (response.ok) {
+                const data = await response.json();
+                setViews(data.watch);
+            } else {
+                console.error('Failed to increase views');
+            }
+        };
+
+        fetchComments(); // 댓글 데이터 가져오는 함수
+        increaseViews(); // 조회수를 증가시키는 함수
     }, [postId]);
 
     if (!post) {
         return <Container>게시글을 찾을 수 없습니다.</Container>;
     }
-
     //comments 상태를 업데이트 하고 새로운 댓글 화면에 표시
     const handleCommentSubmit = async (e) => {
         e.preventDefault();
         if (commentText.trim()) {
-            const response = await fetch(`/api/posts/${postId}/comments/`, {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/comments/${postId}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -45,6 +66,34 @@ const PostDetail = ({ posts }) => {
             }
         }
     };
+    // 좋아요를 눌렀을 때 호출되는 함수
+    const handleLike = async () => {
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_like/${postId}/`, {
+            method: 'POST'
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            setLikes(data.like);
+            setLiked(true);
+        } else {
+            console.error('Failed to like post');
+        }
+    };
+    // 좋아요 취소했을 떄 호출되는 함수
+    const handleDislike = async () => {
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_dislike/${postId}/`, {
+            method: 'POST'
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            setLikes(data.like);
+            setLiked(false);
+        } else {
+            console.error('Failed to dislike post');
+        }
+    };
 
     return (
         <Container>
@@ -55,7 +104,19 @@ const PostDetail = ({ posts }) => {
                         <AuthorAvatar src="/path/to/avatar.jpg" alt="Author Avatar" />
                         <Author>{post.author}</Author>
                     </AuthorInfo>
-                    <Date>{post.date}</Date>
+                    <DateTime>
+                        {post.year}.{post.month}.{post.day} {post.hour}:{post.minute}
+                    </DateTime>
+                    <Icons>
+                        <IconContainer>
+                            <Icon src={watch} alt="views" />
+                            <IconCount>{views}</IconCount>
+                        </IconContainer>
+                        <IconContainer onClick={liked ? handleDislike : handleLike}>
+                            <Icon src={liked ? heart : emptyHeart} alt="likes" />
+                            <IconCount>{likes}</IconCount>
+                        </IconContainer>
+                    </Icons>
                 </PostInfo>
             </PostHeader>
             <Content>{post.content}</Content>
@@ -126,9 +187,31 @@ const Author = styled.p`
     font-weight: bold;
 `;
 
-const Date = styled.p`
+const DateTime = styled.p`
     margin: 0;
     color: #999;
+    font-size: 14px;
+`;
+
+
+const Icons = styled.div`
+    display: flex;
+    gap: 10px;
+`;
+
+const IconContainer = styled.div`
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+`;
+
+const Icon = styled.img`
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+`;
+
+const IconCount = styled.span`
     font-size: 14px;
 `;
 
