@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import styled, { keyframes } from "styled-components";
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import ReactImage from '../../../src/assets/img/soda.png';
+import heart from '../../../src/assets/img/heart.png';
+import view from '../../../src/assets/img/watch.png';
 import { Link } from 'react-router-dom';
 
 const center = {
@@ -39,6 +41,8 @@ const MapComponent = ({ apiKey, setActiveChatRooms }) => {
 export default function Community() {
     const [activeGrade, setActiveGrade] = useState('grade1');
     const [activeChatRooms, setActiveChatRooms] = useState([]);
+    const [popularPosts, setPopularPosts] = useState([]);
+
     const searchTerms = {
         grade1: ['길상현', 'ex2', 'ex3', 'ex4', 'ex5', 'ex6', 'ex7', 'ex8', 'ex9', 'ex10'],
         grade2: ['Example 1', 'Example 2', 'Example 3', 'Example 4', 'Example 5', 'Example 6', 'Example 7', 'Example 8', 'Example 9', 'Example 10'],
@@ -48,36 +52,46 @@ export default function Community() {
 
     const handleGradeChange = grade => setActiveGrade(grade);
     
-      
+    useEffect(() => {
+        const fetchPopularPosts = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_view/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setPopularPosts(data.popular);
+                } else {
+                    console.error('Failed to fetch popular posts');
+                }
+            } catch (error) {
+                console.error('Error fetching popular posts:', error);
+            }
+        };
+
+        fetchPopularPosts();
+    }, []); 
 
     return (
         <Container>
             <CardTitle>인기 게시물</CardTitle>
             <CardsContainer>
-                <PopularPostCard
-                    title="게시물 1"
-                    author="작성자: 홍길동"
-                    preview="이 곳에 게시물의 내용이 미리 보여집니다."
-                    image={ReactImage}
-                />
-                <PopularPostCard
-                    title="게시물 2"
-                    author="작성자: 홍길동"
-                    preview="이 곳에 게시물의 내용이 미리 보여집니다."
-                    image={ReactImage}
-                />
-                <PopularPostCard
-                    title="게시물 3"
-                    author="작성자: 홍길동"
-                    preview="이 곳에 게시물의 내용이 미리 보여집니다."
-                    image={ReactImage}
-                />
-                <PopularPostCard
-                    title="게시물 4"
-                    author="작성자: 홍길동"
-                    preview="이 곳에 게시물의 내용이 미리 보여집니다."
-                    image={ReactImage}
-                />
+                {popularPosts.map(post => (
+                    <PopularPostCard
+                        key={post.id}
+                        title={post.title}
+                        author={post.author}
+                        preview={post.content}
+                        image={ReactImage}
+                        like={post.like}
+                        watch={post.watch}
+                        date={`${post.year}.${post.month}.${post.day}`}
+                        comments={post.comment_number}
+                    />
+                ))}
             </CardsContainer>
             <HorizontalRule />
             <MainContent>
@@ -266,20 +280,86 @@ const ContentPreview = styled.p`
   text-align: center;
 `;
 
-const PopularPostCard = ({ title, author, preview, image }) => {
+const PopularPostCard = ({ title, author, preview, image, like, watch, date, comments }) => {
     const [hover, setHover] = useState(false);
-  
+
     return (
-      <Card bgImage={image} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
-        <OverlayTitle style={{ opacity: hover ? 0 : 1 }}>{title}</OverlayTitle> {/* 호버 시 사라지고, 아니면 보입니다 */}
-        <Overlay style={{ transform: hover ? 'translateY(0)' : 'translateY(100%)', opacity: hover ? 1 : 0 }}>
-          <Title>{title}</Title>
-          <Author>{author}</Author>
-          <ContentPreview>{preview}</ContentPreview>
-        </Overlay>
-      </Card>
+        <Card bgImage={image} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+            <CardOverlayTitle style={{ backgroundColor: 'rgba(0, 255, 0, 0.5)', position: 'absolute', bottom: 0, width: '100%', opacity: hover ? 0 : 1 }}>
+                <Title>{title}</Title>
+                <Icons>
+                    <IconContainer>
+                        <Icon src={heart} alt="likes" />
+                        <IconCount>{like}</IconCount>
+                    </IconContainer>
+                    <IconContainer>
+                        <Icon src={view} alt="views" />
+                        <IconCount>{watch}</IconCount>
+                    </IconContainer>
+                </Icons>
+            </CardOverlayTitle>
+            <Overlay style={{ transform: hover ? 'translateY(0)' : 'translateY(100%)', opacity: hover ? 1 : 0 }}>
+                <Title>{title}</Title>
+                <Author>{author}</Author>
+                <ContentPreview>{preview}</ContentPreview>
+                <PostDetails>
+                    <PostDate>{date}</PostDate>
+                    <CommentsCount>댓글수: {comments}</CommentsCount>
+                </PostDetails>
+            </Overlay>
+        </Card>
     );
-  };
+};
+
+
+
+const CardOverlayTitle = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  background-color: rgba(0, 255, 0, 0.5);
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+`;
+
+
+const PostDetails = styled.div`
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+`;
+
+const Icons = styled.div`
+  display: flex;
+`;
+
+const IconContainer = styled.div`
+  display: flex;
+  align-items: center;
+`;
+
+const Icon = styled.img`
+  width: 20px;
+  height: 20px;
+  margin-right: 5px;
+`;
+
+const IconCount = styled.span`
+  font-size: 14px;
+`;
+
+const PostDate = styled.div`
+  font-size: 14px;
+  color: #999;
+`;
+
+const CommentsCount = styled.div`
+  font-size: 14px;
+  color: #4CAF50;
+`;
+
 /* 카드 이미지 */
 const CardImage = styled.img`
     width: 100%;
