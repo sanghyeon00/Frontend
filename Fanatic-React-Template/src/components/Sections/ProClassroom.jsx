@@ -9,7 +9,7 @@ const ProClassroom = () => {
     const [view, setView] = useState('createClassroom'); // 뷰 상태 추가
     const [myCourses, setMyCourses] = useState([]);
     const [showModal, setShowModal] = useState(false);
-    const { user, isLoggedIn, cookie} = useAuth();
+    const { isLoggedIn, accessToken, refreshToken} = useAuth();
 
     useEffect(() => {
         checkPosition();
@@ -28,7 +28,7 @@ const ProClassroom = () => {
           const response = await fetch(`${process.env.REACT_APP_Server_IP}/position_check/`, { //백엔드 엔드포인트 수정해야함
             method: "GET",
             headers: {
-              "Authorization": `Bearer ${cookie.access_token}`
+              "Authorization": `Bearer ${accessToken}`
             }
           });
             if (response.ok) {
@@ -50,24 +50,24 @@ const ProClassroom = () => {
     };
     //모든 강의 백엔드로 가져오는 함수
     const fetchCourses = async () => {
-      try {
-          const response = await fetch(`${process.env.REACT_APP_Server_IP}/course_view/`, {
-              headers: {
-                  "Authorization": `Bearer ${cookie.access_token}`
-              }
-          });
-          const data = await response.json();
-          setMyCourses(data.lecture);
-      } catch (error) {
-          console.error('Failed to fetch courses:', error);
-      }
-  };
+        try {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/course_view/`, {
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            });
+            const data = await response.json();
+            setMyCourses(data.lecture);
+        } catch (error) {
+            console.error('Failed to fetch courses:', error);
+        }
+    };
     //백엔드로부터 내 강의 목록 가져오는 함수
     const fetchMyCourses = async () => {
       try {
           const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_show/`, {
               headers: {
-                  "Authorization": `Bearer ${cookie.access_token}`
+                  "Authorization": `Bearer ${accessToken}`
               }
           });
           const data = await response.json();
@@ -86,7 +86,7 @@ const ProClassroom = () => {
         const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_generate/`, {
             method: 'POST',
             headers: {
-                "Authorization": `Bearer ${cookie.access_token}`,
+                "Authorization": `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ subject: courseName })
@@ -106,17 +106,9 @@ const ProClassroom = () => {
     }
 };
 
-  const handleFeedback = (course_name, user_name) =>{
-    console.log(course_name + "|" + user_name);
-    const course_imformation = course_name + "$$" + user_name;
-    navigate(`/feedback/${decodeURIComponent(course_imformation)}`);
-  }
 
-  const handleCreateQuestion = (course_name) => {
-      console.log("course_name:", course_name);
-      const decodedCourseName = decodeURIComponent(course_name);
-      console.log("decodedCourseName:", decodedCourseName);
-      navigate(`/Create_question/${decodeURIComponent(course_name)}`);
+  const handleCreateQuestion = () => {
+      navigate(`/Create_question/`);
   };
 
   const Modal = ({ closeModal }) => {
@@ -134,10 +126,6 @@ const ProClassroom = () => {
       setShowModal(false);
       setView('myCourses');
   };
-
-  const hhh = () => {
-    console.log(user);
-};
 
   return (
       <ClassroomWrapper>
@@ -161,20 +149,12 @@ const ProClassroom = () => {
     <CourseCard key={course.key}>
         <CourseInfo>
             <CourseTitle>{course.name}</CourseTitle>
-            <ProfessorName>교수명 : {user}</ProfessorName>
+            <ProfessorName>교수명 입력</ProfessorName>
         </CourseInfo>
         {/* 내 강의 목록에 있는 경우는 문제 생성 버튼을 노출하고, 생성된 강의 목록에 있는 경우는 생성하기 버튼을 노출합니다. */}
-        <div>
-            {view === 'myCourses' ? (
-              <Button onClick={() => view === 'myCourses' ? handleFeedback(course.name, user) : hhh}>
-                피드백
-              </Button>
-            ) : (<></>)}
-        
-          <Button onClick={() => view === 'myCourses' ? handleCreateQuestion(course.name) : handleCreateClassroom(course.name)}>
-              {view === 'myCourses' ? '문제 생성' : '생성하기'}
-          </Button>
-        </div>
+        <Button onClick={() => view === 'myCourses' ? handleCreateQuestion(course.name) : handleCreateClassroom(course.name)}>
+            {view === 'myCourses' ? '문제 생성' : '생성하기'}
+        </Button>
     </CourseCard>
 ))}
           </CoursesBox>
@@ -265,7 +245,6 @@ const Button = styled.button`
   padding: 8px 16px;
   cursor: pointer;
   transition: background 0.3s;
-  margin-left: 10px;
 
   &:hover {
     background: #367c39;

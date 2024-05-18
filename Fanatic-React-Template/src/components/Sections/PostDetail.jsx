@@ -17,98 +17,107 @@ const PostDetail = () => {
     const [views, setViews] = useState(0); // 조회수 상태
 
     useEffect(() => {
-        // 댓글 가져오기
-        const fetchComments = async () => {
-            const response = await fetch(`${process.env.REACT_APP_Server_IP}/comments/${postId}/`); //postId 변경될 때마다 특정 작업 수행
-            const data = await response.json();
-            setComments(data);
-        };
-
-        // 조회수 증가
         const fetchPostData = async () => {
             console.log("Fetching post data with postId:", postId);
-            const response = await fetch(`${process.env.REACT_APP_Server_IP}/content_view/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: postId }),
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setPost(data);
-                setComments(data.comment); // 댓글 데이터 설정
-                setLikes(data.like); // 좋아요 수 설정
-                setViews(data.watch); // 조회수 설정
-                setLiked(data.like_check === 1); // 사용자가 좋아요를 눌렀는지 여부 설정
-            } else {
-                console.error('Failed to fetch post data');
+            try {
+                const response = await fetch(`${process.env.REACT_APP_Server_IP}/content_view/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ id: postId }),
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    setPost(data);
+                    setComments(data.comment); // 댓글 데이터 설정
+                    setLikes(data.like); // 좋아요 수 설정
+                    setViews(data.watch); // 조회수 설정
+                    setLiked(data.like_check === 1); // 사용자가 좋아요를 눌렀는지 여부 설정
+                } else {
+                    console.error('Failed to fetch post data');
+                }
+            } catch (error) {
+                console.error('Error fetching post data:', error);
             }
         };
 
         fetchPostData();
     }, [postId]);
 
-    if (!post) {
-        return <Container>게시글을 찾을 수 없습니다.</Container>;
-    }
-    //comments 상태를 업데이트 하고 새로운 댓글 화면에 표시
     const handleCommentSubmit = async (e) => {
         e.preventDefault();
         if (commentText.trim()) {
-            const response = await fetch(`${process.env.REACT_APP_Server_IP}/comments/${postId}/`, {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_Server_IP}/comments/${postId}/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ text: commentText }),
+                });
+
+                if (response.ok) {
+                    const newComment = await response.json();
+                    setComments([...comments, newComment]);
+                    setCommentText('');
+                } else {
+                    console.error('Failed to submit comment');
+                }
+            } catch (error) {
+                console.error('Error submitting comment:', error);
+            }
+        }
+    };
+
+    const handleLike = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_like/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ text: commentText }),
+                body: JSON.stringify({ id: postId }),
             });
 
             if (response.ok) {
-                const newComment = await response.json();
-                setComments([...comments, newComment]);
-                setCommentText('');
+                const data = await response.json();
+                setLikes(data.like);
+                setLiked(true);
             } else {
-                console.error('Failed to submit comment');
+                console.error('Failed to like post');
             }
+        } catch (error) {
+            console.error('Error liking post:', error);
         }
     };
-    // 좋아요를 눌렀을 때 호출되는 함수
-    const handleLike = async () => {
-        const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_like/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id: postId }),
-        });
 
-        if (response.ok) {
-            const data = await response.json();
-            setLikes(data.like);
-            setLiked(true);
-        } else {
-            console.error('Failed to like post');
-        }
-    };
-    // 좋아요 취소했을 떄 호출되는 함수
     const handleDislike = async () => {
-        const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_dislike/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ id: postId }),
-        });
+        try {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_dislike/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: postId }),
+            });
 
-        if (response.ok) {
-            const data = await response.json();
-            setLikes(data.like);
-            setLiked(false);
-        } else {
-            console.error('Failed to dislike post');
+            if (response.ok) {
+                const data = await response.json();
+                setLikes(data.like);
+                setLiked(false);
+            } else {
+                console.error('Failed to dislike post');
+            }
+        } catch (error) {
+            console.error('Error disliking post:', error);
         }
     };
+
+    if (!post) {
+        return <Container>게시글을 찾을 수 없습니다.</Container>;
+    }
 
     return (
         <Container>
@@ -146,8 +155,8 @@ const PostDetail = () => {
                     <CommentButton type="submit">작성</CommentButton>
                 </CommentForm>
                 <CommentsList>
-                    {comments.map(comment => (
-                        <Comment key={comment.id}>{comment.text}</Comment>
+                    {comments.map((comment, index) => (
+                        <Comment key={index}>{comment.content}</Comment>
                     ))}
                 </CommentsList>
             </CommentSection>
@@ -156,6 +165,9 @@ const PostDetail = () => {
 };
 
 export default PostDetail;
+
+// 스타일 정의는 이전 코드와 동일합니다.
+
 
 const Container = styled.div`
     padding: 40px;
@@ -207,7 +219,6 @@ const DateTime = styled.p`
     color: #999;
     font-size: 14px;
 `;
-
 
 const Icons = styled.div`
     display: flex;
