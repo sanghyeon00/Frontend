@@ -13,7 +13,8 @@ import Community from "./components/Sections/Community.jsx";
 import DiaryPage from "./components/Sections/DiaryPage.jsx";
 import FreeCommu from './components/Sections/FreeCommu.jsx';
 import Write from './components/Sections/Write.jsx'; // Write를 올바르게 import
-import PostDetail from './components/Sections/PostDetail.jsx';
+import PostDetail from './components/Sections/PostDetail.jsx'; // PostDetail을 올바르게 import
+
 // Member
 import Login from "./components/Member/Login.jsx";
 import Membership from "./components/Member/Membership.jsx";
@@ -67,15 +68,6 @@ export default function App() {
           <Route path="/write" element={<Write addPost={addPost} />} />
           <Route path="/posts/:postId" element={<PostDetail posts={posts} />} />
         </Routes>
-
-      <>
-        <AuthProvider>
-          <TopNavbar />
-
-       
-          
-        </AuthProvider>
-
         <Footer />
       </AuthProvider>
     </Router>
