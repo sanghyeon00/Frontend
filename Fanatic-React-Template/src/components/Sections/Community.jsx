@@ -42,6 +42,7 @@ export default function Community() {
     const [activeGrade, setActiveGrade] = useState('grade1');
     const [activeChatRooms, setActiveChatRooms] = useState([]);
     const [popularPosts, setPopularPosts] = useState([]);
+    const [freePosts, setFreePosts] = useState([]);
 
     const searchTerms = {
         grade1: ['길상현', 'ex2', 'ex3', 'ex4', 'ex5', 'ex6', 'ex7', 'ex8', 'ex9', 'ex10'],
@@ -64,6 +65,7 @@ export default function Community() {
                 if (response.ok) {
                     const data = await response.json();
                     setPopularPosts(data.popular);
+                    setFreePosts(data.free);
                 } else {
                     console.error('Failed to fetch popular posts');
                 }
@@ -96,18 +98,35 @@ export default function Community() {
             <HorizontalRule />
             <MainContent>
                 <LeftColumn>
-                    <StyledSection>
+                <StyledSection>
                         <CardTitle>자유 게시판</CardTitle>
                         <Button to="/freeCommu">자유게시판 바로가기 →</Button>
-                        <FreedomPostCard>
-                            <p>글 1</p>
-                        </FreedomPostCard>
-                        <FreedomPostCard>
-                            <p>글 2</p>
-                        </FreedomPostCard>
-                        <FreedomPostCard>
-                            <p>글 3</p>
-                        </FreedomPostCard>
+                        <PostTable>
+                            <thead>
+                                <tr>
+                                    <th>제목</th>
+                                    <th>글쓴이</th>
+                                    <th>날짜</th>
+                                    <th>조회수</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {freePosts.slice(0, 10).map(post => (
+                                    <tr key={post.id}>
+                                        <td>
+                                            {post.title}
+                                            <CommentNumber>[{post.comment_number}]</CommentNumber>
+                                        </td>
+                                        <td>{post.author}</td>
+                                        <td>{post.year}.{post.month}.{post.day}</td>
+                                        <td>
+                                            <Icon src={view} alt="views" />
+                                            <span>{post.watch}</span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </PostTable>
                     </StyledSection>
                 </LeftColumn>
                 <RightColumn>
@@ -358,6 +377,32 @@ const PostDate = styled.div`
 const CommentsCount = styled.div`
   font-size: 14px;
   color: #4CAF50;
+`;
+
+const PostTable = styled.table`
+    width: 100%;
+    border-collapse: collapse;
+    border: 2px solid #4CAF50; /* 초록색 굵은 테두리 추가 */
+    margin-top: 10px;
+
+    th, td {
+        border: none; /* 수직 줄을 없애기 위해 변경된 부분 */
+        border-bottom: 1px solid #ddd; /* 수평 줄을 추가 */
+        padding: 8px;
+        text-align: left;
+    }
+
+    th {
+        background-color: #f2f2f2;
+    }
+`;
+
+
+
+
+const CommentNumber = styled.span`
+    color: #4CAF50;
+    margin-left: 5px;
 `;
 
 /* 카드 이미지 */
