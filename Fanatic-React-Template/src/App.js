@@ -67,6 +67,15 @@ export default function App() {
           <Route path="/write" element={<Write addPost={addPost} />} />
           <Route path="/posts/:postId" element={<PostDetail posts={posts} />} />
         </Routes>
+
+      <>
+        <AuthProvider>
+          <TopNavbar />
+
+       
+          
+        </AuthProvider>
+
         <Footer />
       </AuthProvider>
     </Router>
