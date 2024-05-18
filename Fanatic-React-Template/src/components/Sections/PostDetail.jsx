@@ -26,6 +26,7 @@ const PostDetail = () => {
 
         // 조회수 증가
         const fetchPostData = async () => {
+            console.log("Fetching post data with postId:", postId);
             const response = await fetch(`${process.env.REACT_APP_Server_IP}/content_view/`, {
                 method: 'POST',
                 headers: {
@@ -39,6 +40,7 @@ const PostDetail = () => {
                 setComments(data.comment); // 댓글 데이터 설정
                 setLikes(data.like); // 좋아요 수 설정
                 setViews(data.watch); // 조회수 설정
+                setLiked(data.like_check === 1); // 사용자가 좋아요를 눌렀는지 여부 설정
             } else {
                 console.error('Failed to fetch post data');
             }
@@ -73,8 +75,12 @@ const PostDetail = () => {
     };
     // 좋아요를 눌렀을 때 호출되는 함수
     const handleLike = async () => {
-        const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_like/${postId}/`, {
-            method: 'POST'
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_like/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: postId }),
         });
 
         if (response.ok) {
@@ -87,8 +93,12 @@ const PostDetail = () => {
     };
     // 좋아요 취소했을 떄 호출되는 함수
     const handleDislike = async () => {
-        const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_dislike/${postId}/`, {
-            method: 'POST'
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_dislike/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: postId }),
         });
 
         if (response.ok) {
