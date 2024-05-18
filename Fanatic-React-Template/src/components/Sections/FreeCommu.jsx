@@ -1,18 +1,44 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate } from 'react-router-dom';
+import heart from '../../../src/assets/img/heart.png';
+import watch from '../../../src/assets/img/watch.png';
 
-const FreeCommu = ({ posts, addPost }) => {
+const FreeCommu = ({ addPost }) => {
     const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(1);
     const [postsPerPage] = useState(8);
     const [currentPosts, setCurrentPosts] = useState([]);
+    const [allPosts, setAllPosts] = useState([]);
+
+    useEffect(() => {
+        const fetchPosts = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_view/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setAllPosts(data.free);
+                } else {
+                    console.error('Failed to fetch posts');
+                }
+            } catch (error) {
+                console.error('Error fetching posts:', error);
+            }
+        };
+
+        fetchPosts();
+    }, []);
 
     useEffect(() => {
         const indexOfLastPost = currentPage * postsPerPage;
         const indexOfFirstPost = indexOfLastPost - postsPerPage;
-        setCurrentPosts(posts.slice(indexOfFirstPost, indexOfLastPost));
-    }, [currentPage, posts, postsPerPage]);
+        setCurrentPosts(allPosts.slice(indexOfFirstPost, indexOfLastPost));
+    }, [currentPage, allPosts, postsPerPage]);
 
     const handlePostClick = (postId) => {
         navigate(`/posts/${postId}`);
@@ -34,7 +60,7 @@ const FreeCommu = ({ posts, addPost }) => {
                                 <PostAuthorAvatar src="/path/to/avatar.jpg" alt="Author Avatar" />
                                 <div>
                                     <PostAuthor>{post.author}</PostAuthor>
-                                    <PostDate>{post.date}</PostDate>
+                                    <PostDate>{post.year}.{post.month}.{post.day}</PostDate>
                                 </div>
                             </PostAuthorInfo>
                             <PostIndex>{(currentPage - 1) * postsPerPage + index + 1}</PostIndex>
@@ -42,13 +68,21 @@ const FreeCommu = ({ posts, addPost }) => {
                         <PostTitle>{post.title}</PostTitle>
                         <PostExcerpt>{(post.content || '').substring(0, 100)}...</PostExcerpt>
                         <PostFooter>
-                            <CommentsCount>댓글수: {post.comments}</CommentsCount>
+                            <IconContainer>
+                                <Icon src={heart} alt="likes" />
+                                <IconCount>{post.like}</IconCount>
+                            </IconContainer>
+                            <IconContainer>
+                                <Icon src={watch} alt="views" />
+                                <IconCount>{post.watch}</IconCount>
+                            </IconContainer>
+                            <CommentsCount>댓글수: {post.comment_number}</CommentsCount>
                         </PostFooter>
                     </PostCard>
                 ))}
             </PostList>
             <Pagination>
-                {Array.from({ length: Math.ceil(posts.length / postsPerPage) }, (_, i) => (
+                {Array.from({ length: Math.ceil(allPosts.length / postsPerPage) }, (_, i) => (
                     <PageNumber key={i + 1} onClick={() => paginate(i + 1)} active={i + 1 === currentPage}>
                         {i + 1}
                     </PageNumber>
@@ -164,6 +198,22 @@ const PostFooter = styled.div`
     display: flex;
     justify-content: flex-end;
 `;
+
+const IconContainer = styled.div`
+    display: flex;
+    align-items: center;
+`;
+
+const Icon = styled.img`
+    width: 20px;
+    height: 20px;
+    margin-right: 5px;
+`;
+
+const IconCount = styled.span`
+    font-size: 14px;
+`;
+
 
 const CommentsCount = styled.span`
     color: #4CAF50;

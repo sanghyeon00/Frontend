@@ -6,15 +6,15 @@ import heart from '../../../src/assets/img/heart.png';
 import watch from '../../../src/assets/img/watch.png';
 import { useAuth } from '../Member/AuthContext';
 
-const PostDetail = ({ posts }) => {
-    const { postId } = useParams(); //postId 게시글 고유 id
-    const post = posts.find(p => p.id === parseInt(postId)); //URL에서 postID 가져옴
-    const [comments, setComments] = useState(post.comments || []); //posts 배열에서 현재 postId와 일치하는 게시글 찾기
+const PostDetail = () => {
+    const { postId } = useParams(); // URL에서 postId 가져옴
+    const [post, setPost] = useState(null); // 게시글 상태
+    const [comments, setComments] = useState([]); // 댓글 상태
     const [commentText, setCommentText] = useState(''); // 댓글 입력 상태
-    const [likes, setLikes] = useState(post.like || 0); // 초기 좋아요 수
+    const [likes, setLikes] = useState(0); // 좋아요 수 상태
     const [liked, setLiked] = useState(false); // 좋아요 눌렀는지 여부
     const { user } = useAuth(); // 로그인한 사용자 정보 가져오기
-    const [views, setViews] = useState(post.watch || 0); // 초기 조회수 설정
+    const [views, setViews] = useState(0); // 조회수 상태
 
     useEffect(() => {
         // 댓글 가져오기
@@ -25,20 +25,26 @@ const PostDetail = ({ posts }) => {
         };
 
         // 조회수 증가
-        const increaseViews = async () => {
-            const response = await fetch(`${process.env.REACT_APP_Server_IP}/content_view/${postId}/`, {
-                method: 'POST'
+        const fetchPostData = async () => {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/content_view/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ id: postId }),
             });
             if (response.ok) {
                 const data = await response.json();
-                setViews(data.watch);
+                setPost(data);
+                setComments(data.comment); // 댓글 데이터 설정
+                setLikes(data.like); // 좋아요 수 설정
+                setViews(data.watch); // 조회수 설정
             } else {
-                console.error('Failed to increase views');
+                console.error('Failed to fetch post data');
             }
         };
 
-        fetchComments(); // 댓글 데이터 가져오는 함수
-        increaseViews(); // 조회수를 증가시키는 함수
+        fetchPostData();
     }, [postId]);
 
     if (!post) {
@@ -61,7 +67,6 @@ const PostDetail = ({ posts }) => {
                 setComments([...comments, newComment]);
                 setCommentText('');
             } else {
-                // 에러 처리
                 console.error('Failed to submit comment');
             }
         }
