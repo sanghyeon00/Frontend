@@ -86,7 +86,7 @@ export default function Blog() {
           </div>
           <div className="row flexCenter">
             <div style={{ margin: "50px 0", width: "200px" }}>
-              <FullButton title="커뮤니티 바로가기" action={goToCommunity} />
+              <FullButton title="커뮤니티 바로가기" action={goToCommunity} /> {/* 커뮤니티 바로가기 버튼 추가 */}
             </div>
           </div>
         </div>
