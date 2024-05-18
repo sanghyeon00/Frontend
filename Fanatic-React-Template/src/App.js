@@ -13,6 +13,7 @@ import ProClassroom from "./components/Sections/ProClassroom.jsx";
 import Community from "./components/Sections/Community.jsx";
 import DiaryPage from "./components/Sections/DiaryPage.jsx";
 import Feedback from "./components/Sections/Feedback.jsx";
+import Feedbacklook from "./components/Sections/Feedbacklook.jsx";
 
 //Member
 import Login from "./components/Member/Login.jsx";
@@ -51,6 +52,7 @@ export default function App() {
             <Route path="/proClassroom" element={<ProClassroom/>} />
             <Route path="/community" element={<Community/>} />
             <Route path="/feedback/:course_imformation" element={<Feedback/>} />
+            <Route path="/feedbacklook/:course_imformation" element={<Feedbacklook/>} />
           </Routes >
           
         </AuthProvider>
