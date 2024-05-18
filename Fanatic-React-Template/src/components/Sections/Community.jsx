@@ -1,235 +1,133 @@
 import React, { useEffect, useState } from 'react';
 import styled, { keyframes } from "styled-components";
+import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
+import ReactImage from '../../../src/assets/img/soda.png';
+import { Link } from 'react-router-dom';
+
+const center = {
+    lat: 37.886381,
+    lng: 127.736857
+};
+
+const markers = [
+    { id: 1, position: { lat: 37.886447, lng: 127.735785 }, chatRooms: ['채팅방 1', '채팅방 2', '채팅방 3'] },
+    { id: 2, position: { lat: 37.885800, lng: 127.736848 }, chatRooms: ['채팅방 4', '채팅방 5'] },
+    { id: 3, position: { lat: 37.886369, lng: 127.737402 }, chatRooms: ['채팅방 6'] }
+];
+
+
+const MapComponent = ({ apiKey, setActiveChatRooms }) => {
+    return (
+        <LoadScript googleMapsApiKey={apiKey}>
+            <GoogleMap
+                mapContainerStyle={{ width: '500px', height: '400px' }}
+                center={center}
+                zoom={17}
+            >
+                {markers.map(marker => (
+                    <Marker
+                        key={marker.id}
+                        position={marker.position}
+                        onClick={() => setActiveChatRooms(marker.chatRooms)}
+                    />
+                ))}
+            </GoogleMap>
+        </LoadScript>
+    );
+};
 
 export default function Community() {
-    const [isMapLoaded, setMapLoaded] = useState(false);
     const [activeGrade, setActiveGrade] = useState('grade1');
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const [animating, setAnimating] = useState(false);
-
-    const termsData = {
-        grade1: ['1. 길상현', '2. 자바', '3. 코테', '4. 프론트엔드', '5. 백엔드', '6. 쟝고', '7. 리액트', '8. 파이썬', '9. 공부 꿀팁', '10. 코딩 잘 하는 법'],
-        grade2: ['Example 1', 'Example 2', 'Example 3'],
-        grade3: ['Example 1', 'Example 2', 'Example 3'],
-        grade4: ['Example 1', 'Example 2', 'Example 3']
+    const [activeChatRooms, setActiveChatRooms] = useState([]);
+    const searchTerms = {
+        grade1: ['길상현', 'ex2', 'ex3', 'ex4', 'ex5', 'ex6', 'ex7', 'ex8', 'ex9', 'ex10'],
+        grade2: ['Example 1', 'Example 2', 'Example 3', 'Example 4', 'Example 5', 'Example 6', 'Example 7', 'Example 8', 'Example 9', 'Example 10'],
+        grade3: ['Exam 1', 'Exam 2', 'Exam 3', 'Exam 4', 'Exam 5', 'Exam 6', 'Exam 7', 'Exam 8', 'Exam 9', 'Exam 10'],
+        grade4: ['Example 1', 'Example 2', 'Example 3', 'Example 4', 'Example 5', 'Example 6', 'Example 7', 'Example 8', 'Example 9', 'Example 10']
     };
 
-    useEffect(() => {
-        const script = document.createElement('script');
-        script.src = "//dapi.kakao.com/v2/maps/sdk.js?appkey=your_app_key&autoload=false";
-        script.async = true;
-
-        script.onload = () => {
-            window.kakao.maps.load(() => {
-                setMapLoaded(true);
-                const container = document.getElementById('map');
-                const options = {
-                    center: new window.kakao.maps.LatLng(33.450701, 126.570667),
-                    level: 3
-                };
-                new window.kakao.maps.Map(container, options);
-            });
-        };
-
-        document.head.appendChild(script);
-
-        return () => {
-            document.head.removeChild(script);
-        };
-    }, []);
-
-    useEffect(() => {
-        const interval = setInterval(() => {
-            setAnimating(true);
-            setTimeout(() => {
-                setCurrentIndex(current => (current + 1) % termsData[activeGrade].length);
-                setAnimating(false);
-            }, 1000); // 1 second for animation
-        }, 6000); // Additional 1 second for stay
-
-        return () => clearInterval(interval);
-    }, [activeGrade, termsData]);
+    const handleGradeChange = grade => setActiveGrade(grade);
     
+      
 
     return (
         <Container>
             <CardTitle>인기 게시물</CardTitle>
             <CardsContainer>
-                <Card>
-                    <CardImage src="https://example.com/image1.jpg" alt="게시물 이미지 1" />
-                    <CardContent>
-                        <CardTitle>게시물 1</CardTitle>
-                        <CardDescription>게시물 설명이 여기에 들어갑니다.</CardDescription>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardImage src="https://example.com/image2.jpg" alt="게시물 이미지 2" />
-                    <CardContent>
-                        <CardTitle>게시물 2</CardTitle>
-                        <CardDescription>게시물 설명이 여기에 들어갑니다.</CardDescription>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardImage src="https://example.com/image3.jpg" alt="게시물 이미지 3" />
-                    <CardContent>
-                        <CardTitle>게시물 3</CardTitle>
-                        <CardDescription>게시물 설명이 여기에 들어갑니다.</CardDescription>
-                    </CardContent>
-                </Card>
-                <Card>
-                    <CardImage src="https://example.com/image4.jpg" alt="게시물 이미지 4" />
-                    <CardContent>
-                        <CardTitle>게시물 4</CardTitle>
-                        <CardDescription>게시물 설명이 여기에 들어갑니다.</CardDescription>
-                    </CardContent>
-                </Card>
+                <PopularPostCard
+                    title="게시물 1"
+                    author="작성자: 홍길동"
+                    preview="이 곳에 게시물의 내용이 미리 보여집니다."
+                    image={ReactImage}
+                />
+                <PopularPostCard
+                    title="게시물 2"
+                    author="작성자: 홍길동"
+                    preview="이 곳에 게시물의 내용이 미리 보여집니다."
+                    image={ReactImage}
+                />
+                <PopularPostCard
+                    title="게시물 3"
+                    author="작성자: 홍길동"
+                    preview="이 곳에 게시물의 내용이 미리 보여집니다."
+                    image={ReactImage}
+                />
+                <PopularPostCard
+                    title="게시물 4"
+                    author="작성자: 홍길동"
+                    preview="이 곳에 게시물의 내용이 미리 보여집니다."
+                    image={ReactImage}
+                />
             </CardsContainer>
+            <HorizontalRule />
             <MainContent>
                 <LeftColumn>
-                    <Section>
+                    <StyledSection>
                         <CardTitle>자유 게시판</CardTitle>
-                        <Card>
+                        <Button to="/freeCommu">자유게시판 바로가기 →</Button>
+                        <FreedomPostCard>
                             <p>글 1</p>
-                        </Card>
-                        <Card>
+                        </FreedomPostCard>
+                        <FreedomPostCard>
                             <p>글 2</p>
-                        </Card>
-                        <Card>
+                        </FreedomPostCard>
+                        <FreedomPostCard>
                             <p>글 3</p>
-                        </Card>
-                    </Section>
-                    <Section>
-                        <CardTitle>지도</CardTitle>
-                        <MapPlaceholder id="map" style={{ width: '100%', height: '200px', display: isMapLoaded ? 'block' : 'none' }}>
-                            {!isMapLoaded && <p>Loading Map...</p>}
-                        </MapPlaceholder>
-                    </Section>
+                        </FreedomPostCard>
+                    </StyledSection>
                 </LeftColumn>
                 <RightColumn>
-                <Section>
-                    <CardTitle>학년별 인기 검색어</CardTitle>
-                    <Card>
-                        <TermContainer>
-                            <TermSlide key={currentIndex} animating={animating}>
-                                {termsData[activeGrade][currentIndex]}
-                            </TermSlide>
-                        </TermContainer>
-                    </Card>
-                </Section>
-                    <Section>
-                        <CardTitle>채팅방</CardTitle>
-                        <ChatRoomsContainer>
-                            <ChatRoomCard>
-                                <ChatRoomImage src="https://example.com/chatroom1.jpg" alt="채팅방 이미지 1" />
-                            </ChatRoomCard>
-                            <ChatRoomCard>
-                                <ChatRoomImage src="https://example.com/chatroom2.jpg" alt="채팅방 이미지 2" />
-                            </ChatRoomCard>
-                            <ChatRoomCard>
-                                <ChatRoomImage src="https://example.com/chatroom3.jpg" alt="채팅방 이미지 3" />
-                            </ChatRoomCard>
-                        </ChatRoomsContainer>
-                    </Section>
+                    <GradeTabs>
+                        {Object.keys(searchTerms).map(grade => (
+                            <GradeTab key={grade} active={activeGrade === grade} onClick={() => handleGradeChange(grade)}>
+                                {grade.replace('grade', '')}학년
+                            </GradeTab>
+                        ))}
+                    </GradeTabs>
+                    <SearchList>
+                        {searchTerms[activeGrade].map((term, index) => <SearchItem key={index}>{`${index + 1}. ${term}`}</SearchItem>)}
+                    </SearchList>
                 </RightColumn>
             </MainContent>
+            <HorizontalRule />
+            <StyledSection>
+            <CardTitle>지도 및 채팅방</CardTitle>
+            <MapAndChatContainer>
+                        
+                        <MapComponent apiKey="AIzaSyA6YxyGqgTTzQPYmjqBq5am4Q-KsyFDV3Y" setActiveChatRooms={setActiveChatRooms} />
+                        <ChatRoomsContainer>                       
+                        {activeChatRooms.map((room, index) => (
+    <ChatRoomCard key={index}>{room}</ChatRoomCard>
+))}
+
+                </ChatRoomsContainer>
+            </MapAndChatContainer>
+            </StyledSection>
         </Container>
     );
 }
 
-const Container = styled.div`
-    margin-top: 100px;
-    padding: 20px;
-    background-color: #f4f4f4;
-`;
-
-const CardsContainer = styled.div`
-    display: flex;
-    justify-content: space-between;
-    flex-wrap: wrap;
-`;
-
-const Card = styled.div`
-    flex: 1 1 22%; // 약 25%에서 각 카드 사이의 간격을 고려
-    background: #fff;
-    border-radius: 10px;
-    margin: 10px;
-    overflow: hidden;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-    display: flex;
-    flex-direction: column;
-    transition: transform 0.3s ease;
-    &:hover {
-        transform: translateY(-5px);
-    }
-`;
-
-const CardImage = styled.img`
-    width: 100%;
-    height: 200px; // 이미지 높이를 늘려 정사각형 근사치 유지
-    object-fit: cover;
-`;
-
-const CardContent = styled.div`
-    padding: 10px;
-    flex-grow: 1;
-`;
-
-const CardTitle = styled.h2`
-    color: #333;
-    padding: 0;
-    margin: 0;
-`;
-
-const CardDescription = styled.p`
-    color: #666;
-`;
-
-const MainContent = styled.div`
-    display: flex;
-`;
-
-const LeftColumn = styled.div`
-    flex: 2;
-    margin-right: 20px;
-`;
-
-const RightColumn = styled.div`
-    flex: 1;
-`;
-
-const MapPlaceholder = styled.div`
-    height: 200px;
-    background: #ccc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 8px;
-`;
-
-const ChatRoomsContainer = styled.div`
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
-    padding: 20px;
-`;
-
-const ChatRoomCard = styled.div`
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    overflow: hidden;
-    transition: transform 0.3s ease;
-    &:hover {
-        transform: scale(1.05);
-    }
-`;
-
-const ChatRoomImage = styled.img`
-    width: 100%;
-    height: 100px;  // 조절해야 할 수도 있음
-    object-fit: cover;
-`;
-
+/* 섹션 스타일 */
 const Section = styled.section`
     background: white;
     padding: 20px;
@@ -238,6 +136,244 @@ const Section = styled.section`
     margin-bottom: 20px;
 `;
 
+const StyledSection = styled(Section)`
+    position: relative; // 이를 기준으로 Button을 배치
+    background-color: #DFF8D8; // 연두색 배경
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+`;
+
+/* 컨테이너 기본 설정 */
+const Container = styled.div`
+    padding: 20px;
+    margin-top: 80px;
+    background-color: #EFF8F3;
+    display: flex;
+    flex-direction: column;
+`;
+
+/* 카드 컨테이너 */
+const CardsContainer = styled.div`
+    display: flex;
+    justify-content: center; // 카드들을 가운데 정렬합니다.
+    flex-wrap: wrap;
+    margin: 0; // 외부 마진 제거
+    padding: 0 10px; // 양쪽 패딩을 추가하여 카드들 사이의 간격을 조정합니다.
+`;
+
+const MapAndChatContainer = styled.div`
+    display: flex;
+    justify-content: space-between;
+`;
+
+const MapContainer = styled.div`
+    flex: 3; // 지도가 채팅방보다 넓게 설정
+    padding: 20px;
+    background: #f0f0f0; // 배경 색상 설정
+`;
+
+
+const Overlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 255, 0, 0.5); // 반투명 남색 오버레이
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; 
+  align-items: center;
+  padding: 10px;
+  transition: transform 0.5s ease, opacity 0.5s ease;
+  transform: translateY(100%);
+  opacity: 0;
+`;
+
+const OverlayTitle = styled.div`
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  background-color: rgba(0, 255, 0, 0.5); // 남색 반투명 배경
+  color: white;
+  text-align: center;
+  padding: 10px;
+  transition: opacity 0.5s ease; // 페이드 아웃 효과
+  opacity: 1; // 기본적으로 표시
+`;
+
+/* 각 카드 스타일 */
+const Card = styled.div`
+  position: relative;
+  width: 300px;
+  height: 180px;
+  margin: 10px;
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  background-color: white; /* 여기에 흰색 배경을 지정합니다 */
+  background-image: url(${props => props.bgImage});
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.05);
+    ${Overlay} {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    ${OverlayTitle} {
+      opacity: 0;
+    }
+  }
+`;
+
+const FreedomPostCard = styled(Card)`
+  width: 1000px; // 너비를 300px로 늘림
+  background-color: white; // 배경색을 흰색으로 지정
+`;
+
+const FreedomLink = styled(Link)`
+  position: absolute;
+  right: 20px; // 우측에서 20px
+  top: 20px; // 상단에서 20px
+  color: #4CAF50; // 초록색 텍스트
+  font-weight: bold;
+  text-decoration: none;
+  transition: color 0.3s ease; // 색상 변경 애니메이션
+
+  &:hover {
+    color: #45a049; // 호버 시 색상 변경
+  }
+`;
+
+const Title = styled.h2`
+  font-size: 16px;
+  text-align: center;
+`;
+
+const Author = styled.div`
+  font-size: 14px;
+`;
+
+const ContentPreview = styled.p`
+  font-size: 12px;
+  padding: 5px;
+  text-align: center;
+`;
+
+const PopularPostCard = ({ title, author, preview, image }) => {
+    const [hover, setHover] = useState(false);
+  
+    return (
+      <Card bgImage={image} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+        <OverlayTitle style={{ opacity: hover ? 0 : 1 }}>{title}</OverlayTitle> {/* 호버 시 사라지고, 아니면 보입니다 */}
+        <Overlay style={{ transform: hover ? 'translateY(0)' : 'translateY(100%)', opacity: hover ? 1 : 0 }}>
+          <Title>{title}</Title>
+          <Author>{author}</Author>
+          <ContentPreview>{preview}</ContentPreview>
+        </Overlay>
+      </Card>
+    );
+  };
+/* 카드 이미지 */
+const CardImage = styled.img`
+    width: 100%;
+    height: 200px; // 이미지 높이를 늘려 정사각형 근사치 유지
+    object-fit: cover;
+`;
+
+/* 카드 내용 */
+const CardContent = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+`;
+
+/* 카드 타이틀 */
+const CardTitle = styled.h2`
+    margin-bottom: 20px;
+`;
+
+const CardAuthor = styled.div`
+  font-size: 14px;
+  text-align: center;
+`;
+
+/* 카드 설명 */
+const CardDescription = styled.p`
+    color: #666;
+    font-size: 14px;
+    text-align: center;
+    padding: 0 10px; // 좌우 패딩 추가
+`;
+
+/* 메인 콘텐츠 */
+const MainContent = styled.div`
+    display: flex;
+`;
+
+/* 왼쪽 컬럼 */
+const LeftColumn = styled.div`
+    flex: 2;
+    margin-right: 20px;
+`;
+
+/* 오른쪽 컬럼 */
+const RightColumn = styled.div`
+    flex: 1;
+    background-color: #DFF8D8; /* 연두색 배경 추가 */
+    padding: 20px; /* 패딩 추가 */
+    border-radius: 10px; /* 모서리 둥글게 처리 */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* 그림자 효과 추가 */
+    height: 650px;
+`;
+
+/* 지도 플레이스홀더 */
+const MapPlaceholder = styled.div`
+    width: 200px;
+    height: 200px;
+    background: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+`;
+
+/* 채팅방 컨테이너 */
+const ChatRoomsContainer = styled.div`
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    padding: 20px;
+    flex: 1;
+`;
+
+
+/* 채팅방 카드 */
+const ChatRoomCard = styled.div`
+    height: 150px;
+    background-color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+`;
+
+/* 채팅방 이미지 */
+const ChatRoomImage = styled.img`
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+`;
+
+/* 애니메이션 키프레임 */
 const slideIn = keyframes`
     0% { transform: translateX(100%); }
     100% { transform: translateX(0); }
@@ -248,6 +384,7 @@ const slideOut = keyframes`
     100% { transform: translateX(-100%); }
 `;
 
+/* 용어 슬라이드 컨테이너 */
 const TermContainer = styled.div`
     overflow: hidden;
     width: 100%;
@@ -257,8 +394,70 @@ const TermContainer = styled.div`
     justify-content: center;
 `;
 
+/* 용어 슬라이드 */
 const TermSlide = styled.div`
     animation: ${props => props.animating ? slideOut : slideIn} 1s forwards;
     width: 100%;
     text-align: center;
+`;
+
+/* 지도 컨테이너 스타일 */
+const containerStyle = {
+    width: '500px',
+    height: '400px'
+};
+
+const GradeTabs = styled.div`
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+`;
+
+const GradeTab = styled.button`
+    padding: 10px 20px;
+    border: none;
+    background-color: ${props => props.active ? '#FFD700' : 'transparent'};
+    color: ${props => props.active ? 'white' : 'black'};
+    font-weight: bold;
+    cursor: pointer;
+    &:hover {
+        background-color: #FFD700;
+        color: white;
+    }
+`;
+
+const SearchList = styled.div`
+    list-style: none;
+    background-color: #DFF8D8; /* 연두색 배경 추가 */
+    padding: 10px; /* 내부 패딩 변경 */
+    margin-bottom: 20px; /* 아래 마진 추가 */
+    border-radius: 8px; /* 모서리 둥글게 처리 */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* 그림자 효과 추가 */
+    height: auto; /* 높이 자동 조절 */
+`;
+
+
+const SearchItem = styled.li`
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+`;
+
+const Button = styled(Link)`
+    position: absolute;
+    right: 20px; // 우측에서 20px
+    top: 20px; // 상단에서 20px
+    color: #4CAF50; // 초록색 텍스트
+    font-weight: bold;
+    text-decoration: none;
+    &:hover {
+        text-decoration: underline; // 호버 시 밑줄 효과
+        color: #45a049; // 호버 시 색상 변경
+    }
+`;
+
+const HorizontalRule = styled.hr`
+    border: none;
+    height: 2px;
+    background-color: #ccc; // 회색 톤으로 설정
+    margin: 20px 0; // 상하 마진 추가
 `;
