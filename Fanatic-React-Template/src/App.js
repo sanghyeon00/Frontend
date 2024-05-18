@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Helmet } from "react-helmet";
+
 // Screens
 import Landing from "./screens/Landing.jsx";
 import CreateQpage from "./components/Sections/CreateQpage.jsx";
@@ -14,16 +15,20 @@ import DiaryPage from "./components/Sections/DiaryPage.jsx";
 import FreeCommu from './components/Sections/FreeCommu.jsx';
 import Write from './components/Sections/Write.jsx'; // Write를 올바르게 import
 import PostDetail from './components/Sections/PostDetail.jsx'; // PostDetail을 올바르게 import
+import Feedback from "./components/Sections/Feedback.jsx";
+import Feedbacklook from "./components/Sections/Feedbacklook.jsx";
 
-// Member
+//Member
 import Login from "./components/Member/Login.jsx";
-import Membership from "./components/Member/Membership.jsx";
-import TeacherSingout from "./components/Member/TeacherSingout.jsx";
-import StudentSingout from "./components/Member/StudentSingout.jsx";
+import Membership from "./components/Member/Membership.jsx"
+import TeacherSingout from "./components/Member/TeacherSingout.jsx"
+import StudentSingout from "./components/Member/StudentSingout.jsx"
+
 
 import { AuthProvider } from "./components/Member/AuthContext.jsx";
 
 export default function App() {
+
   const [posts, setPosts] = useState([
       { id: 1, title: '게시물1', date: '2024-05-14', author: '이름없음', comments: 0 },
       { id: 2, title: '게시물2', date: '2017-11-20', author: '이름없음', comments: 0 },
@@ -67,9 +72,12 @@ export default function App() {
           <Route path="/freeCommu" element={<FreeCommu posts={posts} addPost={addPost} />} />
           <Route path="/write" element={<Write addPost={addPost} />} />
           <Route path="/posts/:postId" element={<PostDetail posts={posts} />} />
-        </Routes>
+          <Route path="/feedback/:course_imformation" element={<Feedback/>} />
+          <Route path="/feedbacklook/:course_imformation" element={<Feedbacklook/>} />
+        </Routes>         
+        </AuthProvider>
         <Footer />
-      </AuthProvider>
+      </>
     </Router>
   );
 }

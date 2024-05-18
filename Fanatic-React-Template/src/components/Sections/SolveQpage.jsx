@@ -2,7 +2,10 @@ import React, { useState, useEffect } from 'react';
 import styled, { css } from 'styled-components';
 import QconfirmButton from "../Buttons/QconfirmButton";
 import { MdQuiz } from "react-icons/md";
-
+import { useParams } from 'react-router-dom';
+import timeloding from '../../assets/img/loding/time.gif';
+import isodaloding from '../../assets/img/loding/isodaloding.png';
+import { useAuth } from '../Member/AuthContext';
 
 const PageContainer = styled.div`
   padding-top: 120px;
@@ -280,14 +283,21 @@ function SolveQpage() {
   const [question, setQuestion] = useState('');
   const [questions, setQuestions] = useState([]); // 서버로부터 받은 문제 데이터
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
-  const [selectedAnswers, setSelectedAnswers] = useState({});
-  const [selectedKeywords, setSelectedKeywords] = useState([]); //선택된 키워드 배열 
+  const [selectedAnswers, setSelectedAnswers] = useState({}); 
 
 
-  // 선택된 옵션 변겅 시 로그 출력을 위한 useEffect 훅 사용
-  useEffect(() => {
-    console.log(selections);
-  }, [selections]); // selections 상태가 변경될 때마다 실행됩니다.
+  const {course_imformation} = useParams();
+
+  const parts = course_imformation.split("$$");
+  const course_name = parts[0];
+  const course_professor = parts[1];
+
+  const {cookie} = useAuth();
+
+  // // 선택된 옵션 변겅 시 로그 출력을 위한 useEffect 훅 사용
+  // useEffect(() => {
+  //   console.log(selections);
+  // }, [selections]); // selections 상태가 변경될 때마다 실행됩니다.
 
 
   const handleAnswerSelect = (questionId, answer) => {
@@ -301,14 +311,18 @@ function SolveQpage() {
 
   // 문제 데이터를 서버로부터 가져오는 함수
   const fetchQuestions = () => {
-    if (Object.keys(selections).some(key => selections[key] > 0 && selectedTypes.includes(key))) {
       setLoading(true);
-      fetch(`${process.env.REACT_APP_Server_IP}/GenerateQuestion/`, {
+      fetch(`${process.env.REACT_APP_Server_IP}/student_problem/`, {
         method: "POST",
         headers: {
           'Content-Type': 'application/json',
+          "Authorization": `Bearer ${cookie.access_token}`
         },
-        body: JSON.stringify({ selections: selections })
+        body: JSON.stringify({ 
+          course_name : course_name,
+          course_professor : course_professor
+
+        })
       })
       .then(response => response.json())
       .then(data => {
@@ -316,17 +330,51 @@ function SolveQpage() {
         setQuestions(data.questions);
       })
       .catch(error => {
-        console.error('Fetching questions failed:', error);
+        console.error('문제를 받아오는중 에러:', error);
         setError(error.message);
-        setLoading(false);
+        setLoading(true);
       });
-    }
   };
 
 
 
-  const handleGenerateButtonClick = () => {
-    fetchQuestions();
+  const sendAnswer = () => {
+    let answers = {"answer1":'', "answer2":'', "answer3":'', "answer4":'', "answer5":'',
+                   "answer6":'', "answer7":'', "answer8":'', "answer9":'', "answer10":''};
+    let num = 1;
+
+    questions.forEach((questionType, index) => {
+      // 문제 유형별로 답안을 생성합니다.
+      questionType.items.forEach((item, itemIndex) => {
+        const questionId = `question-${index}-${itemIndex}`;
+        answers[`answer${num}`] = selectedAnswers[questionId] || '';
+        num ++;
+      });
+    });
+  
+    // 생성한 답안을 쟝고로 전송합니다.
+    fetch(`${process.env.REACT_APP_Server_IP}/student_answer/`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": `Bearer ${cookie.access_token}`
+      },
+      body: JSON.stringify({
+        course_name: course_name,
+        course_professor: course_professor,
+        answers: answers,
+      }),
+    })
+      .then((response) => {
+        if (response.ok) {
+          console.log("답안 보내기 성공.");
+        }
+        return response.json();
+      })
+
+      .catch((error) => {
+        console.error('답안을 전송하는 중 에러:', error);
+      });
   };
 
 
@@ -344,6 +392,9 @@ function SolveQpage() {
 
 
 
+
+
+//문제 유형별로 view 설정/////////////////////////////////////////////////////////////////////////////////////////////////////////
   const renderQuestionUI = (type, item, questionId) => {
     switch (type) {
       case 1: // 객관식-빈칸
@@ -400,9 +451,22 @@ function SolveQpage() {
 
   return (
     <>
+      {loading ? (
+        <PageContainer>
+          <InputContainer>
+            <h1 style={{marginBottom:"25px", color:"#20C075", fontWeight:"bold"}}><MdQuiz /> {course_name} 퀴즈 시작<MdQuiz /></h1>
+          </InputContainer>
+          <InputContainer>
+            <hr style={{ width: "850px", height: "2px", backgroundColor: "#20C075", border: "none" }} />
+          </InputContainer>
+
+        <img src={isodaloding} alt={"로딩 중"} style={{marginTop:"15px"}}/>
+        <h2 style={{marginTop:"25px", color:"#20C075", fontWeight:"bold"}}>퀴즈가 생성 중입니다.</h2>
+        </PageContainer>
+      ) : (
       <PageContainer>
         <InputContainer>
-          <h1 style={{marginBottom:"25px", color:"#20C075", fontWeight:"bold"}}><MdQuiz />퀴즈 시작<MdQuiz /></h1>
+          <h1 style={{marginBottom:"25px", color:"#20C075", fontWeight:"bold"}}><MdQuiz /> {course_name} 퀴즈 시작<MdQuiz /></h1>
         </InputContainer>
         <InputContainer>
             <hr style={{ width: "850px", height: "2px", backgroundColor: "#20C075", border: "none" }} />
@@ -428,9 +492,11 @@ function SolveQpage() {
             {index < questions.length - 1 && <QuestionDivider />}
           </React.Fragment>
         ))}
-        <QconfirmButton  title="퀴즈 마감 제출" margin_top={true} />
+
+        <QconfirmButton  title="퀴즈 마감 제출" margin_top={true} action={sendAnswer}/>
 
       </PageContainer>
+      )}
     </>
   );
 }

@@ -12,6 +12,7 @@ const StudentSingout = () => {
     const [passwordcheack, setpasswordcheack] = useState('');
     const [name, setname] = useState('');
     const [studentid, setstudentid] = useState('');
+    const [grade, setgrade] = useState('');
     const [email, setemail] = useState('');
     const [phone, setphone] = useState('');
     const [phoneid, setphoneid] = useState('');
@@ -32,6 +33,9 @@ const StudentSingout = () => {
     const studentidUpdate = (event) => {
         setstudentid(event.target.value); // 입력한 아이디로 상태 업데이트
     };
+    const gradeUpdate = (event) => {
+      setgrade(event.target.value); // 입력한 아이디로 상태 업데이트
+  };
     const emailUpdate = (event) => {
         setemail(event.target.value); // 입력한 아이디로 상태 업데이트
     };
@@ -106,19 +110,19 @@ const StudentSingout = () => {
     // 각 입력 요소에 대한 입력 유효성 검사 함수 정의
     const validateInputs = () => {
         // 필수 입력 요소에 대한 상태를 확인하여 유효성 검사 수행
-        const isValid = id !== '' && password !== '' && passwordcheack !== '' && name !== '' && studentid !== '' && email !== '' && phone !== '' && phoneid !== '' && year !== '' && month !== '' && day !== '' && gender !== '' && isAllAgreed && isPasswordMatch;
+        const isValid = id !== '' && password !== '' && passwordcheack !== '' && name !== '' && studentid !== '' && grade !== '' && email !== '' && phone !== '' && phoneid !== '' && year !== '' && month !== '' && day !== '' && gender !== '' && isAllAgreed && isPasswordMatch;
         // 입력 상태를 변경
         setInputValid(isValid);
     };
 
     useEffect(() => {
         validateInputs();
-    }, [id, password, passwordcheack, name, studentid, email, phone, phoneid, year, month, day, gender, agreement1, agreement2, agreement3]);
+    }, [id, password, passwordcheack, name, studentid, grade, email, phone, phoneid, year, month, day, gender, agreement1, agreement2, agreement3]);
     
     const usertype = "student";
 
     // 회원가입을 위해 django로 넘겨줄 데이터들
-    const registerUser = async (id, password, passwordcheack, name, studentid, email, phone, year, month, day, gender, usertype) => {
+    const registerUser = async (id, password, passwordcheack, name, studentid, grade, email, phone, year, month, day, gender, usertype) => {
         const response = await fetch(`${process.env.REACT_APP_Server_IP}/sign_up/`, {
           method: "POST",
           headers: {
@@ -130,6 +134,7 @@ const StudentSingout = () => {
             passwordcheack, 
             name, 
             studentid, 
+            grade,
             email, 
             phone,
             year,
@@ -150,7 +155,7 @@ const StudentSingout = () => {
 
       // 사용자 정보 서버로 전달할거임 가입하기 버튼 누르면 
       const handleJoin = () => {
-        registerUser(id, password, passwordcheack, name, studentid, email, phone, year, month, day, gender, usertype);
+        registerUser(id, password, passwordcheack, name, studentid, grade, email, phone, year, month, day, gender, usertype);
       };
 
 
@@ -186,6 +191,64 @@ const StudentSingout = () => {
       };
     
       const [idCheckResult, setIdCheckResult] = useState(''); //중복확인 텍스트임.
+
+
+      const displayFormattedPhoneNumber = (numbers) => {
+        if (numbers.length <= 3) {
+          return numbers;
+        } else if (numbers.length <= 7) {
+          return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+        } else {
+          return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(
+            7
+          )}`;
+        }
+      };
+
+      const PHONE_NUMBER_LENGTH = 11;
+
+      const handleChange = (e) => {
+        const numbersOnly = e.target.value.replace(/\D/g, "");
+        if (numbersOnly.length <= PHONE_NUMBER_LENGTH) {
+          setphone(numbersOnly);
+        }
+      };
+
+      //////////////////////////////////////////////////////
+      function useTimer(initialSeconds) {
+        const [timer, setTimer] = useState(initialSeconds);
+        const [isActive, setIsActive] = useState(false);
+       
+        useEffect(() => {
+          let interval;
+          if (isActive) {
+            interval = setInterval(() => {
+              setTimer((prevTimer) => (prevTimer > 0 ? prevTimer - 1 : 0));
+            }, 1000);
+          }
+          return () => clearInterval(interval);
+        }, [isActive]);
+       
+        const resetTimer = () => {
+          setTimer(initialSeconds);
+          setIsActive(true);
+        };
+       
+        const stopTimer = () => {
+          setIsActive(false);
+        };
+       
+        return { timer, resetTimer, stopTimer };
+      }
+
+      const INITIAL_TIMER_SECONDS = 180;
+      const { timer, resetTimer, stopTimer } = useTimer(INITIAL_TIMER_SECONDS);
+
+      const formatTime = () => {
+        const minutes = Math.floor(timer / 60);
+        const seconds = timer % 60;
+        return `${minutes}:${seconds < 10 ? `0${seconds}` : seconds}`;
+      };
 
 
 
@@ -258,6 +321,16 @@ const StudentSingout = () => {
                 </div>
 
                 <div style={{marginBottom:"7px"}}>
+                    <strong style={{ fontSize:"15px", fontWeight:"bold", marginLeft:"25px"}} className="font15 extraBold">학년</strong> 
+                <InputBox2 
+                    type="text" 
+                    value={grade} 
+                    onChange={gradeUpdate} 
+                    placeholder="학년을 입력해주세요." 
+                />
+                </div>
+
+                <div style={{marginBottom:"7px"}}>
                     <strong style={{ fontSize:"15px", fontWeight:"bold", marginLeft:"25px"}} className="font15 extraBold">이메일</strong> 
                 <InputBox3 
                     type="text" 
@@ -271,8 +344,8 @@ const StudentSingout = () => {
                     <strong style={{ fontSize:"15px", fontWeight:"bold", marginLeft:"25px"}} className="font15 extraBold">휴대폰</strong> 
                 <InputBox3
                     type="text" 
-                    value={phone} 
-                    onChange={phoneUpdate} 
+                    value={displayFormattedPhoneNumber(phone)} 
+                    onChange={handleChange} 
                     placeholder="숫자만 입력해주세요." 
                 />
                 <CheckButton>인증번호 받기</CheckButton>
@@ -280,12 +353,13 @@ const StudentSingout = () => {
 
                 <div style={{marginBottom:"7px"}}>
                     <strong style={{ fontSize:"15px", fontWeight:"bold", marginLeft:"25px"}} className="font15 extraBold">인증번호</strong> 
-                <InputBox4 
-                    type="text" 
-                    value={phoneid} 
-                    onChange={phoneidUpdate} 
-                    placeholder="인증번호 4자리를 입력하세요." 
-                />
+                    {/* <Timer>{formatTime()}</Timer> */}
+                    <InputBox4 
+                        type="text" 
+                        value={phoneid} 
+                        onChange={phoneidUpdate} 
+                        placeholder="인증번호 4자리를 입력하세요." 
+                    />
                 </div>
 
                 <div style={{marginTop:"7px"}}> 
@@ -365,14 +439,23 @@ const StudentSingout = () => {
   background:#EFF8F3;
 `;
 
+const Timer = styled.div`
+		position: absolute;
+		right: 120px;
+		top: 50%;
+		transform: translate(0, -50%);
+		color: #1273e4;
+		font-weight: bold;
+	`;
+
 const LoginBox = styled.div`
-margin-top: 300px;
+margin-top: 330px;
 position: absolute;
 top: 50%;
 left: 50%;
 transform: translate(-50%, -50%);
 width:600px;
-height:1080px;
+height:1140px;
 background: #FFFFFF;
 bottom: 0;
 border-radius: 3px;

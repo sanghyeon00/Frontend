@@ -8,6 +8,7 @@ export default function SingupButton({ title, action, border, small,margin_top, 
       border={border}
       small={small} // small prop을 Wrapper에 전달
       margin_top={margin_top}
+      margin_left={margin_left}
     >
       {title}
     </Wrapper>
