@@ -6,10 +6,10 @@ import watch from '../../../src/assets/img/watch.png';
 
 const FreeCommu = ({ addPost }) => {
     const navigate = useNavigate();
-    const [currentPage, setCurrentPage] = useState(1);
-    const [postsPerPage] = useState(8);
-    const [currentPosts, setCurrentPosts] = useState([]);
-    const [allPosts, setAllPosts] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태
+    const [postsPerPage] = useState(8); // 페이지당 포스트 수 상태
+    const [currentPosts, setCurrentPosts] = useState([]); // 현재 페이지에 표시할 포스트 목록 상태
+    const [allPosts, setAllPosts] = useState([]); // 모든 포스트 목록
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -34,12 +34,13 @@ const FreeCommu = ({ addPost }) => {
         fetchPosts();
     }, []);
 
+    // currentPage 또는 allPosts가 변경될 때마다 현재 페이지에 표시할 포스트 목록을 계산하여 상태에 저장
     useEffect(() => {
         const indexOfLastPost = currentPage * postsPerPage;
         const indexOfFirstPost = indexOfLastPost - postsPerPage;
         setCurrentPosts(allPosts.slice(indexOfFirstPost, indexOfLastPost));
     }, [currentPage, allPosts, postsPerPage]);
-
+    
     const handlePostClick = (postId) => {
         navigate(`/posts/${postId}`);
     };
@@ -213,7 +214,6 @@ const Icon = styled.img`
 const IconCount = styled.span`
     font-size: 14px;
 `;
-
 
 const CommentsCount = styled.span`
     color: #4CAF50;
