@@ -77,7 +77,6 @@ export default function App() {
         </Routes>         
         </AuthProvider>
         <Footer />
-      </>
     </Router>
   );
 }

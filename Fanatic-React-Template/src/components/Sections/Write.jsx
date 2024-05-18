@@ -5,23 +5,39 @@ import 'react-quill/dist/quill.snow.css';
 import styled from 'styled-components';
 
 const Write = ({ addPost }) => {
-    const [title, setTitle] = useState('');
-    const [content, setContent] = useState('');
+    const [title, setTitle] = useState(''); //제목
+    const [author, setAuthor] = useState('이름없음');  // 글쓴이
+    const [content, setContent] = useState(''); // 내용
     const navigate = useNavigate();
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    const handleSubmit = async (e) => {
+        e.preventDefault(); // 빈칸 제출 안되게
         const newPost = {
-            id: Date.now(),
-            title,
-            date: new Date().toISOString().split('T')[0],
-            author: '이름없음',
-            comments: 0,
-            content,
+            title, //제목
+            author, // 글쓴이
+            content, // 내용
         };
-        addPost(newPost);
-        navigate('/');
-    };
+
+        try {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_create/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(newPost),
+            });
+
+            if (response.ok) {
+                const savedPost = await response.json(); // 글 정보 받기
+                addPost(savedPost); 
+                navigate('/'); // 홈 화면 이동
+            } else {
+                console.error('Failed to submit post');
+            }
+        } catch (error) {
+            console.error('Error submitting post:', error);
+        }
+    };    
 
     return (
         <Container>
@@ -31,6 +47,13 @@ const Write = ({ addPost }) => {
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
+                    required
+                />
+                <Label>글쓴이</Label>
+                <Input
+                    type="text"
+                    value={author}
+                    onChange={(e) => setAuthor(e.target.value)}
                     required
                 />
                 <Label>내용</Label>
