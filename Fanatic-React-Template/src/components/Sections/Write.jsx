@@ -3,18 +3,19 @@ import { useNavigate } from 'react-router-dom';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import styled from 'styled-components';
+import { useAuth } from '../Member/AuthContext';
 
 const Write = ({ addPost }) => {
-    const [title, setTitle] = useState(''); //제목
-    const [author, setAuthor] = useState('이름없음');  // 글쓴이
+    const { user } = useAuth(); // 로그인한 사용자 정보
+    const [title, setTitle] = useState(''); //제목  
     const [content, setContent] = useState(''); // 내용
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
         e.preventDefault(); // 빈칸 제출 안되게
         const newPost = {
-            title, //제목
-            author, // 글쓴이
+            title, // 제목
+            author: user || '이름없음', // 로그인한 사용자의 이름 사용
             content, // 내용
         };
 
@@ -47,13 +48,6 @@ const Write = ({ addPost }) => {
                     type="text"
                     value={title}
                     onChange={(e) => setTitle(e.target.value)}
-                    required
-                />
-                <Label>글쓴이</Label>
-                <Input
-                    type="text"
-                    value={author}
-                    onChange={(e) => setAuthor(e.target.value)}
                     required
                 />
                 <Label>내용</Label>
