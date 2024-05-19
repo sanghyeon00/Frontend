@@ -56,11 +56,10 @@ const Feedbacklook = () => {
             headers: {
                 "Authorization": `Bearer ${cookie.access_token}`,
                 'Content-Type': 'application/json'
-            }
-            // body: JSON.stringify({ 
-            //     course_name: course_name,
-            //     professor_name: course_professor 
-            // })
+            },
+            body: JSON.stringify({ 
+                id: location.state.id
+            })
         });
         const result = await response.json();
       

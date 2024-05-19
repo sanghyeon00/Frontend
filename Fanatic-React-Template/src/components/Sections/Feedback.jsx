@@ -19,6 +19,7 @@ const Feedback = () => {
     const [dateList, setDateList] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [datesPerPage] = useState(3);
+    const [id,setID] = useState([]);
 
     useEffect(() => {
         fetchDateList();
@@ -26,21 +27,22 @@ const Feedback = () => {
 
     const fetchDateList = async () => {
         try {
-            const response = await fetch(`${process.env.REACT_APP_Server_IP}/mock_feedback/`, {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/feedback_view/`, {
                 method: 'POST',
                 headers: {
                     "Authorization": `Bearer ${cookie.access_token}`,
                     'Content-Type': 'application/json'
                 },
-                // body: JSON.stringify({ 
-                //     course_name: course_name,
-                //     course_professor: course_professor 
-                // })
+                body: JSON.stringify({ 
+                    course_name: course_name,
+                    course_professor: course_professor 
+                })
             });
             const result = await response.json();
           
             if (response.ok) {
                 setDateList(result.date || []);
+                setID(result.id || []);
             } 
             else {
                 console.error(`불러오기 실패 : ${result.message}`);
@@ -56,8 +58,8 @@ const Feedback = () => {
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    const feedbacklook = (date) =>{
-      navigate(`/feedbacklook/${decodeURIComponent(course_imformation)}`, { state: { date: `${date}` } });
+    const feedbacklook = (date, thisid) =>{
+      navigate(`/feedbacklook/${decodeURIComponent(course_imformation)}`, { state: { date: `${date}`, id: `${thisid}`} });
   };
 
     
@@ -77,7 +79,7 @@ const Feedback = () => {
                                 <DateTitle>피드백 일자 : {date}</DateTitle>
                                 <ProfessorName>교수명 : {course_professor}</ProfessorName>
                             </CourseInfo>
-                            <Button onClick={() => feedbacklook(date)}>피드백 보기</Button>
+                            <Button onClick={() => feedbacklook(date, id[index])}>피드백 보기</Button>
                         </DateItem>
                     ))}
                 </DateList>
