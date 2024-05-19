@@ -18,11 +18,16 @@ export default function Contact() {
             <Link className="flexCenter animate pointer" to="home" smooth={true} offset={-80}>
               <LogoImg />
               <h1 className="font15 extraBold whiteColor" style={{ marginLeft: "15px" }}>
-                Fanatic
+                iSoda
               </h1>
             </Link>
-            <StyleP className="whiteColor font13">
-              © {getCurrentYear()} - <span className="purpleColor font13">Fanatic</span> All Right Reserved
+            
+            <StyleP className="whiteColor font13"> 
+              © {getCurrentYear()} - <span className="purpleColor font13">iSoda</span> All Right Reserved
+              <h6 style={{color:"white"}}> 
+                (주)iSoda  |   제작자 : 이민주 길상현 안승빈 김규민 | 주소 : 한림대학교 <br/>
+                TEL : 010-1234-5678  |  FAX : kkkk  |   E-MAIL : kkkk@hallym.ac.kr <br/>
+              </h6>
             </StyleP>
 
             <Link className="whiteColor animate pointer font13" to="home" smooth={true} offset={-80}>
