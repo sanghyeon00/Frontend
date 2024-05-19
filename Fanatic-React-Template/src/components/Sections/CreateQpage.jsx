@@ -318,7 +318,7 @@ const fetchQcheck = () => {
     })
     .then(response => response.json())
     .then(data => {
-      setCheck(data.check);
+      setCheck(1);
     })
     .catch(error => {
       console.error('문제 유무 체크 오류:', error);
