@@ -143,7 +143,7 @@ const PostDetail = () => {
                     </Icons>
                 </PostInfo>
             </PostHeader>
-            <Content>{post.content}</Content>
+            <Content dangerouslySetInnerHTML={{ __html: post.content }} />
             <CommentSection>
                 <CommentForm onSubmit={handleCommentSubmit}>
                     <CommentInput
