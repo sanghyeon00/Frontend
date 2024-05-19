@@ -16,19 +16,19 @@ import chatboticon from '../assets/img/chatboticon.png';
 import pngwing from '../assets/img/pngwing.png';
 import roundlogo from '../assets/img/roundlogo.png';
 import chatrobot from '../assets/img/chatrobot.png';
-
+import robotlee from '../assets/img/robotlee.png';
 
 function Landing() {
 
   const [isClicked, setIsClicked] = useState(false);
   const [rotateDeg, setRotateDeg] = useState(0);
   const [showChatBot, setShowChatBot] = useState(false);
-  const [imageSrc, setImageSrc] = useState(chatboticon);
+  const [imageSrc, setImageSrc] = useState(robotlee);
 
   const handleClick = () => {
     setIsClicked(!isClicked);
     setRotateDeg(isClicked ? 0 : 45);
-    const newImageSrc = isClicked ? chatboticon : pngwing;
+    const newImageSrc = isClicked ? robotlee : pngwing;
     setTimeout(() => {
       setImageSrc(newImageSrc);
     }, 400);
@@ -102,7 +102,7 @@ const ChatbotBox = styled.div`
   border-radius: 50%;
   width: 65px;
   height: 65px;
-  background: #4CAF50;
+  background: #B9F6C7;
   display: flex;
   justify-content: center;
   align-items: center;

@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../Member/AuthContext";
 import { MdReportProblem } from "react-icons/md";
 import { FaCircleCheck } from "react-icons/fa6";
+import backbb from '../../assets/img/study2.jpg';
 
 const Classroom = () => {
     const navigate = useNavigate();
@@ -190,14 +191,14 @@ const Classroom = () => {
                         <CourseInfo>
                             <CourseTitle>{course.course}</CourseTitle>
                             <ProfessorName>교수명 : {course.professor}</ProfessorName>
-                            {myCourses[0].check === 1 ? (
+                            {course.check === 1 ? (
                                 <p style={{fontSize:"13px", fontWeight:"bold"}}> <FaCircleCheck style={{fontSize:"11px"}}/> 퀴즈가 생성 되었습니다.</p>
                                 ) : (
                                 <p style={{fontSize:"13px", fontWeight:"bold", color:"#A9A9A9"}}> <MdReportProblem style={{fontSize:"11px"}}/> 퀴즈가 아직 생성 되지 않았습니다.</p>
                             )}
                         </CourseInfo>
 
-                        {myCourses[0].check === 1 ? (
+                        {course.check === 1 ? (
                             <Button onClick={() => handleQuestionStart(course)}>퀴즈 시작</Button>
                             ) : (
                             <>
@@ -228,13 +229,32 @@ const Classroom = () => {
 
 export default Classroom;
 
+
+
+
+
 const Wrapper = styled.div`
   margin-top:30px;
   display: flex;
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: #EFF8F3;
+  position: relative;
+  z-index: 1;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url(${backbb});
+    background-size: cover;
+    background-attachment: fixed;
+    opacity: 0.2;
+    z-index: -1;
+  }
 `;
 
 const Content = styled.div`

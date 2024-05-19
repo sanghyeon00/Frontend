@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "styled-components";
 
-export default function QconfirmButton({ title, action, border, small, margin_top, margin_left }) {
+export default function QconfirmButton({ title, action, border, small, margin_top, margin_left, disabled }) {
   return (
     <Wrapper
       onClick={action ? () => action() : null}
@@ -9,6 +9,7 @@ export default function QconfirmButton({ title, action, border, small, margin_to
       small={small} // small prop을 Wrapper에 전달
       margin_top={margin_top}
       margin_left={margin_left}
+      disabled={disabled}
     >
       {title}
     </Wrapper>
@@ -34,7 +35,8 @@ const Wrapper = styled.button`
   flex-direction: column; /* 수직으로 요소들을 배치 */
   justify-content: center; /* 수직 중앙 정렬 */
   align-items: center; /* 수평 중앙 정렬 */
-  
+  cursor: ${props => props.disabled ? "not-allowed" : "pointer"};
+  opacity: ${props => props.disabled ? 0.4 : 1};
 
   &:hover {
     background-color: ${props => props.border ? "transparent" : "#01DF01"};
