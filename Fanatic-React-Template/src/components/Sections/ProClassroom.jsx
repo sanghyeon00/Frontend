@@ -16,6 +16,7 @@ const ProClassroom = () => {
     const { user, isLoggedIn, cookie} = useAuth();
     
 
+
     useEffect(() => {
         checkPosition();
         fetchCourses();
@@ -44,7 +45,7 @@ const ProClassroom = () => {
           const response = await fetch(`${process.env.REACT_APP_Server_IP}/position_check/`, { //백엔드 엔드포인트 수정해야함
             method: "GET",
             headers: {
-              "Authorization": `Bearer ${cookie.access_token}`
+              "Authorization": `Bearer ${accessToken}`
             }
           });
             if (response.ok) {
@@ -66,24 +67,24 @@ const ProClassroom = () => {
     };
     //모든 강의 백엔드로 가져오는 함수
     const fetchCourses = async () => {
-      try {
-          const response = await fetch(`${process.env.REACT_APP_Server_IP}/course_view/`, {
-              headers: {
-                  "Authorization": `Bearer ${cookie.access_token}`
-              }
-          });
-          const data = await response.json();
-          setMyCourses(data.lecture);
-      } catch (error) {
-          console.error('Failed to fetch courses:', error);
-      }
-  };
+        try {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/course_view/`, {
+                headers: {
+                    "Authorization": `Bearer ${accessToken}`
+                }
+            });
+            const data = await response.json();
+            setMyCourses(data.lecture);
+        } catch (error) {
+            console.error('Failed to fetch courses:', error);
+        }
+    };
     //백엔드로부터 내 강의 목록 가져오는 함수
     const fetchMyCourses = async () => {
       try {
           const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_show/`, {
               headers: {
-                  "Authorization": `Bearer ${cookie.access_token}`
+                  "Authorization": `Bearer ${accessToken}`
               }
           });
           const data = await response.json();
@@ -102,7 +103,7 @@ const ProClassroom = () => {
         const response = await fetch(`${process.env.REACT_APP_Server_IP}/lecture_generate/`, {
             method: 'POST',
             headers: {
-                "Authorization": `Bearer ${cookie.access_token}`,
+                "Authorization": `Bearer ${accessToken}`,
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({ subject: courseName })
@@ -122,11 +123,6 @@ const ProClassroom = () => {
     }
 };
 
-  const handleFeedback = (course_name, user_name) =>{
-    console.log(course_name + "|" + user_name);
-    const course_imformation = course_name + "$$" + user_name;
-    navigate(`/feedback/${decodeURIComponent(course_imformation)}`);
-  }
 
   const handleCreateQuestion = (course_name) => {
       console.log("course_name:", course_name);
@@ -188,6 +184,7 @@ const ProClassroom = () => {
       setShowModal(false);
       setView('myCourses');
   };
+
 
   const hhh = () => {
     console.log(user);
@@ -258,7 +255,7 @@ return (
     )}
   </ClassroomWrapper>
 );
-};
+ 
 
 export default ProClassroom;
 
@@ -358,7 +355,6 @@ const Button = styled.button`
   padding: 8px 16px;
   cursor: pointer;
   transition: background 0.3s;
-  margin-left: 10px;
 
   &:hover {
     background: #367c39;

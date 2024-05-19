@@ -42,7 +42,7 @@ const FreeCommu = ({ addPost }) => {
     }, [currentPage, allPosts, postsPerPage]);
     
     const handlePostClick = (postId) => {
-        navigate(`/posts/${postId}`);
+        navigate(`/post/${postId}`);
     };
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
