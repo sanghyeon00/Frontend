@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import heart from '../../../src/assets/img/heart.png';
 import watch from '../../../src/assets/img/watch.png';
 
-const FreeCommu = ({ addPost }) => {
+const FreeCommu = () => {
     const navigate = useNavigate();
     const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태
     const [postsPerPage] = useState(8); // 페이지당 포스트 수 상태
@@ -67,7 +67,7 @@ const FreeCommu = ({ addPost }) => {
                             <PostIndex>{(currentPage - 1) * postsPerPage + index + 1}</PostIndex>
                         </PostHeader>
                         <PostTitle>{post.title}</PostTitle>
-                        <PostExcerpt>{(post.content || '').substring(0, 100)}...</PostExcerpt>
+                        <PostExcerpt dangerouslySetInnerHTML={{ __html: (post.content || '').substring(0, 100) }} />
                         <PostFooter>
                             <IconContainer>
                                 <Icon src={heart} alt="likes" />
