@@ -41,8 +41,8 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Landing />} />
           <Route path="/community" element={<Community />} />
-          <Route path="/create_question" element={<CreateQpage />} />
-          <Route path="/solve_question" element={<SolveQpage />} />
+          <Route path="/create_question/:course_name" element={<CreateQpage />} />
+          <Route path="/solve_question/:course_imformation" element={<SolveQpage />} />
           <Route path="/classroom" element={<Classroom />} />
           <Route path="/login" element={<Login />} />
           <Route path="/membership" element={<Membership />} />
