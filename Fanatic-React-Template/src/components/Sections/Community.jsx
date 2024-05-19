@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import styled, { keyframes } from "styled-components";
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import ReactImage from '../../../src/assets/img/soda.png';
 import heart from '../../../src/assets/img/heart.png';
 import view from '../../../src/assets/img/watch.png';
-import { Link } from 'react-router-dom';
+import Users from '../../../src/assets/img/users.png';
+import { Link, useNavigate } from 'react-router-dom';
 
 const center = {
     lat: 37.886381,
@@ -12,17 +13,17 @@ const center = {
 };
 
 const markers = [
-    { id: 1, position: { lat: 37.886447, lng: 127.735785 }, chatRooms: ['채팅방 1', '채팅방 2', '채팅방 3'] },
-    { id: 2, position: { lat: 37.885800, lng: 127.736848 }, chatRooms: ['채팅방 4', '채팅방 5'] },
-    { id: 3, position: { lat: 37.886369, lng: 127.737402 }, chatRooms: ['채팅방 6'] }
+    { id: 1, position: { lat: 37.886447, lng: 127.735785 } },
+    { id: 2, position: { lat: 37.885800, lng: 127.736848 } },
+    { id: 3, position: { lat: 37.886369, lng: 127.737402 } }
 ];
 
 
-const MapComponent = ({ apiKey, setActiveChatRooms }) => {
+const MapComponent = ({ apiKey, handleMarkerClick }) => {
     return (
         <LoadScript googleMapsApiKey={apiKey}>
             <GoogleMap
-                mapContainerStyle={{ width: '500px', height: '400px' }}
+                mapContainerStyle={{ width: '100%', height: '400px' }}
                 center={center}
                 zoom={17}
             >
@@ -30,7 +31,7 @@ const MapComponent = ({ apiKey, setActiveChatRooms }) => {
                     <Marker
                         key={marker.id}
                         position={marker.position}
-                        onClick={() => setActiveChatRooms(marker.chatRooms)}
+                        onClick={() => handleMarkerClick(marker.id)}
                     />
                 ))}
             </GoogleMap>
@@ -38,11 +39,46 @@ const MapComponent = ({ apiKey, setActiveChatRooms }) => {
     );
 };
 
+const ChatComponent = ({ chatRoomName, messages, setMessages, inputValue, setInputValue, handleSend, handleKeyPress, handleClose }) => {
+    return (
+        <ChatContainer>
+            <CloseButton onClick={handleClose}>X</CloseButton>
+            <Header>{chatRoomName}</Header> {/* 채팅방 이름 */}
+            <MessagesContainer>
+                {messages.map((message, index) => (
+                    <Message key={index} isBot={message.sender === 'Bot'} isOwnMessage={message.sender === 'User'}>
+                        <MessageHeader>
+                            <ChatBotImage src={Users} alt="Avatar" />
+                            <MessageInfo>{message.sender} - {message.time}</MessageInfo>
+                        </MessageHeader>
+                        <MessageContent>{message.text}</MessageContent>
+                    </Message>
+                ))}
+            </MessagesContainer>
+            <InputContainer>
+                <Input
+                    type="text"
+                    value={inputValue}
+                    onChange={e => setInputValue(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    placeholder="메시지를 입력하세요"
+                />
+                <SendButton onClick={handleSend}>➤</SendButton>
+            </InputContainer>
+        </ChatContainer>
+    );
+};
+
+
 export default function Community() {
     const [activeGrade, setActiveGrade] = useState('grade1');
-    const [activeChatRooms, setActiveChatRooms] = useState([]);
     const [popularPosts, setPopularPosts] = useState([]);
     const [freePosts, setFreePosts] = useState([]);
+    const [chatRoomName, setChatRoomName] = useState('');
+    const [messages, setMessages] = useState([]); // 채팅 메시지 목록
+    const [inputValue, setInputValue] = useState('');
+    const ws = useRef(null); // WebSocket 레퍼런스 // 메시지 입력값
+    const navigate = useNavigate();
 
     const searchTerms = {
         grade1: ['길상현', 'ex2', 'ex3', 'ex4', 'ex5', 'ex6', 'ex7', 'ex8', 'ex9', 'ex10'],
@@ -76,6 +112,64 @@ export default function Community() {
 
         fetchPopularPosts();
     }, []); 
+
+    const handleMarkerClick = (markerId) => {
+        if (markerId === 1) {
+            const room = "공대 채팅방"; // 이름 설정
+            setChatRoomName(room);
+            const now = new Date();
+            const formattedTime = `${now.getHours()}:${now.getMinutes()}`;
+            setMessages([{ text: `여기는 공대 채팅방입니다!`, isBot: true, sender: 'Bot', time: formattedTime }]);
+        }
+    };
+
+    useEffect(() => {
+        if (chatRoomName) {
+            ws.current = new WebSocket('ws://localhost:8080');
+
+            ws.current.onopen = () => {
+                console.log('WebSocket Connected');
+            };
+
+            ws.current.onmessage = (event) => {
+                const message = JSON.parse(event.data);
+                console.log(`Received: ${event.data}`);
+                setMessages((prevMessages) => [...prevMessages, message]);
+            };
+
+            ws.current.onclose = () => {
+                console.log('WebSocket Disconnected');
+            };
+
+            ws.current.onerror = (error) => {
+                console.error('WebSocket Error:', error);
+            };
+
+            return () => {
+                ws.current.close();
+            };
+        }
+    }, [chatRoomName]);
+
+    const handleSend = () => {
+        if (ws.current && ws.current.readyState === WebSocket.OPEN && inputValue) {
+            const message = { sender: 'User', text: inputValue, time: new Date().toLocaleTimeString() };
+            ws.current.send(JSON.stringify(message));
+            setMessages((prevMessages) => [...prevMessages, message]);
+            setInputValue('');
+        }
+    };
+
+    const handleKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSend();
+        }
+    };
+
+    const handleClose = () => {
+        setChatRoomName('');
+        setMessages([]);
+    };
 
     return (
         <Container>
@@ -146,15 +240,22 @@ export default function Community() {
             <StyledSection>
             <CardTitle>지도 및 채팅방</CardTitle>
             <MapAndChatContainer>
-                        
-                        <MapComponent apiKey="AIzaSyA6YxyGqgTTzQPYmjqBq5am4Q-KsyFDV3Y" setActiveChatRooms={setActiveChatRooms} />
-                        <ChatRoomsContainer>                       
-                        {activeChatRooms.map((room, index) => (
-    <ChatRoomCard key={index}>{room}</ChatRoomCard>
-))}
-
-                </ChatRoomsContainer>
-            </MapAndChatContainer>
+            <MapContainer>
+        <MapComponent apiKey="AIzaSyA6YxyGqgTTzQPYmjqBq5am4Q-KsyFDV3Y" handleMarkerClick={handleMarkerClick} />
+    </MapContainer>
+                    {chatRoomName && (
+                        <ChatComponent
+                            chatRoomName={chatRoomName}
+                            messages={messages}
+                            setMessages={setMessages}
+                            inputValue={inputValue}
+                            setInputValue={setInputValue}
+                            handleSend={handleSend}
+                            handleKeyPress={handleKeyPress}
+                            handleClose={handleClose} // 추가된 부분
+                        />
+                    )}
+                </MapAndChatContainer>
             </StyledSection>
         </Container>
     );
@@ -198,15 +299,147 @@ const CardsContainer = styled.div`
 
 const MapAndChatContainer = styled.div`
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start; /* 왼쪽 정렬 */
+    width: 100%;
 `;
 
 const MapContainer = styled.div`
-    flex: 3; // 지도가 채팅방보다 넓게 설정
+    flex: 1;
+    max-width: 45%; // 지도의 최대 너비를 50%로 설정
     padding: 20px;
     background: #f0f0f0; // 배경 색상 설정
 `;
 
+const ChatContainer = styled.div`
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+    width: 50%; /* 가로 너비를 50%로 설정 */
+    margin-left: 20px; /* 왼쪽 여백 추가 */
+    border: 1px solid #ccc;
+    background-color: #eff8f3;
+    overflow: hidden;
+    position: relative; /* X 버튼을 위한 상대적 위치 설정 */
+`;
+
+const Header = styled.div`
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+`;
+
+const MessagesContainer = styled.div`
+  flex: 1;
+  padding: 10px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  background-color: #ccffcc;
+`;
+
+const Message = styled.div`
+  background-color: ${props => (props.isBot ? '#ccffcc' : '#FAFAD2')};
+  color: ${props => (props.isBot ? 'black' : 'black')};
+  align-self: ${props => (props.isBot ? 'flex-start' : 'flex-end')};
+  margin: 10px 0;
+  padding: 10px;
+  border-radius: 10px;
+  max-width: 70%;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: ${props => (props.isBot ? 'flex-start' : 'flex-end')};
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 10px;
+    ${props => (props.isBot ? 'left: -10px;' : 'right: -10px;')}
+    width: 0;
+    height: 0;
+    border: 10px solid transparent;
+    border-top-color: ${props => (props.isBot ? '#ccffcc' : '#FAFAD2')};
+    ${props => (props.isBot ? 'border-left-color: transparent;' : 'border-right-color: transparent;')}
+    ${props => (props.isBot ? 'border-right: 0;' : 'border-left: 0;')}
+    ${props => (props.isBot ? 'margin-top: -10px;' : 'margin-top: -10px;')}
+  }
+`;
+
+const MessageHeader = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+`;
+
+const MessageContent = styled.div`
+  font-size: 16px;
+  margin-bottom: 5px;
+`;
+
+const MessageInfo = styled.div`
+  font-size: 12px;
+  color: #666;
+`;
+
+const InputContainer = styled.div`
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ccc;
+  background-color: #ffffff;
+`;
+
+const Input = styled.input`
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 20px;
+  outline: none;
+  font-size: 16px;
+`;
+
+const SendButton = styled.button`
+  background-color: #4CAF50;
+  border: none;
+  padding: 10px;
+  margin-left: 10px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+
+  &:hover {
+    background-color: #45a049;
+  }
+`;
+
+const ChatBotImage = styled.img`
+  width: 40px;
+  height: 40px;
+  margin-right: 10px;
+  border-radius: 50%;
+`;
+
+const CloseButton = styled.button`
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: transparent;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #45a049; /* X 버튼의 색상 */
+
+    &:hover {
+        color: #45a049; /* 호버 시 색상 변경 */
+    }
+`;
 
 const Overlay = styled.div`
   position: absolute;
@@ -489,6 +722,7 @@ const ChatRoomCard = styled.div`
     justify-content: center;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    cursor: pointer;
 `;
 
 /* 채팅방 이미지 */
@@ -585,4 +819,5 @@ const HorizontalRule = styled.hr`
     height: 2px;
     background-color: #ccc; // 회색 톤으로 설정
     margin: 20px 0; // 상하 마진 추가
+}
 `;
