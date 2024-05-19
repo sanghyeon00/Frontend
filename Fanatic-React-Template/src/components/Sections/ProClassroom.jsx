@@ -2,14 +2,19 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from "../Member/AuthContext";
+import backbb from '../../assets/img/study2.jpg';
+import isodaloding from '../../assets/img/loding/isodaloding.png';
 
 //useState로 컴포넌트 상태 관리
 const ProClassroom = () => {
     const navigate = useNavigate();
-    const [view, setView] = useState('createClassroom'); // 뷰 상태 추가
+    const [view, setView] = useState('myCourses'); // 뷰 상태 추가
     const [myCourses, setMyCourses] = useState([]);
     const [showModal, setShowModal] = useState(false);
+    const [loding, setLoding] = useState(false);
+
     const { user, isLoggedIn, cookie} = useAuth();
+    
 
     useEffect(() => {
         checkPosition();
@@ -19,9 +24,20 @@ const ProClassroom = () => {
 
     useEffect(() => {
       if (view === 'myCourses') {
-          fetchMyCourses();
+          fetchMyCourses();  
       }
   }, [view]);
+
+    const [showContent, setShowContent] = useState(false);
+
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        setShowContent(true);
+      }, 250);
+
+      return () => clearTimeout(timer);
+    }, []);
+
 
     const checkPosition = async () => {
         try {
@@ -116,8 +132,46 @@ const ProClassroom = () => {
       console.log("course_name:", course_name);
       const decodedCourseName = decodeURIComponent(course_name);
       console.log("decodedCourseName:", decodedCourseName);
-      navigate(`/Create_question/${decodeURIComponent(course_name)}`);
+      navigate(`/create_question/${decodeURIComponent(course_name)}`);
   };
+  
+  const handleQuizEnd = (count, student_count, course_name) => {
+    const confirmEnd = window.confirm(`퀴즈를 마감하시겠습니까?\n\n 퀴즈 현황 : (${student_count}명 / ${count}명)`);
+    if (confirmEnd) {
+        alert("퀴즈가 마감되었습니다.");
+        setLoding(true);
+        fetchFeedbackcheck(course_name);
+    } else {
+    }
+  };
+
+  const fetchFeedbackcheck = (course_name) => {
+    fetch(`${process.env.REACT_APP_Server_IP}/feedback_save/`, { //피드백 생성하는 함수 엔드포인트
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": `Bearer ${cookie.access_token}`
+      },
+      body: JSON.stringify({ 
+        professor_name: user,
+        course_name: course_name
+      })
+      
+    })
+    .then(response => {
+      if (response.ok) {
+        setLoding(false);
+        fetchMyCourses();
+        alert("피드백이 생성 되었습니다.");
+        return response.json();
+      } else {
+        throw new Error('네트워크 응답이 실패했습니다.');
+      }
+    })
+    .catch(error => {
+      console.error('문제 유무 체크 오류:', error);
+    });
+  }
 
   const Modal = ({ closeModal }) => {
       return (
@@ -139,47 +193,71 @@ const ProClassroom = () => {
     console.log(user);
 };
 
-  return (
-      <ClassroomWrapper>
-          {showModal && <Modal closeModal={closeModal} />}
-          <CoursesBox>
-              <Nav>
-                  <NavLink 
-                      onClick={() => setView('myCourses')}
-                      active={view === 'myCourses'}
-                  >
-                      내 강의
-                  </NavLink>
-                  <NavLink 
-                      onClick={() => { setView('createClassroom'); fetchCourses(); }}
-                      active={view === 'createClassroom'}
-                  >
-                      강의실 생성
-                  </NavLink>
-              </Nav>
-              {(view === 'createClassroom' || view === 'myCourses') && Array.isArray(myCourses) && myCourses.map(course => (
-    <CourseCard key={course.key}>
-        <CourseInfo>
-            <CourseTitle>{course.name}</CourseTitle>
-            <ProfessorName>교수명 : {user}</ProfessorName>
-        </CourseInfo>
-        {/* 내 강의 목록에 있는 경우는 문제 생성 버튼을 노출하고, 생성된 강의 목록에 있는 경우는 생성하기 버튼을 노출합니다. */}
-        <div>
-            {view === 'myCourses' ? (
-              <Button onClick={() => view === 'myCourses' ? handleFeedback(course.name, user) : hhh}>
-                피드백
-              </Button>
-            ) : (<></>)}
-        
-          <Button onClick={() => view === 'myCourses' ? handleCreateQuestion(course.name) : handleCreateClassroom(course.name)}>
-              {view === 'myCourses' ? '문제 생성' : '생성하기'}
-          </Button>
-        </div>
-    </CourseCard>
-))}
-          </CoursesBox>
-      </ClassroomWrapper>
-  );
+return (
+  <ClassroomWrapper>
+    {loding ? (
+        <>
+          <div style={{ textAlign: "center" }}>
+            <img src={isodaloding} alt={"로딩 중"} style={{marginTop:"15px"}}/>
+            <h2 style={{marginTop:"25px", color:"#20C075", fontWeight:"bold"}}>피드백이 생성 중입니다...</h2>
+          </div>
+        </>
+      ):(
+        <>
+        {showModal && <Modal closeModal={closeModal} />}
+        {showContent && (
+            <CoursesBox>
+                <Nav>
+                    <NavLink 
+                        onClick={() => setView('myCourses')}
+                        active={view === 'myCourses'}
+                    >
+                        내 강의
+                    </NavLink>
+                    <NavLink 
+                        onClick={() => { setView('createClassroom'); fetchCourses(); }}
+                        active={view === 'createClassroom'}
+                    >
+                        강의실 생성
+                    </NavLink>
+                </Nav>
+                {(view === 'createClassroom' || view === 'myCourses') && Array.isArray(myCourses) && myCourses.map(course => (
+                    <CourseCard key={course.key}>
+                        <CourseInfo>
+                            <CourseTitle>{course.name}</CourseTitle>
+                            <ProfessorName>교수명 : {user}</ProfessorName>
+                        </CourseInfo>
+                        <div>
+                            {view === 'myCourses' ? (
+                                <Button onClick={() => view === 'myCourses' ? handleFeedback(course.name, user) : hhh}>
+                                    피드백
+                                </Button>
+                            ) : (<></>)}
+                        
+                        <Button onClick={() => {
+                            if (view === 'myCourses') {
+                                if (course.check === 1) {
+                                  handleQuizEnd(course.count, course.student_count, course.name);
+                                } 
+                                else {
+                                  handleCreateQuestion(course.name);
+                                }
+                            } 
+                            else {
+                              handleCreateClassroom(course.name);
+                            }
+                        }}>
+                            {view === 'myCourses' ? (course.check === 1 ? '퀴즈 마감' : '문제 생성') : '생성하기'}
+                        </Button>
+                        </div>
+                    </CourseCard>
+                ))}
+            </CoursesBox>
+        )}
+      </>
+    )}
+  </ClassroomWrapper>
+);
 };
 
 export default ProClassroom;
@@ -189,7 +267,22 @@ const ClassroomWrapper = styled.div`
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background: #EFF8F3;
+  position: relative;
+  z-index: 1;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: url(${backbb});
+    background-size: cover;
+    background-attachment: fixed;
+    opacity: 0.2;
+    z-index: -1;
+  }
 `;
 
 const CoursesBox = styled.div`

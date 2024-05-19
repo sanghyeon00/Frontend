@@ -288,8 +288,9 @@ function CreateQPage() {
   const [selectedQuestionId, setSelectedQuestionId] = useState(null);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [selectedKeywords, setSelectedKeywords] = useState([]); //선택된 키워드 배열 
+  const [check, setCheck] = useState(0);
 
-  const {cookie, user} = useAuth();
+  const {cookie, user} = useAuth(); 
 
   const { course_name } = useParams();
   console.log("course_name:", course_name);
@@ -298,8 +299,37 @@ function CreateQPage() {
   const navigate = useNavigate();
 
 
+  useEffect(() => {
+    fetchQcheck();
+}, [loading]);
+
+const fetchQcheck = () => {
+    fetch(`${process.env.REACT_APP_Server_IP}/problem_check/`, { //문제 유무 체크하는 함수 엔드포인트 작성
+      method: "POST",
+      headers: {
+        'Content-Type': 'application/json',
+        "Authorization": `Bearer ${cookie.access_token}`
+      },
+      body: JSON.stringify({ 
+        professor_name: user,
+        course_name: course_name
+      })
+      
+    })
+    .then(response => response.json())
+    .then(data => {
+      setCheck(data.check);
+    })
+    .catch(error => {
+      console.error('문제 유무 체크 오류:', error);
+    });
+  }
+
+
   const handleSolveQpage = () => {
     sendQuertions();
+    alert(`${user} 교수님의 ${course_name} 강의 문제 생성 완료`);
+    navigate("/proClassroom");
   };
 
 
@@ -688,7 +718,7 @@ function CreateQPage() {
             {index < questions.length - 1 && <QuestionDivider />}
           </React.Fragment>
         ))}
-        <QconfirmButton title="확정 및 퀴즈 시작" action={handleSolveQpage}/>
+        <QconfirmButton title="확정 및 퀴즈 시작" action={handleSolveQpage} disabled={check !== 1}/>
         </>
       )}
       </PageContainer>
