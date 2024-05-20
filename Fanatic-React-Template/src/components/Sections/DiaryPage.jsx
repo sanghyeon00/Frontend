@@ -293,6 +293,7 @@ function DiaryPage() {
   const [selectedTab, setSelectedTab] = useState('write');
   const [isDiaryCreated, setIsDiaryCreated] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [title, setTitle] = useState(''); // title 상태 추가
   const { cookie } = useAuth();
 
   const togglePreview = () => {
