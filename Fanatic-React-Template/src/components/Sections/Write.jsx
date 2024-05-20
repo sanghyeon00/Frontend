@@ -6,7 +6,7 @@ import styled from 'styled-components';
 import { useAuth } from '../Member/AuthContext';
 
 const Write = ({ addPost }) => {
-    const { user } = useAuth(); // 로그인한 사용자 정보
+    const { user, cookie } = useAuth(); // 로그인한 사용자 정보
     const [title, setTitle] = useState(''); //제목  
     const [content, setContent] = useState(''); // 내용
     const navigate = useNavigate();
@@ -23,6 +23,7 @@ const Write = ({ addPost }) => {
             const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_create/`, {
                 method: 'POST',
                 headers: {
+                    "Authorization": `Bearer ${cookie.access_token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(newPost),
@@ -31,7 +32,6 @@ const Write = ({ addPost }) => {
             if (response.ok) {
                 const savedPost = await response.json(); // 글 정보 받기
                 addPost(savedPost); 
-                navigate('/'); // 홈 화면 이동
             } else {
                 console.error('Failed to submit post');
             }
@@ -39,6 +39,11 @@ const Write = ({ addPost }) => {
             console.error('Error submitting post:', error);
         }
     };    
+
+    const handleUploadClick = (e) => {
+        handleSubmit(e); // 글 업로드
+        navigate('/FreeCommu'); // FreeCommu 화면으로 이동
+    };
 
     return (
         <Container>
@@ -53,7 +58,7 @@ const Write = ({ addPost }) => {
                 <Label>내용</Label>
                 <StyledReactQuill value={content} onChange={setContent} />
                 <ButtonContainer>
-                    <Button type="submit">올리기</Button>
+                <Button type="submit" onClick={handleUploadClick}>업로드</Button>
                 </ButtonContainer>
             </Form>
         </Container>

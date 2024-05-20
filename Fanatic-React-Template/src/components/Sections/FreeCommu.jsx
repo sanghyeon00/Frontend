@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../Member/AuthContext'; // useAuth 훅 임포트
 import heart from '../../../src/assets/img/heart.png';
 import watch from '../../../src/assets/img/watch.png';
+import Users from '../../../src/assets/img/users.png';
 
-const FreeCommu = ({ addPost }) => {
+const FreeCommu = () => {
+    const { cookie } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
     const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태
     const [postsPerPage] = useState(8); // 페이지당 포스트 수 상태
     const [currentPosts, setCurrentPosts] = useState([]); // 현재 페이지에 표시할 포스트 목록 상태
     const [allPosts, setAllPosts] = useState([]); // 모든 포스트 목록
+    const [searchTerm, setSearchTerm] = useState(''); // 검색어 상태
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -34,54 +39,108 @@ const FreeCommu = ({ addPost }) => {
         fetchPosts();
     }, []);
 
-    // currentPage 또는 allPosts가 변경될 때마다 현재 페이지에 표시할 포스트 목록을 계산하여 상태에 저장
     useEffect(() => {
-        const indexOfLastPost = currentPage * postsPerPage;
-        const indexOfFirstPost = indexOfLastPost - postsPerPage;
-        setCurrentPosts(allPosts.slice(indexOfFirstPost, indexOfLastPost));
+        const params = new URLSearchParams(location.search);
+        const term = params.get('search');
+        if (term) {
+            setSearchTerm(term);
+        }
+    }, [location]);
+
+    useEffect(() => {
+        const filteredPosts = allPosts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
+        setCurrentPosts(filteredPosts);
     }, [currentPage, allPosts, postsPerPage]);
     
     const handlePostClick = (postId) => {
-        navigate(`/posts/${postId}`);
+        navigate(`/post/${postId}`);
     };
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
-    return (
-        <Container>
-            <Header>
-                <Title>자유 게시판</Title>
-                <WriteButton to="/write">글쓰기</WriteButton>
-            </Header>
-            <PostList>
-                {currentPosts.map((post, index) => (
-                    <PostCard key={post.id} onClick={() => handlePostClick(post.id)}>
-                        <PostHeader>
-                            <PostAuthorInfo>
-                                <PostAuthorAvatar src="/path/to/avatar.jpg" alt="Author Avatar" />
-                                <div>
-                                    <PostAuthor>{post.author}</PostAuthor>
-                                    <PostDate>{post.year}.{post.month}.{post.day}</PostDate>
-                                </div>
-                            </PostAuthorInfo>
-                            <PostIndex>{(currentPage - 1) * postsPerPage + index + 1}</PostIndex>
-                        </PostHeader>
-                        <PostTitle>{post.title}</PostTitle>
-                        <PostExcerpt>{(post.content || '').substring(0, 100)}...</PostExcerpt>
-                        <PostFooter>
-                            <IconContainer>
-                                <Icon src={heart} alt="likes" />
-                                <IconCount>{post.like}</IconCount>
-                            </IconContainer>
-                            <IconContainer>
-                                <Icon src={watch} alt="views" />
-                                <IconCount>{post.watch}</IconCount>
-                            </IconContainer>
-                            <CommentsCount>댓글수: {post.comment_number}</CommentsCount>
-                        </PostFooter>
-                    </PostCard>
-                ))}
-            </PostList>
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+    };
+    
+    const handleSearchSubmit = async () => {
+        setCurrentPage(1);
+        try {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/search/`, {
+                method: 'POST',
+                headers: {
+                    "Authorization": `Bearer ${cookie.access_token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content: searchTerm }) // 검색어
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                setAllPosts(data.search); // 검색결과 AllPosts에 저장
+            } else {
+                console.error('Failed to fetch search results');
+            }
+        } catch (error) {
+            console.error('Error fetching search results:', error);
+        }
+    };
+
+    const handleSearchButtonClick = () => {
+    handleSearchSubmit();
+};
+
+const handleSearchKeyPress = (e) => {
+    if (e.key === 'Enter') {
+        handleSearchSubmit();
+    }
+};
+
+return (
+    <Container>
+        <Header>
+            <Title>자유 게시판</Title>
+            <SearchContainer>
+                <SearchInput 
+                    type="text" 
+                    placeholder="검색어를 입력하세요" 
+                    value={searchTerm} 
+                    onChange={handleSearchChange} 
+                    onKeyPress={handleSearchKeyPress} 
+                />
+                <SearchButton onClick={handleSearchButtonClick}>검색</SearchButton>
+            </SearchContainer>
+            <WriteButton to="/write">글쓰기</WriteButton>
+        </Header>
+        <PostList>
+            {currentPosts.map((post, index) => (
+                <PostCard key={post.id} onClick={() => handlePostClick(post.id)}>
+                    <PostHeader>
+                        <PostAuthorInfo>
+                            <PostAuthorAvatar src={Users} alt="Author Avatar" />
+                            <div>
+                                <PostAuthor>{post.author}</PostAuthor>
+                                <PostDate>{post.year}.{post.month}.{post.day}</PostDate>
+                            </div>
+                        </PostAuthorInfo>
+                        <PostIndex>{(currentPage - 1) * postsPerPage + index + 1}</PostIndex>
+                    </PostHeader>
+                    <PostTitle>{post.title}</PostTitle>
+                    <PostExcerpt dangerouslySetInnerHTML={{ __html: (post.content || '').substring(0, 100) }} />
+                    <PostFooter>
+    <IconContainer>
+        <Icon src={heart} alt="likes" />
+        <IconCount>{post.like}</IconCount>
+    </IconContainer>
+    <IconContainer>
+        <Icon src={watch} alt="views" />
+        <IconCount>{post.watch}</IconCount>
+    </IconContainer>
+    <CommentsCount>댓글수: {post.comment_number}</CommentsCount>
+</PostFooter>
+                </PostCard>
+            ))}
+        </PostList>
+        <PaginationContainer>
             <Pagination>
                 {Array.from({ length: Math.ceil(allPosts.length / postsPerPage) }, (_, i) => (
                     <PageNumber key={i + 1} onClick={() => paginate(i + 1)} active={i + 1 === currentPage}>
@@ -89,8 +148,9 @@ const FreeCommu = ({ addPost }) => {
                     </PageNumber>
                 ))}
             </Pagination>
-        </Container>
-    );
+        </PaginationContainer>
+    </Container>
+);
 };
 
 export default FreeCommu;
@@ -118,7 +178,7 @@ const Title = styled.h1`
 `;
 
 const WriteButton = styled(Link)`
-    padding: 10px 20px;
+    padding: 6px;
     background-color: #4CAF50;
     color: white;
     text-decoration: none;
@@ -219,9 +279,43 @@ const CommentsCount = styled.span`
     color: #4CAF50;
 `;
 
+const PaginationContainer = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 800px; /* 너비를 PostCard와 맞춤 */
+    margin-top: 20px; /* 상단 마진 추가 */
+`;
+
+const SearchContainer = styled.div`
+    display: flex;
+    align-items: center;
+`;
+
+const SearchInput = styled.input`
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 10px;
+    width: 150px; /* 너비를 줄임 */
+`;
+
+const SearchButton = styled.button`
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    &:hover {
+        background-color: #45a049;
+    }
+`;
+
 const Pagination = styled.div`
     display: flex;
     justify-content: center;
+    flex-grow: 1; /* flex-grow를 사용해 가운데 정렬 */
     margin: 20px 0;
 `;
 

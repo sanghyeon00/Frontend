@@ -16,6 +16,11 @@ const ProClassroom = () => {
     const { user, isLoggedIn, cookie} = useAuth();
     
 
+    const handleFeedback = (course_name, user_name) =>{
+      console.log(course_name + "|" + user_name);
+      const course_imformation = course_name + "$$" + user_name;
+      navigate(`/feedback/${decodeURIComponent(course_imformation)}`);
+    }
     useEffect(() => {
         checkPosition();
         fetchCourses();
@@ -66,18 +71,18 @@ const ProClassroom = () => {
     };
     //모든 강의 백엔드로 가져오는 함수
     const fetchCourses = async () => {
-      try {
-          const response = await fetch(`${process.env.REACT_APP_Server_IP}/course_view/`, {
-              headers: {
-                  "Authorization": `Bearer ${cookie.access_token}`
-              }
-          });
-          const data = await response.json();
-          setMyCourses(data.lecture);
-      } catch (error) {
-          console.error('Failed to fetch courses:', error);
-      }
-  };
+        try {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/course_view/`, {
+                headers: {
+                    "Authorization": `Bearer ${cookie.access_token}`
+                }
+            });
+            const data = await response.json();
+            setMyCourses(data.lecture);
+        } catch (error) {
+            console.error('Failed to fetch courses:', error);
+        }
+    };
     //백엔드로부터 내 강의 목록 가져오는 함수
     const fetchMyCourses = async () => {
       try {
@@ -122,11 +127,6 @@ const ProClassroom = () => {
     }
 };
 
-  const handleFeedback = (course_name, user_name) =>{
-    console.log(course_name + "|" + user_name);
-    const course_imformation = course_name + "$$" + user_name;
-    navigate(`/feedback/${decodeURIComponent(course_imformation)}`);
-  }
 
   const handleCreateQuestion = (course_name) => {
       console.log("course_name:", course_name);
@@ -188,6 +188,7 @@ const ProClassroom = () => {
       setShowModal(false);
       setView('myCourses');
   };
+
 
   const hhh = () => {
     console.log(user);
@@ -261,8 +262,8 @@ return (
     )}
   </ClassroomWrapper>
 );
+ 
 };
-
 export default ProClassroom;
 
 const ClassroomWrapper = styled.div`
@@ -361,10 +362,12 @@ const Button = styled.button`
   padding: 8px 16px;
   cursor: pointer;
   transition: background 0.3s;
+
   margin-left: 10px;
   border-radius: 20px;
   border-color: #ccc;
   
+
 
   &:hover {
     background: #367c39;

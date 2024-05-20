@@ -192,7 +192,7 @@ const Feedbacklook = () => {
                                         >
                                             <CartesianGrid strokeDasharray="3 3" />
                                             <XAxis dataKey="questionNumber" />
-                                            <YAxis />
+                                            <YAxis interval={1} />
                                             <Tooltip />
                                             <Legend />
                                             <Bar dataKey="answerCount" fill="#8884d8" />

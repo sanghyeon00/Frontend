@@ -1,20 +1,43 @@
 import React, { useState, useEffect } from 'react';
 import styled, { css, keyframes } from 'styled-components';
-import ReactQuill from 'react-quill';
+import { useAuth } from '../Member/AuthContext'; // useAuth 훅 임포트
 import 'react-quill/dist/quill.snow.css';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
+import remarkBreaks from 'remark-breaks';
+import ReactMde from 'react-mde';
+import * as Showdown from 'showdown';
+import 'react-mde/lib/styles/css/react-mde-all.css';
 
 
 const pulseAnimation = keyframes`
   0% {
-    box-shadow: 0 0 0 0 var(--hover, #66bb6a);
+    box-shadow: 0 0 0 0 var (--hover, #66bb6a);
   }
   100% {
     box-shadow: 0 0 0 2em transparent;
   }
 `;
+
+const blinkAnimation = keyframes`
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+`;
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+`;
+
 
 const MainContent = styled.div`
   display: flex;
@@ -34,7 +57,7 @@ const InputColumn = styled.div`
   background-color: #ccffcc;
   border-radius: 8px;
   border: 1px solid #ccc;
-  box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
   margin-right: 20px;
 `;
 
@@ -75,7 +98,9 @@ const buttonStyles = css`
     box-shadow: 0 0 0 2em transparent;
   }
 
-  ${({ active }) => active && `
+  ${({ active }) =>
+    active &&
+    `
     background-color: #007BFF;
     color: white;
     border-color: #007BFF;
@@ -89,6 +114,12 @@ const Button = styled.button`
     animation: ${pulseAnimation} 1s;
     box-shadow: 0 0 0 2em transparent;
   }
+`;
+
+const DisabledButton = styled(Button)`
+  cursor: not-allowed;
+  opacity: 0.6;
+  pointer-events: none;
 `;
 
 const Tag = styled.div`
@@ -122,11 +153,10 @@ const HashTagBox = styled.div`
   word-wrap: break-word;
   border-radius: 8px;
   margin-top: 20px;
-  box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 `;
 
 const DiaryOutput = styled.div`
-  // 기존 스타일 유지
   width: 65%;
   min-height: 300px;
   background-color: #f9f9f9;
@@ -136,8 +166,13 @@ const DiaryOutput = styled.div`
   color: #333;
   position: relative;
   border-radius: 8px;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  overflow: auto;
 
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     font-size: 1.5em;
     color: #333;
   }
@@ -147,7 +182,6 @@ const DiaryOutput = styled.div`
   }
 `;
 
-
 const UploadSection = styled.div`
   display: flex;
   justify-content: flex-end;
@@ -156,15 +190,19 @@ const UploadSection = styled.div`
 `;
 
 const GuidelineTitle = styled.h1`
-  color: #50C878; 
+  color: #50C878;
   text-align: center;
-  margin-top : 50px;
+  margin-top: 50px;
 `;
 
 const GuidelineText = styled.p`
   font-weight: bold;
   text-align: center;
-  margin-top : 50px;
+  margin-top: 50px;
+`;
+
+const BlinkingGuideline = styled.div`
+  animation: ${blinkAnimation} 1s linear infinite;
 `;
 
 const MarkdownPreview = styled.div`
@@ -173,17 +211,67 @@ const MarkdownPreview = styled.div`
   margin-top: 20px;
   background-color: #f9f9f9;
 
-  h1, h2, h3 {
+  h1,
+  h2,
+  h3 {
     font-size: 1.5em;
     color: #333;
-    font-weight: bold; /* h1, h2, h3 태그에 대한 폰트 굵기 설정 */
+    font-weight: bold;
   }
 
-  // strong 태그를 렌더링하지 않음
   em {
     font-weight: normal;
   }
 `;
+
+const StyledReactMde = styled(ReactMde)`
+  height: 1000px; /* 원하는 높이로 설정 */
+  .mde-textarea-wrapper {
+    height: calc(100% - 50px); /* 탭 높이를 제외한 높이 설정 */
+  }
+  .mde-text {
+    height: 100%; /* 텍스트 영역의 높이를 100%로 설정 */
+  }
+`;
+
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: ${fadeIn} 0.3s;
+`;
+
+const Modal = styled.div`
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  text-align: center;
+  animation: ${fadeIn} 0.3s;
+`;
+
+const ModalText = styled.p`
+  font-size: 16px;
+  margin-bottom: 20px;
+`;
+
+const ModalButton = styled(Button)`
+  margin: 0 10px;
+`;
+
+const converter = new Showdown.Converter({
+  tables: true,
+  simplifiedAutoLink: true,
+  strikethrough: true,
+  tasklists: true,
+});
 
 function DiaryPage() {
   const [formValues, setFormValues] = useState({
@@ -196,24 +284,25 @@ function DiaryPage() {
     others: '',
   });
 
-    const [hashtags, setHashtags] = useState([]);
+  const [hashtags, setHashtags] = useState([]);
   const [showGuideline, setShowGuideline] = useState(true);
+  const [showBlinkingGuideline, setShowBlinkingGuideline] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [editorText, setEditorText] = useState('');
-  const [markdownText, setMarkdownText] = useState('');
+  const [editorText, setEditorText] = useState([]);
   const [previewMode, setPreviewMode] = useState(false);
+  const [selectedTab, setSelectedTab] = useState('write');
+  const [isDiaryCreated, setIsDiaryCreated] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [title, setTitle] = useState(''); // title 상태 추가
+  const { cookie } = useAuth();
 
-  // togglePreview 함수 수정하여 마크다운 미리보기 모드 전환 시 텍스트 저장 및 복원
-const togglePreview = () => {
-  if (!previewMode && editorText) {
-    setMarkdownText(editorText); // 마크다운 텍스트 저장
-  }
-  setPreviewMode(!previewMode);
-};
+  const togglePreview = () => {
+    setPreviewMode(!previewMode);
+  };
 
   const handleTextChange = value => {
-    setEditorText(value);
-  }; 
+    setEditorText(value.split('\n'));
+  };
 
   const placeholders = {
     who: 'ex) 내가, 친구랑',
@@ -243,23 +332,17 @@ const togglePreview = () => {
       .map(value => value.replace(/\s+/g, ''));
     setHashtags(newTags);
   };
+
   const parseMarkdown = text => {
-    // 이 함수는 ReactMarkdown을 사용하여 실제 마크다운을 HTML로 변환하지 않습니다.
-    // 단순히 일반 텍스트에서 마크다운 문법을 해석하여 저장합니다.
     if (!text) return '';
-    return text; // 이 예시에서는 변환 로직을 구현하지 않습니다.
+    return text;
   };
 
   useEffect(() => {
-    parseMarkdown();
-  }, [editorText]);
-
-  useEffect(() => {
-    if (previewMode && editorText) {
-      const newParsedMarkdown = parseMarkdown(editorText);
-      setEditorText(newParsedMarkdown);
+    if (previewMode) {
+      setEditorText(editorText);
     }
-  }, [previewMode, editorText]); // 의존성 배열에 previewMode와 editorText 추가
+  }, [previewMode]);
 
   const createDiary = async () => {
     const newTags = Object.values(formValues)
@@ -267,32 +350,30 @@ const togglePreview = () => {
       .map(value => value.replace(/\s+/g, ''));
     setHashtags(newTags);
 
-    const markdownText = `
-      **Who:** ${formValues.who}\n
-      **When:** ${formValues.when}\n
-      **Where:** ${formValues.where}\n
-      **What:** ${formValues.what}\n
-      **How:** ${formValues.how}\n
-      **Why:** ${formValues.why}\n\n
-      ${formValues.others}
-    `;
+    const markdownText = [
+      `**Who:** ${formValues.who}`,
+      `**When:** ${formValues.when}`,
+      `**Where:** ${formValues.where}`,
+      `**What:** ${formValues.what}`,
+      `**How:** ${formValues.how}`,
+      `**Why:** ${formValues.why}`,
+      `${formValues.others}`
+    ];
     setEditorText(markdownText);
-    setShowGuideline(false);
+    setShowBlinkingGuideline(true);
 
     const diaryData = {
-        who: formValues.who,
-        when: formValues.when,
-        where: formValues.where,
-        what: formValues.what,
-        how: formValues.how,
-        why: formValues.why,
-        others: formValues.others,
-        hashtags: newTags,
+      who: formValues.who,
+      when: formValues.when,
+      where: formValues.where,
+      what: formValues.what,
+      how: formValues.how,
+      why: formValues.why,
+      others: formValues.others,
+      hashtags: newTags,
     };
-  
 
     try {
-      // 쟝고에 일기 생성 요청
       const response = await fetch(`${process.env.REACT_APP_Server_IP}/generate_daily/`, {
         method: 'POST',
         headers: {
@@ -300,30 +381,86 @@ const togglePreview = () => {
         },
         body: JSON.stringify(diaryData),
       });
-  
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
-  
+
       const data = await response.json();
-  
-      // 쟝고로부터 받은 일기 텍스트
-      const generatedDiaryText = data.diaryText.replace(/\n/g, "\n\n");
-  
-      // 일기 텍스트를 마크다운 형식으로 변환하여 에디터에 표시
-      setEditorText(data.diaryText);
-  
-      // 가이드라인 숨기기
+      const generatedDiaryText = data.diaryText; // 리스트 그대로 받기
+
+      setEditorText(generatedDiaryText); // 리스트 그대로 설정
       setShowGuideline(false);
+      setIsDiaryCreated(true);
     } catch (error) {
-      console.error("Error creating diary:", error);
+      console.error('Error creating diary:', error);
     }
   };
 
   const handleUpload = () => {
-    setUploading(true);
-    setTimeout(() => setUploading(false), 2000);
+    setIsModalOpen(true);
   };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleConfirmUpload = async () => {
+    try {
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/daily_save`, {
+            method: 'POST',
+            headers: {
+              "Authorization": `Bearer ${cookie.access_token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                title: title,
+                content: editorText.join('\n'),
+                check: 1, // 예 버튼 눌렀을 때는 1
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // 성공적인 업로드 후 로직 추가
+        console.log('Diary uploaded successfully');
+    } catch (error) {
+        console.error('Error uploading diary:', error);
+    } finally {
+        closeModal();
+    }
+};
+
+const handleCancelUpload = async () => {
+    try {
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/daily_save`, {
+            method: 'POST',
+            headers: {
+              "Authorization": `Bearer ${cookie.access_token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                title: title,
+                content: editorText.join('\n'),
+                check: 0, // 아니오 버튼 눌렀을 때는 0
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // 성공적인 업로드 후 로직 추가
+        console.log('Diary uploaded successfully');
+    } catch (error) {
+        console.error('Error uploading diary:', error);
+    } finally {
+        closeModal();
+    }
+};
+
 
   return (
     <Container>
@@ -356,42 +493,65 @@ const togglePreview = () => {
           </Button>
         </InputColumn>
         <DiaryOutput>
-        {showGuideline ? (
-  <>
-    <GuidelineTitle>Guide Line</GuidelineTitle>
-    <GuidelineText>육하원칙에 해당하는 내용을 작성해주세요.</GuidelineText>
-    <GuidelineText>작성한 후 해시태그 생성을 눌러주세요.</GuidelineText>
-    <GuidelineText>해시태그가 생성된 후 해시태그를 바탕으로 일기 생성이 됩니다.</GuidelineText>
-  </>
-) : (
-  previewMode ? (
-    <MarkdownPreview>
-                <ReactMarkdown
-                  children={editorText}
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeRaw]}
-                  components={{
-                    // 별표로 둘러싸인 텍스트를 굵게 표시
-                    strong: ({ node, children, ...props }) => <span style={{ fontWeight: 'bold' }} {...props}>{children}</span>,
-                    // h1 태그 스타일 적용
-                    h1: ({ node, children, ...props }) => <h1 style={{ fontWeight: 'bold' }} {...props}>{children}</h1>,
-                    // h2 태그 스타일 적용
-                    h2: ({ node, children, ...props }) => <h2 style={{ fontWeight: 'bold' }} {...props}>{children}</h2>,
-                    // h3 태그 스타일 적용
-                    h3: ({ node, children, ...props }) => <h3 style={{ fontWeight: 'bold' }} {...props}>{children}</h3>,
-                  }}
-                />
-              </MarkdownPreview>
+  {showGuideline ? (
+    showBlinkingGuideline ? (
+      <BlinkingGuideline>
+        <GuidelineTitle>Guide Line</GuidelineTitle>
+        <GuidelineText>육하원칙에 해당하는 내용을 작성해주세요.</GuidelineText>
+        <GuidelineText>작성한 후 해시태그 생성을 눌러주세요.</GuidelineText>
+        <GuidelineText>해시태그가 생성된 후 해시태그를 바탕으로 일기 생성이 됩니다.</GuidelineText>
+      </BlinkingGuideline>
+    ) : (
+      <>
+        <GuidelineTitle>Guide Line</GuidelineTitle>
+        <GuidelineText>육하원칙에 해당하는 내용을 작성해주세요.</GuidelineText>
+        <GuidelineText>작성한 후 해시태그 생성을 눌러주세요.</GuidelineText>
+        <GuidelineText>해시태그가 생성된 후 해시태그를 바탕으로 일기 생성이 됩니다.</GuidelineText>
+      </>
+    )
+  ) : !previewMode ? (
+    <StyledReactMde
+      value={editorText.join('\n')}
+      onChange={value => setEditorText(value.split('\n'))}
+      selectedTab={selectedTab}
+      onTabChange={setSelectedTab}
+      generateMarkdownPreview={markdown =>
+        Promise.resolve(converter.makeHtml(markdown))
+      }
+    />
   ) : (
-    <ReactQuill value={editorText} onChange={handleTextChange} />
-  )
-)}
+    <MarkdownPreview>
+      <ReactMarkdown
+        children={editorText.join('\n')}
+        remarkPlugins={[remarkGfm, remarkBreaks]}
+        rehypePlugins={[rehypeRaw]}
+        components={{
+          strong: ({ node, children, ...props }) => <span style={{ fontWeight: 'bold' }} {...props}>{children}</span>,
+          h1: ({ node, children, ...props }) => <h1 style={{ fontWeight: 'bold' }} {...props}>{children}</h1>,
+          h2: ({ node, children, ...props }) => <h2 style={{ fontWeight: 'bold' }} {...props}>{children}</h2>,
+          h3: ({ node, children, ...props }) => <h3 style={{ fontWeight: 'bold' }} {...props}>{children}</h3>,
+        }}
+      />
+    </MarkdownPreview>
+  )}
 </DiaryOutput>
       </MainContent>
       <UploadSection>
-        <Button onClick={handleUpload}>업로드+</Button>
-        {uploading && <div style={{ fontSize: '16px', textAlign: 'center' }}>업로드중...</div>}
-      </UploadSection>
+  {isDiaryCreated ? (
+    <Button onClick={handleUpload}>업로드+</Button>
+  ) : (
+    <DisabledButton>업로드+</DisabledButton>
+  )}
+</UploadSection>
+      {isModalOpen && (
+        <ModalOverlay>
+          <Modal>
+            <ModalText>이 일기는 마이페이지에 저장이 됩니다. 마이페이지에도 저장하시겠습니까?</ModalText>
+            <ModalButton onClick={handleConfirmUpload}>네</ModalButton>
+            <ModalButton onClick={handleCancelUpload}>아니오</ModalButton>
+          </Modal>
+        </ModalOverlay>
+      )}
     </Container>
   );
 }

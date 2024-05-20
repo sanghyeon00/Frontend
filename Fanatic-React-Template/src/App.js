@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Helmet } from "react-helmet";
 
@@ -17,37 +17,22 @@ import Write from './components/Sections/Write.jsx'; // Write를 올바르게 im
 import PostDetail from './components/Sections/PostDetail.jsx'; // PostDetail을 올바르게 import
 import Feedback from "./components/Sections/Feedback.jsx";
 import Feedbacklook from "./components/Sections/Feedbacklook.jsx";
+
 import StudyDiary from "./components/Sections/StudyDiary.jsx";
 import ClassDiary from "./components/Sections/ClassDiary.jsx";
 
-//Member
-import Login from "./components/Member/Login.jsx";
-import Membership from "./components/Member/Membership.jsx"
-import TeacherSingout from "./components/Member/TeacherSingout.jsx"
-import StudentSingout from "./components/Member/StudentSingout.jsx"
+import Chatting from "./components/Sections/Chatting.jsx";
 
+
+// Member
+import Login from "./components/Member/Login.jsx";
+import Membership from "./components/Member/Membership.jsx";
+import TeacherSingout from "./components/Member/TeacherSingout.jsx";
+import StudentSingout from "./components/Member/StudentSingout.jsx";
 
 import { AuthProvider } from "./components/Member/AuthContext.jsx";
 
 export default function App() {
-
-  const [posts, setPosts] = useState([
-      { id: 1, title: '게시물1', date: '2024-05-14', author: '이름없음', comments: 0 },
-      { id: 2, title: '게시물2', date: '2017-11-20', author: '이름없음', comments: 0 },
-      { id: 3, title: '게시물3', date: '2017-11-20', author: '이름없음', comments: 0 },
-      { id: 4, title: '게시물4', date: '2017-11-20', author: '이름없음', comments: 0 },
-      { id: 5, title: '게시물5', date: '2017-11-20', author: '이름없음', comments: 0 },
-      { id: 6, title: '게시물6', date: '2017-11-20', author: '이름없음', comments: 0 },
-      { id: 7, title: '게시물7', date: '2017-11-20', author: '이름없음', comments: 0 },
-      { id: 8, title: '게시물8', date: '2017-11-20', author: '이름없음', comments: 0 },
-      { id: 9, title: '게시물9', date: '2017-11-20', author: '이름없음', comments: 0 },
-      { id: 10, title: '게시물10', date: '2017-11-20', author: '이름없음', comments: 0 },
-      // 더 많은 게시물...
-  ]);
-
-  const addPost = (newPost) => {
-    setPosts([newPost, ...posts]);
-  };
 
   return (
     <Router>
@@ -71,6 +56,7 @@ export default function App() {
           <Route path="/studentSingout" element={<StudentSingout />} />
           <Route path="/diary" element={<DiaryPage />} />
           <Route path="/proClassroom" element={<ProClassroom />} />
+
           <Route path="/freeCommu" element={<FreeCommu posts={posts} addPost={addPost} />} />
           <Route path="/write" element={<Write addPost={addPost} />} />
           <Route path="/posts/:postId" element={<PostDetail posts={posts} />} />
@@ -78,9 +64,10 @@ export default function App() {
           <Route path="/feedbacklook/:course_imformation" element={<Feedbacklook/>} />
           <Route path="/studyDiary" element={<StudyDiary/>} />
           <Route path="/classDiary" element={<ClassDiary/>} />
+
         </Routes>         
-        </AuthProvider>
-        <Footer />
+      </AuthProvider>
+      <Footer />
     </Router>
   );
 }
