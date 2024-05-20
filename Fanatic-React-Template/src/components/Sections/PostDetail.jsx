@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import emptyHeart from '../../../src/assets/img/emptyheart.png';
 import heart from '../../../src/assets/img/heart.png';
 import watch from '../../../src/assets/img/watch.png';
-import { useAuth } from '../Member/AuthContext';
+import Users from '../../../src/assets/img/users.png'; // 수정된 부분
+import { useAuth } from '../Member/AuthContext'; 
 
 const PostDetail = () => {
     const { postId } = useParams(); // URL에서 postId 가져옴
@@ -13,8 +15,10 @@ const PostDetail = () => {
     const [commentText, setCommentText] = useState(''); // 댓글 입력 상태
     const [likes, setLikes] = useState(0); // 좋아요 수 상태
     const [liked, setLiked] = useState(false); // 좋아요 눌렀는지 여부
-    const { user } = useAuth(); // 로그인한 사용자 정보 가져오기
+    const { user, cookie } = useAuth(); // 로그인한 사용자 정보 가져오기
     const [views, setViews] = useState(0); // 조회수 상태
+    const navigate = useNavigate();
+
 
     useEffect(() => {
         const fetchPostData = async () => {
@@ -23,6 +27,7 @@ const PostDetail = () => {
                 const response = await fetch(`${process.env.REACT_APP_Server_IP}/content_view/`, {
                     method: 'POST',
                     headers: {
+                        "Authorization": `Bearer ${cookie.access_token}`,
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ id: postId }),
@@ -34,7 +39,10 @@ const PostDetail = () => {
                     setComments(data.comment); // 댓글 데이터 설정
                     setLikes(data.like); // 좋아요 수 설정
                     setViews(data.watch); // 조회수 설정
-                    setLiked(data.like_check === 1); // 사용자가 좋아요를 눌렀는지 여부 설정
+                    setLiked(data.like_check === 0); // 사용자가 좋아요를 눌렀는지 여부 설정
+                    console.log("-----------------------")
+                    console.log(data.like_check === 0);
+                    console.log("-----------------------")
                 } else {
                     console.error('Failed to fetch post data');
                 }
@@ -50,24 +58,55 @@ const PostDetail = () => {
         e.preventDefault();
         if (commentText.trim()) {
             try {
-                const response = await fetch(`${process.env.REACT_APP_Server_IP}/comments/`, {
+                const response = await fetch(`${process.env.REACT_APP_Server_IP}/comment_create/`, {
                     method: 'POST',
                     headers: {
+                        "Authorization": `Bearer ${cookie.access_token}`,
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ content: commentText, post_id: postId, user_id: user.username }),
+                    body: JSON.stringify({ content: commentText, post_id: postId }), //댓글 내용, 게시글 ID
                 });
-
+    
                 if (response.ok) {
                     const newComment = await response.json();
                     setComments([...comments, newComment]);
                     setCommentText('');
+                    setPost(prevPost => ({
+                        ...prevPost,
+                        comment_number: prevPost.comment_number + 1
+                    })); // 댓글 수 증가
                 } else {
                     console.error('Failed to submit comment');
                 }
             } catch (error) {
                 console.error('Error submitting comment:', error);
             }
+        }
+        window.location.reload();
+    };
+    
+    const handleDeleteComment = async (commentId) => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/comment_delete/`, {
+                method: 'POST',
+                headers: {
+                    "Authorization": `Bearer ${cookie.access_token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ comment_id: commentId }),
+            });
+
+            if (response.ok) {
+                setComments(comments.filter(comment => comment.id !== commentId));
+                setPost(prevPost => ({
+                    ...prevPost,
+                    comment_number: prevPost.comment_number - 1
+                })); // 댓글 수 감소
+            } else {
+                console.error('Failed to delete comment');
+            }
+        } catch (error) {
+            console.error('Error deleting comment:', error);
         }
     };
 
@@ -76,6 +115,7 @@ const PostDetail = () => {
             const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_like/`, {
                 method: 'POST',
                 headers: {
+                    "Authorization": `Bearer ${cookie.access_token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ id: postId }),
@@ -98,6 +138,7 @@ const PostDetail = () => {
             const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_dislike/`, {
                 method: 'POST',
                 headers: {
+                    "Authorization": `Bearer ${cookie.access_token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ id: postId }),
@@ -115,6 +156,10 @@ const PostDetail = () => {
         }
     };
 
+    const formatNumber = (number) => {
+        return number < 10 ? `0${number}` : number;
+    };
+
     if (!post) {
         return <Container>게시글을 찾을 수 없습니다.</Container>;
     }
@@ -125,11 +170,11 @@ const PostDetail = () => {
                 <Title>{post.title}</Title>
                 <PostInfo>
                     <AuthorInfo>
-                        <AuthorAvatar src="/path/to/avatar.jpg" alt="Author Avatar" />
+                    <AuthorAvatar src={Users} alt="Author Avatar" />
                         <Author>{post.author}</Author>
                     </AuthorInfo>
                     <DateTime>
-                        {post.year}.{post.month}.{post.day} {post.hour}:{post.minute}
+                        {post.year}.{formatNumber(post.month)}.{formatNumber(post.day)} {formatNumber(post.hour)}:{formatNumber(post.minute)}
                     </DateTime>
                     <Icons>
                         <IconContainer>
@@ -155,21 +200,30 @@ const PostDetail = () => {
                     <CommentButton type="submit">작성</CommentButton>
                 </CommentForm>
                 <CommentsList>
-                    {comments.map((comment, index) => (
-                        <Comment key={index}>
-                            <strong>{comment.user_id}</strong>: {comment.content}
-                        </Comment>
-                    ))}
-                </CommentsList>
+    {comments.map((comment, index) => (
+        <Comment key={index}>
+            <CommentHeader>
+                <CommentAuthor>{comment.author}</CommentAuthor>
+                <CommentDate>
+                    {formatNumber(comment.month)}/{formatNumber(comment.day)} {formatNumber(comment.hour)}:{formatNumber(comment.minute)}
+                </CommentDate>
+            </CommentHeader>
+            <CommentContent>
+                {comment.content}
+                {user.id === comment.user_id && (
+                    <DeleteButton onClick={() => handleDeleteComment(comment.id)}>삭제</DeleteButton>
+                )}
+            </CommentContent>
+        </Comment>
+    ))}
+</CommentsList>
+
             </CommentSection>
         </Container>
     );
 };
 
 export default PostDetail;
-
-// 스타일 정의는 이전 코드와 동일합니다.
-
 
 const Container = styled.div`
     padding: 40px;
@@ -279,15 +333,54 @@ const CommentButton = styled.button`
 `;
 
 const CommentsList = styled.div`
-    border-top: 1px solid #ddd;
-    padding-top: 20px;
+    border-top: 1px solid #ddd; // 상단 테두리 추가
+    border-bottom: 2px solid #ddd;
 `;
 
+
 const Comment = styled.div`
-    padding: 10px 0;
-    background-color: #EFF8F3; /* 댓글 배경색을 연두색으로 설정 */
-    border-bottom: 1px solid #eee;
-    &:last-child {
-        border-bottom: none;
+    padding: 0;
+    background-color: #fff;
+    height: 120px; // 각 댓글의 높이 고정
+`;
+const CommentHeader = styled.div`
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border-top: 1px solid #ddd; // 아래쪽 테두리 추가
+    height: 30px; // 윗줄 높이 고정
+`;
+
+const CommentAuthor = styled.strong`
+    font-weight: bold;
+    color: #999; // 연한 회색
+    font-size: 16px; // 글자 크기 줄임
+`;
+
+const CommentDate = styled.span`
+    color: #999;
+    font-size: 12px;
+`;
+
+const CommentContent = styled.div`
+    padding: 20px 20px 30px 20px; // 텍스트 위치를 아래로 옮김
+    background-color: #fff;
+    position: relative;
+    font-weight: 550; // 글자 굵기 증가
+    font-size: 20px; // 글자 크기 증가
+`;
+
+
+const DeleteButton = styled.button`
+    background: none;
+    border: none;
+    color: red;
+    cursor: pointer;
+    font-size: 12px;
+    position: absolute;
+    right: 10px;
+    top: 7px; // 삭제 버튼을 오른쪽 하단에 배치
+    &:hover {
+        text-decoration: underline;
     }
 `;

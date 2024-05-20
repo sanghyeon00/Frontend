@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import styled, { css, keyframes } from 'styled-components';
+import { useAuth } from '../Member/AuthContext'; // useAuth 훅 임포트
 import 'react-quill/dist/quill.snow.css';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -8,6 +9,7 @@ import remarkBreaks from 'remark-breaks';
 import ReactMde from 'react-mde';
 import * as Showdown from 'showdown';
 import 'react-mde/lib/styles/css/react-mde-all.css';
+
 
 const pulseAnimation = keyframes`
   0% {
@@ -26,6 +28,16 @@ const blinkAnimation = keyframes`
     opacity: 0;
   }
 `;
+
+const fadeIn = keyframes`
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+`;
+
 
 const MainContent = styled.div`
   display: flex;
@@ -102,6 +114,12 @@ const Button = styled.button`
     animation: ${pulseAnimation} 1s;
     box-shadow: 0 0 0 2em transparent;
   }
+`;
+
+const DisabledButton = styled(Button)`
+  cursor: not-allowed;
+  opacity: 0.6;
+  pointer-events: none;
 `;
 
 const Tag = styled.div`
@@ -216,6 +234,38 @@ const StyledReactMde = styled(ReactMde)`
   }
 `;
 
+const ModalOverlay = styled.div`
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: ${fadeIn} 0.3s;
+`;
+
+const Modal = styled.div`
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
+  width: 400px;
+  text-align: center;
+  animation: ${fadeIn} 0.3s;
+`;
+
+const ModalText = styled.p`
+  font-size: 16px;
+  margin-bottom: 20px;
+`;
+
+const ModalButton = styled(Button)`
+  margin: 0 10px;
+`;
+
 const converter = new Showdown.Converter({
   tables: true,
   simplifiedAutoLink: true,
@@ -241,6 +291,9 @@ function DiaryPage() {
   const [editorText, setEditorText] = useState([]);
   const [previewMode, setPreviewMode] = useState(false);
   const [selectedTab, setSelectedTab] = useState('write');
+  const [isDiaryCreated, setIsDiaryCreated] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { cookie } = useAuth();
 
   const togglePreview = () => {
     setPreviewMode(!previewMode);
@@ -337,15 +390,76 @@ function DiaryPage() {
 
       setEditorText(generatedDiaryText); // 리스트 그대로 설정
       setShowGuideline(false);
+      setIsDiaryCreated(true);
     } catch (error) {
       console.error('Error creating diary:', error);
     }
   };
 
   const handleUpload = () => {
-    setUploading(true);
-    setTimeout(() => setUploading(false), 2000);
+    setIsModalOpen(true);
   };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleConfirmUpload = async () => {
+    try {
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/daily_save`, {
+            method: 'POST',
+            headers: {
+              "Authorization": `Bearer ${cookie.access_token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                title: title,
+                content: editorText.join('\n'),
+                check: 1, // 예 버튼 눌렀을 때는 1
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // 성공적인 업로드 후 로직 추가
+        console.log('Diary uploaded successfully');
+    } catch (error) {
+        console.error('Error uploading diary:', error);
+    } finally {
+        closeModal();
+    }
+};
+
+const handleCancelUpload = async () => {
+    try {
+        const response = await fetch(`${process.env.REACT_APP_Server_IP}/daily_save`, {
+            method: 'POST',
+            headers: {
+              "Authorization": `Bearer ${cookie.access_token}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                title: title,
+                content: editorText.join('\n'),
+                check: 0, // 아니오 버튼 눌렀을 때는 0
+            }),
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // 성공적인 업로드 후 로직 추가
+        console.log('Diary uploaded successfully');
+    } catch (error) {
+        console.error('Error uploading diary:', error);
+    } finally {
+        closeModal();
+    }
+};
+
 
   return (
     <Container>
@@ -422,9 +536,21 @@ function DiaryPage() {
 </DiaryOutput>
       </MainContent>
       <UploadSection>
-        <Button onClick={handleUpload}>업로드+</Button>
-        {uploading && <div style={{ fontSize: '16px', textAlign: 'center' }}>업로드중...</div>}
-      </UploadSection>
+  {isDiaryCreated ? (
+    <Button onClick={handleUpload}>업로드+</Button>
+  ) : (
+    <DisabledButton>업로드+</DisabledButton>
+  )}
+</UploadSection>
+      {isModalOpen && (
+        <ModalOverlay>
+          <Modal>
+            <ModalText>이 일기는 마이페이지에 저장이 됩니다. 마이페이지에도 저장하시겠습니까?</ModalText>
+            <ModalButton onClick={handleConfirmUpload}>네</ModalButton>
+            <ModalButton onClick={handleCancelUpload}>아니오</ModalButton>
+          </Modal>
+        </ModalOverlay>
+      )}
     </Container>
   );
 }
