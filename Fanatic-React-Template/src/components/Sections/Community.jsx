@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import styled, { keyframes } from "styled-components";
+import { useAuth } from '../Member/AuthContext'; // useAuth 훅 임포트
 import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api';
 import ReactImage from '../../../src/assets/img/soda.png';
 import heart from '../../../src/assets/img/heart.png';
@@ -40,6 +41,16 @@ const MapComponent = ({ apiKey, handleMarkerClick }) => {
 };
 
 const ChatComponent = ({ chatRoomName, messages, setMessages, inputValue, setInputValue, handleSend, handleKeyPress, handleClose, username }) => {
+    const messagesEndRef = useRef(null);
+
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages]);
+
     return (
         <ChatContainer>
             <CloseButton onClick={handleClose}>X</CloseButton>
@@ -57,6 +68,7 @@ const ChatComponent = ({ chatRoomName, messages, setMessages, inputValue, setInp
                         <MessageContent>{message.text}</MessageContent>
                     </Message>
                 ))}
+                <div ref={messagesEndRef} />
             </MessagesContainer>
             <InputContainer>
                 <Input
@@ -73,6 +85,7 @@ const ChatComponent = ({ chatRoomName, messages, setMessages, inputValue, setInp
 };
 
 export default function Community() {
+    const { user, cookie } = useAuth();
     const [activeGrade, setActiveGrade] = useState('grade1');
     const [popularPosts, setPopularPosts] = useState([]);
     const [freePosts, setFreePosts] = useState([]);
@@ -81,8 +94,9 @@ export default function Community() {
     const [inputValue, setInputValue] = useState(''); // 메시지 입력값
     const ws = useRef(null); // WebSocket 레퍼런스 
     const navigate = useNavigate();
-    const [username, setUsername] = useState('User'); // 사용자명
+    const [username, setUsername] = useState(''); // 초기값을 빈 문자열로 설정
     const [searchTerm, setSearchTerm] = useState(''); // 검색어 상태
+
 
     const searchTerms = {
         grade1: ['길상현', 'ex2', 'ex3', 'ex4', 'ex5', 'ex6', 'ex71', 'ex8', 'ex9', 'ex10'],
@@ -99,7 +113,7 @@ export default function Community() {
                 const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_view/`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     }
                 });
                 if (response.ok) {
@@ -118,6 +132,28 @@ export default function Community() {
     }, []); 
 
     const handleMarkerClick = (markerId) => { //마커 클릭되었을 때
+        const fetchPopularPosts = async () => {
+            try {
+                const response = await fetch(`${process.env.REACT_APP_Server_IP}/name_check/`, {
+                    method: 'GET',
+                    headers: {
+                        "Authorization": `Bearer ${cookie.access_token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    setUsername(data.username);
+                    console.log(data.username);
+                    
+                } else {
+                    console.error('Failed to fetch popular posts');
+                }
+            } catch (error) {
+                console.error('Error fetching popular posts:', error);
+            }
+        };
+        fetchPopularPosts();
         if (markerId === 1) { 
             const room = "공대 채팅방"; // 이름 설정
             setChatRoomName(room);
@@ -161,10 +197,8 @@ export default function Community() {
 
     const handleSend = () => { // 메시지 전송
         if (ws.current && ws.current.readyState === WebSocket.OPEN && inputValue) {
-            // WebSocket이 열려 있고 inputValue가 존재하는 경우 실행
-            const message = { sender: 'User', text: inputValue, time: new Date().toLocaleTimeString() }; // 메시지 객체 생성
+            const message = { sender: username, text: inputValue, time: new Date().toLocaleTimeString() };
             ws.current.send(JSON.stringify(message));
-            // setMessages((prevMessages) => [...prevMessages, message]);
             setInputValue('');
         }
     };
@@ -189,6 +223,7 @@ export default function Community() {
             const response = await fetch(`${process.env.REACT_APP_Server_IP}/search/`, {
                 method: 'POST',
                 headers: {
+                    "Authorization": `Bearer ${cookie.access_token}`,
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ content: searchTerm }) // 검색어를 content로 서버에 전송
@@ -389,12 +424,16 @@ const MessagesContainer = styled.div`
   display: flex;
   flex-direction: column;
   background-color: #ccffcc;
+  & > div {
+    animation: ${props => props.isNewMessage ? slideInMessages : 'none'} 0.5s forwards;
+  }
 `;
 
+
 const Message = styled.div`
-  background-color: ${props => (props.isBot ? '#ccffcc' : '#FAFAD2')};
-  color: ${props => (props.isBot ? 'black' : 'black')};
-  align-self: ${props => (props.isBot ? 'flex-start' : 'flex-end')};
+  background-color: ${props => (props.isOwnMessage ? '#FAFAD2' : '#ccffcc')}; // 본인 메시지: 밝은 노란색, 다른 사람 메시지: 밝은 초록색
+  color: ${props => (props.isOwnMessage ? 'black' : 'black')};
+  align-self: ${props => (props.isOwnMessage ? 'flex-end' : 'flex-start')}; // 본인 메시지: 오른쪽 정렬, 다른 사람 메시지: 왼쪽 정렬
   margin: 10px 0;
   padding: 10px;
   border-radius: 10px;
@@ -402,21 +441,20 @@ const Message = styled.div`
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
-  align-items: ${props => (props.isBot ? 'flex-start' : 'flex-end')};
+  align-items: ${props => (props.isOwnMessage ? 'flex-end' : 'flex-start')}; // 본인 메시지: 오른쪽 정렬, 다른 사람 메시지: 왼쪽 정렬
   position: relative;
 
   &::after {
     content: '';
     position: absolute;
     top: 10px;
-    ${props => (props.isBot ? 'left: -10px;' : 'right: -10px;')}
+    ${props => (props.isOwnMessage ? 'right: -10px;' : 'left: -10px;')} // 본인 메시지: 오른쪽 말풍선 꼬리, 다른 사람 메시지: 왼쪽 말풍선 꼬리
     width: 0;
     height: 0;
     border: 10px solid transparent;
-    border-top-color: ${props => (props.isBot ? '#ccffcc' : '#FAFAD2')};
-    ${props => (props.isBot ? 'border-left-color: transparent;' : 'border-right-color: transparent;')}
-    ${props => (props.isBot ? 'border-right: 0;' : 'border-left: 0;')}
-    ${props => (props.isBot ? 'margin-top: -10px;' : 'margin-top: -10px;')}
+    border-top-color: ${props => (props.isOwnMessage ? '#FAFAD2' : '#ccffcc')}; // 본인 메시지: 노란색 말풍선 꼬리, 다른 사람 메시지: 초록색 말풍선 꼬리
+    ${props => (props.isOwnMessage ? 'border-right: 0;' : 'border-left: 0;')}
+    ${props => (props.isOwnMessage ? 'margin-top: -10px;' : 'margin-top: -10px;')}
   }
 `;
 
@@ -809,14 +847,25 @@ const ChatRoomImage = styled.img`
 `;
 
 /* 애니메이션 키프레임 */
-const slideIn = keyframes`
-    0% { transform: translateX(100%); }
-    100% { transform: translateX(0); }
+const slideInMessages = keyframes`
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 `;
 
 const slideOut = keyframes`
     0% { transform: translateX(0); }
     100% { transform: translateX(-100%); }
+`;
+
+const slideInTerms = keyframes`
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(0); }
 `;
 
 /* 용어 슬라이드 컨테이너 */
@@ -830,11 +879,13 @@ const TermContainer = styled.div`
 `;
 
 /* 용어 슬라이드 */
+/* 용어 슬라이드 */
 const TermSlide = styled.div`
-    animation: ${props => props.animating ? slideOut : slideIn} 1s forwards;
+    animation: ${props => props.animating ? slideOut : slideInTerms} 1s forwards;
     width: 100%;
     text-align: center;
 `;
+
 
 /* 지도 컨테이너 스타일 */
 const containerStyle = {
