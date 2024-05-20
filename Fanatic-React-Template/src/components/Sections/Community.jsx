@@ -96,14 +96,12 @@ export default function Community() {
     const navigate = useNavigate();
     const [username, setUsername] = useState(''); // 초기값을 빈 문자열로 설정
     const [searchTerm, setSearchTerm] = useState(''); // 검색어 상태
-
-
-    const searchTerms = {
-        grade1: ['길상현', 'ex2', 'ex3', 'ex4', 'ex5', 'ex6', 'ex71', 'ex8', 'ex9', 'ex10'],
-        grade2: ['Example 1', 'Example 2', 'Example 3', 'Example 4', 'Example 5', 'Example 6', 'Example 7', 'Example 8', 'Example 9', 'Example 10'],
-        grade3: ['Exam 1', 'Exam 2', 'Exam 3', 'Exam 4', 'Exam 5', 'Exam 6', 'Exam 7', 'Exam 8', 'Exam 9', 'Exam 10'],
-        grade4: ['Example 1', 'Example 2', 'Example 3', 'Example 4', 'Example 5', 'Example 6', 'Example 7', 'Example 8', 'Example 9', 'Example 10']
-    };
+    const [realTimeSearchTerms, setRealTimeSearchTerms] = useState({
+        grade1: [],
+        grade2: [],
+        grade3: [],
+        grade4: []
+    });
 
     const handleGradeChange = grade => setActiveGrade(grade);
     
@@ -113,6 +111,7 @@ export default function Community() {
                 const response = await fetch(`${process.env.REACT_APP_Server_IP}/post_view/`, {
                     method: 'POST',
                     headers: {
+                        "Authorization": `Bearer ${cookie.access_token}`,
                         'Content-Type': 'application/json'
                     }
                 });
@@ -120,6 +119,14 @@ export default function Community() {
                     const data = await response.json();
                     setPopularPosts(data.popular);
                     setFreePosts(data.free);
+                    
+                    // 실시간 검색어 내용만 추출하여 상태 업데이트
+                    setRealTimeSearchTerms({
+                        grade1: data['1'].slice(0, 10).map(item => item[2]), // '1' 학년 실시간 검색어
+                        grade2: data['2'].slice(0, 10).map(item => item[2]), // '2' 학년 실시간 검색어
+                        grade3: data['3'].slice(0, 10).map(item => item[2]), // '3' 학년 실시간 검색어
+                        grade4: data['4'].slice(0, 10).map(item => item[2])  // '4' 학년 실시간 검색어
+                    });
                 } else {
                     console.error('Failed to fetch popular posts');
                 }
@@ -127,9 +134,9 @@ export default function Community() {
                 console.error('Error fetching popular posts:', error);
             }
         };
-
+    
         fetchPopularPosts();
-    }, []); 
+    }, []);
 
     const handleMarkerClick = (markerId) => { //마커 클릭되었을 때
         const fetchPopularPosts = async () => {
@@ -166,7 +173,7 @@ export default function Community() {
     useEffect(() => { 
         // chatRoomName이 변경될 때마다 실행
         if (chatRoomName) { // chatRoomName이 존재하는 경우 WebSocket 연결 설정
-            ws.current = new WebSocket('ws://localhost:8080');
+            ws.current = new WebSocket(`${process.env.REACT_APP_Server_II}`);
 
             ws.current.onopen = () => {
                 console.log('WebSocket Connected');
@@ -250,20 +257,21 @@ export default function Community() {
         <Container>
             <CardTitle>인기 게시물</CardTitle>
             <CardsContainer>
-                {popularPosts.map(post => (
-                    <PopularPostCard
-                        key={post.id}
-                        title={post.title}
-                        author={post.author}
-                        preview={post.content}
-                        image={ReactImage}
-                        like={post.like}
-                        watch={post.watch}
-                        date={`${post.year}.${post.month}.${post.day}`}
-                        comments={post.comment_number}
-                    />
-                ))}
-            </CardsContainer>
+    {popularPosts.map(post => (
+        <PopularPostCard
+            key={post.id}
+            id={post.id}
+            title={post.title}
+            author={post.author}
+            preview={post.content}
+            image={ReactImage}
+            like={post.like}
+            watch={post.watch}
+            date={`${post.year}.${post.month}.${post.day}`}
+            comments={post.comment_number}
+        />
+    ))}
+</CardsContainer>
             <HorizontalRule />
             <MainContent>
                 <LeftColumn>
@@ -290,36 +298,43 @@ export default function Community() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {freePosts.slice(0, 10).map(post => (
-                                    <tr key={post.id}>
-                                        <td>
-                                            {post.title}
-                                            <CommentNumber>[{post.comment_number}]</CommentNumber>
-                                        </td>
-                                        <td>{post.author}</td>
-                                        <td>{post.year}.{post.month}.{post.day}</td>
-                                        <td>
-                                            <Icon src={view} alt="views" />
-                                            <span>{post.watch}</span>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
+    {freePosts.slice(0, 10).map(post => (
+        <tr key={post.id}>
+            <td>
+                <Link to={`/post/${post.id}`}>
+                    {post.title}
+                    <CommentNumber>[{post.comment_number}]</CommentNumber>
+                </Link>
+            </td>
+            <td>{post.author}</td>
+            <td>{post.year}.{post.month}.{post.day}</td>
+            <td>
+                <Icon src={view} alt="views" />
+                <span>{post.watch}</span>
+            </td>
+        </tr>
+    ))}
+</tbody>
                         </PostTable>
                     </StyledSection>
                 </LeftColumn>
                 <RightColumn>
-                    <GradeTabs>
-                        {Object.keys(searchTerms).map(grade => (
-                            <GradeTab key={grade} active={activeGrade === grade} onClick={() => handleGradeChange(grade)}>
-                                {grade.replace('grade', '')}학년
-                            </GradeTab>
-                        ))}
-                    </GradeTabs>
-                    <SearchList>
-                        {searchTerms[activeGrade].map((term, index) => <SearchItem key={index}>{`${index + 1}. ${term}`}</SearchItem>)}
-                    </SearchList>
-                </RightColumn>
+            <GradeTabs>
+                {Object.keys(realTimeSearchTerms).map(grade => (
+                    <GradeTab key={grade} active={activeGrade === grade} onClick={() => handleGradeChange(grade)}>
+                        {grade.replace('grade', '')}학년
+                    </GradeTab>
+                ))}
+            </GradeTabs>
+            <SearchList>
+    {realTimeSearchTerms[activeGrade].map((term, index) => (
+        <SearchItem key={index}>
+            <RankNumber>{index + 1}</RankNumber>
+            <SearchTerm>{term}</SearchTerm>
+        </SearchItem>
+    ))}
+</SearchList>
+        </RightColumn>
             </MainContent>
             <HorizontalRule />
             <StyledSection>
@@ -621,11 +636,12 @@ const ContentPreview = styled.p`
   text-align: center;
 `;
 
-const PopularPostCard = ({ title, author, preview, image, like, watch, date, comments }) => {
+const PopularPostCard = ({ id, title, author, preview, image, like, watch, date, comments }) => {
+    const navigate = useNavigate();
     const [hover, setHover] = useState(false);
 
     return (
-        <Card bgImage={image} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}>
+        <Card bgImage={image} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)} onClick={() => navigate(`/post/${id}`)}>
             <CardOverlayTitle style={{ backgroundColor: 'rgba(0, 255, 0, 0.5)', position: 'absolute', bottom: 0, width: '100%', opacity: hover ? 0 : 1 }}>
                 <Title>{title}</Title>
                 <Icons>
@@ -652,6 +668,7 @@ const PopularPostCard = ({ title, author, preview, image, like, watch, date, com
     );
 };
 
+
 const SearchContainer = styled.div`
     display: flex;
     align-items: center;
@@ -677,6 +694,25 @@ const SearchButton = styled.button`
     &:hover {
         background-color: #45a049;
     }
+`;
+
+const RankNumber = styled.span`
+    display: inline-block;
+    width: 24px;
+    height: 24px;
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    line-height: 24px;
+    border-radius: 4px;
+    margin-right: 10px;
+`;
+
+const SearchTerm = styled.span`
+    flex: 1;
+    text-align: center;  // 중앙 정렬
+    font-weight: 600;   // 텍스트 굵게
 `;
 
 const CardOverlayTitle = styled.div`
@@ -924,6 +960,8 @@ const SearchList = styled.div`
 
 
 const SearchItem = styled.li`
+    display: flex;
+    align-items: center;
     padding: 10px;
     border-bottom: 1px solid #ddd;
 `;
