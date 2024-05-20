@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../Member/AuthContext'; // useAuth 훅 임포트
 import heart from '../../../src/assets/img/heart.png';
 import watch from '../../../src/assets/img/watch.png';
 
 const FreeCommu = () => {
+    const { cookie } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
     const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태
@@ -45,15 +47,9 @@ const FreeCommu = () => {
     }, [location]);
 
     useEffect(() => {
-        const filteredPosts = allPosts.filter(post => 
-            post.title.includes(searchTerm) || post.content.includes(searchTerm)
-        );
-
-        const indexOfLastPost = currentPage * postsPerPage;
-        const indexOfFirstPost = indexOfLastPost - postsPerPage;
-
-        setCurrentPosts(filteredPosts.slice(indexOfFirstPost, indexOfLastPost));
-    }, [searchTerm, currentPage, allPosts, postsPerPage]);
+        const filteredPosts = allPosts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
+        setCurrentPosts(filteredPosts);
+    }, [currentPage, allPosts, postsPerPage]);
     
     const handlePostClick = (postId) => {
         navigate(`/post/${postId}`);
@@ -64,53 +60,44 @@ const FreeCommu = () => {
     const handleSearchChange = (e) => {
         setSearchTerm(e.target.value);
     };
-
-    const handleSearchSubmit = () => {
+    
+    const handleSearchSubmit = async () => {
         setCurrentPage(1);
-    };
-
-    const handleSearchKeyPress = (e) => {
-        if (e.key === 'Enter') {
-            handleSearchSubmit();
+        try {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/search/`, {
+                method: 'POST',
+                headers: {
+                    "Authorization": `Bearer ${cookie.access_token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content: searchTerm }) // 검색어
+            });
+    
+            if (response.ok) {
+                const data = await response.json();
+                setAllPosts(data.search); // 검색결과 AllPosts에 저장
+            } else {
+                console.error('Failed to fetch search results');
+            }
+        } catch (error) {
+            console.error('Error fetching search results:', error);
         }
     };
 
-    return (
-        <Container>
-            <Header>
-                <Title>자유 게시판</Title>
-                <WriteButton to="/write">글쓰기</WriteButton>
-            </Header>
-            <PostList>
-                {currentPosts.map((post, index) => (
-                    <PostCard key={post.id} onClick={() => handlePostClick(post.id)}>
-                        <PostHeader>
-                            <PostAuthorInfo>
-                                <PostAuthorAvatar src="/path/to/avatar.jpg" alt="Author Avatar" />
-                                <div>
-                                    <PostAuthor>{post.author}</PostAuthor>
-                                    <PostDate>{post.year}.{post.month}.{post.day}</PostDate>
-                                </div>
-                            </PostAuthorInfo>
-                            <PostIndex>{(currentPage - 1) * postsPerPage + index + 1}</PostIndex>
-                        </PostHeader>
-                        <PostTitle>{post.title}</PostTitle>
-                        <PostExcerpt dangerouslySetInnerHTML={{ __html: (post.content || '').substring(0, 100) }} />
-                        <PostFooter>
-                            <IconContainer>
-                                <Icon src={heart} alt="likes" />
-                                <IconCount>{post.like}</IconCount>
-                            </IconContainer>
-                            <IconContainer>
-                                <Icon src={watch} alt="views" />
-                                <IconCount>{post.watch}</IconCount>
-                            </IconContainer>
-                            <CommentsCount>댓글수: {post.comment_number}</CommentsCount>
-                        </PostFooter>
-                    </PostCard>
-                ))}
-            </PostList>
-            <PaginationContainer>
+    const handleSearchButtonClick = () => {
+    handleSearchSubmit();
+};
+
+const handleSearchKeyPress = (e) => {
+    if (e.key === 'Enter') {
+        handleSearchSubmit();
+    }
+};
+
+return (
+    <Container>
+        <Header>
+            <Title>자유 게시판</Title>
             <SearchContainer>
                 <SearchInput 
                     type="text" 
@@ -119,20 +106,50 @@ const FreeCommu = () => {
                     onChange={handleSearchChange} 
                     onKeyPress={handleSearchKeyPress} 
                 />
-                <SearchButton onClick={handleSearchSubmit}>검색</SearchButton>
+                <SearchButton onClick={handleSearchButtonClick}>검색</SearchButton>
             </SearchContainer>
+            <WriteButton to="/write">글쓰기</WriteButton>
+        </Header>
+        <PostList>
+            {currentPosts.map((post, index) => (
+                <PostCard key={post.id} onClick={() => handlePostClick(post.id)}>
+                    <PostHeader>
+                        <PostAuthorInfo>
+                            <PostAuthorAvatar src="/path/to/avatar.jpg" alt="Author Avatar" />
+                            <div>
+                                <PostAuthor>{post.author}</PostAuthor>
+                                <PostDate>{post.year}.{post.month}.{post.day}</PostDate>
+                            </div>
+                        </PostAuthorInfo>
+                        <PostIndex>{(currentPage - 1) * postsPerPage + index + 1}</PostIndex>
+                    </PostHeader>
+                    <PostTitle>{post.title}</PostTitle>
+                    <PostExcerpt dangerouslySetInnerHTML={{ __html: (post.content || '').substring(0, 100) }} />
+                    <PostFooter>
+                        <IconContainer>
+                            <Icon src={heart} alt="likes" />
+                            <IconCount>{post.like}</IconCount>
+                        </IconContainer>
+                        <IconContainer>
+                            <Icon src={watch} alt="views" />
+                            <IconCount>{post.watch}</IconCount>
+                        </IconContainer>
+                        <CommentsCount>댓글수: {post.comment_number}</CommentsCount>
+                    </PostFooter>
+                </PostCard>
+            ))}
+        </PostList>
+        <PaginationContainer>
             <Pagination>
-                {Array.from({ length: Math.ceil(allPosts.filter(post => 
-                    post.title.includes(searchTerm) || post.content.includes(searchTerm)
-                ).length / postsPerPage) }, (_, i) => (
+                {Array.from({ length: Math.ceil(allPosts.length / postsPerPage) }, (_, i) => (
                     <PageNumber key={i + 1} onClick={() => paginate(i + 1)} active={i + 1 === currentPage}>
                         {i + 1}
                     </PageNumber>
                 ))}
             </Pagination>
         </PaginationContainer>
-        </Container>
-    );
+    </Container>
+);
 };
 
 export default FreeCommu;
@@ -160,7 +177,7 @@ const Title = styled.h1`
 `;
 
 const WriteButton = styled(Link)`
-    padding: 10px 20px;
+    padding: 6px;
     background-color: #4CAF50;
     color: white;
     text-decoration: none;
