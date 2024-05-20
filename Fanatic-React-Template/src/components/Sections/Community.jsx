@@ -184,8 +184,25 @@ export default function Community() {
         setSearchTerm(e.target.value);
     };
 
-    const handleSearchSubmit = () => {
-        navigate(`/freeCommu?search=${searchTerm}`);
+    const handleSearchSubmit = async () => {
+        try {
+            const response = await fetch(`${process.env.REACT_APP_Server_IP}/search/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content: searchTerm }) // 검색어를 content로 서버에 전송
+            });
+
+            if (response.ok) {
+                const data = await response.json();
+                setFreePosts(data.search); // 서버로부터 받은 검색 결과를 freePosts에 저장
+            } else {
+                console.error('Failed to fetch search results');
+            }
+        } catch (error) {
+            console.error('Error fetching search results:', error);
+        }
     };
 
     const handleSearchKeyPress = (e) => {
@@ -609,6 +626,7 @@ const SearchInput = styled.input`
     border: 1px solid #ddd;
     border-radius: 4px;
     margin-right: 10px;
+    width: 70%;
 `;
 
 const SearchButton = styled.button`

@@ -48,22 +48,32 @@ const FreeCommu = () => {
         const filteredPosts = allPosts.filter(post => 
             post.title.includes(searchTerm) || post.content.includes(searchTerm)
         );
-        setCurrentPage(1);
-        setCurrentPosts(filteredPosts.slice(0, postsPerPage));
-    }, [searchTerm, allPosts, postsPerPage]);
 
-    // currentPage 또는 allPosts가 변경될 때마다 현재 페이지에 표시할 포스트 목록을 계산하여 상태에 저장
-    useEffect(() => {
         const indexOfLastPost = currentPage * postsPerPage;
         const indexOfFirstPost = indexOfLastPost - postsPerPage;
-        setCurrentPosts(allPosts.slice(indexOfFirstPost, indexOfLastPost));
-    }, [currentPage, allPosts, postsPerPage]);
+
+        setCurrentPosts(filteredPosts.slice(indexOfFirstPost, indexOfLastPost));
+    }, [searchTerm, currentPage, allPosts, postsPerPage]);
     
     const handlePostClick = (postId) => {
         navigate(`/post/${postId}`);
     };
 
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+    };
+
+    const handleSearchSubmit = () => {
+        setCurrentPage(1);
+    };
+
+    const handleSearchKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSearchSubmit();
+        }
+    };
 
     return (
         <Container>
@@ -100,13 +110,27 @@ const FreeCommu = () => {
                     </PostCard>
                 ))}
             </PostList>
+            <PaginationContainer>
+            <SearchContainer>
+                <SearchInput 
+                    type="text" 
+                    placeholder="검색어를 입력하세요" 
+                    value={searchTerm} 
+                    onChange={handleSearchChange} 
+                    onKeyPress={handleSearchKeyPress} 
+                />
+                <SearchButton onClick={handleSearchSubmit}>검색</SearchButton>
+            </SearchContainer>
             <Pagination>
-                {Array.from({ length: Math.ceil(allPosts.length / postsPerPage) }, (_, i) => (
+                {Array.from({ length: Math.ceil(allPosts.filter(post => 
+                    post.title.includes(searchTerm) || post.content.includes(searchTerm)
+                ).length / postsPerPage) }, (_, i) => (
                     <PageNumber key={i + 1} onClick={() => paginate(i + 1)} active={i + 1 === currentPage}>
                         {i + 1}
                     </PageNumber>
                 ))}
             </Pagination>
+        </PaginationContainer>
         </Container>
     );
 };
@@ -237,9 +261,43 @@ const CommentsCount = styled.span`
     color: #4CAF50;
 `;
 
+const PaginationContainer = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 800px; /* 너비를 PostCard와 맞춤 */
+    margin-top: 20px; /* 상단 마진 추가 */
+`;
+
+const SearchContainer = styled.div`
+    display: flex;
+    align-items: center;
+`;
+
+const SearchInput = styled.input`
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 10px;
+    width: 150px; /* 너비를 줄임 */
+`;
+
+const SearchButton = styled.button`
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    &:hover {
+        background-color: #45a049;
+    }
+`;
+
 const Pagination = styled.div`
     display: flex;
     justify-content: center;
+    flex-grow: 1; /* flex-grow를 사용해 가운데 정렬 */
     margin: 20px 0;
 `;
 
