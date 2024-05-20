@@ -39,14 +39,17 @@ const MapComponent = ({ apiKey, handleMarkerClick }) => {
     );
 };
 
-const ChatComponent = ({ chatRoomName, messages, setMessages, inputValue, setInputValue, handleSend, handleKeyPress, handleClose }) => {
+const ChatComponent = ({ chatRoomName, messages, setMessages, inputValue, setInputValue, handleSend, handleKeyPress, handleClose, username }) => {
     return (
         <ChatContainer>
             <CloseButton onClick={handleClose}>X</CloseButton>
             <Header>{chatRoomName}</Header> {/* 채팅방 이름 */}
             <MessagesContainer>
                 {messages.map((message, index) => (
-                    <Message key={index} isBot={message.sender === 'Bot'} isOwnMessage={message.sender === 'User'}>
+                    <Message 
+                        key={index} 
+                        isOwnMessage={message.sender === username}
+                    >
                         <MessageHeader>
                             <ChatBotImage src={Users} alt="Avatar" />
                             <MessageInfo>{message.sender} - {message.time}</MessageInfo>
@@ -69,19 +72,20 @@ const ChatComponent = ({ chatRoomName, messages, setMessages, inputValue, setInp
     );
 };
 
-
 export default function Community() {
     const [activeGrade, setActiveGrade] = useState('grade1');
     const [popularPosts, setPopularPosts] = useState([]);
     const [freePosts, setFreePosts] = useState([]);
     const [chatRoomName, setChatRoomName] = useState('');
     const [messages, setMessages] = useState([]); // 채팅 메시지 목록
-    const [inputValue, setInputValue] = useState('');
-    const ws = useRef(null); // WebSocket 레퍼런스 // 메시지 입력값
+    const [inputValue, setInputValue] = useState(''); // 메시지 입력값
+    const ws = useRef(null); // WebSocket 레퍼런스 
     const navigate = useNavigate();
+    const [username, setUsername] = useState('User'); // 사용자명
+    const [searchTerm, setSearchTerm] = useState(''); // 검색어 상태
 
     const searchTerms = {
-        grade1: ['길상현', 'ex2', 'ex3', 'ex4', 'ex5', 'ex6', 'ex7', 'ex8', 'ex9', 'ex10'],
+        grade1: ['길상현', 'ex2', 'ex3', 'ex4', 'ex5', 'ex6', 'ex71', 'ex8', 'ex9', 'ex10'],
         grade2: ['Example 1', 'Example 2', 'Example 3', 'Example 4', 'Example 5', 'Example 6', 'Example 7', 'Example 8', 'Example 9', 'Example 10'],
         grade3: ['Exam 1', 'Exam 2', 'Exam 3', 'Exam 4', 'Exam 5', 'Exam 6', 'Exam 7', 'Exam 8', 'Exam 9', 'Exam 10'],
         grade4: ['Example 1', 'Example 2', 'Example 3', 'Example 4', 'Example 5', 'Example 6', 'Example 7', 'Example 8', 'Example 9', 'Example 10']
@@ -113,18 +117,19 @@ export default function Community() {
         fetchPopularPosts();
     }, []); 
 
-    const handleMarkerClick = (markerId) => {
-        if (markerId === 1) {
+    const handleMarkerClick = (markerId) => { //마커 클릭되었을 때
+        if (markerId === 1) { 
             const room = "공대 채팅방"; // 이름 설정
             setChatRoomName(room);
             const now = new Date();
-            const formattedTime = `${now.getHours()}:${now.getMinutes()}`;
+            const formattedTime = `${now.getHours()}:${now.getMinutes()}`; //시간 형식
             setMessages([{ text: `여기는 공대 채팅방입니다!`, isBot: true, sender: 'Bot', time: formattedTime }]);
         }
     };
 
-    useEffect(() => {
-        if (chatRoomName) {
+    useEffect(() => { 
+        // chatRoomName이 변경될 때마다 실행
+        if (chatRoomName) { // chatRoomName이 존재하는 경우 WebSocket 연결 설정
             ws.current = new WebSocket('ws://localhost:8080');
 
             ws.current.onopen = () => {
@@ -151,9 +156,10 @@ export default function Community() {
         }
     }, [chatRoomName]);
 
-    const handleSend = () => {
+    const handleSend = () => { // 메시지 전송
         if (ws.current && ws.current.readyState === WebSocket.OPEN && inputValue) {
-            const message = { sender: 'User', text: inputValue, time: new Date().toLocaleTimeString() };
+            // WebSocket이 열려 있고 inputValue가 존재하는 경우 실행
+            const message = { sender: 'User', text: inputValue, time: new Date().toLocaleTimeString() }; // 메시지 객체 생성
             ws.current.send(JSON.stringify(message));
             setMessages((prevMessages) => [...prevMessages, message]);
             setInputValue('');
@@ -169,6 +175,20 @@ export default function Community() {
     const handleClose = () => {
         setChatRoomName('');
         setMessages([]);
+    };
+
+    const handleSearchChange = (e) => {
+        setSearchTerm(e.target.value);
+    };
+
+    const handleSearchSubmit = () => {
+        navigate(`/freeCommu?search=${searchTerm}`);
+    };
+
+    const handleSearchKeyPress = (e) => {
+        if (e.key === 'Enter') {
+            handleSearchSubmit();
+        }
     };
 
     return (
@@ -193,7 +213,17 @@ export default function Community() {
             <MainContent>
                 <LeftColumn>
                 <StyledSection>
-                        <CardTitle>자유 게시판</CardTitle>
+                <CardTitle>자유 게시판</CardTitle>
+                        <SearchContainer>
+                            <SearchInput 
+                                type="text" 
+                                placeholder="검색어를 입력하세요" 
+                                value={searchTerm} 
+                                onChange={handleSearchChange} 
+                                onKeyPress={handleSearchKeyPress} 
+                            />
+                            <SearchButton onClick={handleSearchSubmit}>검색</SearchButton>
+                        </SearchContainer>
                         <Button to="/freeCommu">자유게시판 바로가기 →</Button>
                         <PostTable>
                             <thead>
@@ -245,14 +275,15 @@ export default function Community() {
     </MapContainer>
                     {chatRoomName && (
                         <ChatComponent
-                            chatRoomName={chatRoomName}
-                            messages={messages}
-                            setMessages={setMessages}
-                            inputValue={inputValue}
-                            setInputValue={setInputValue}
-                            handleSend={handleSend}
-                            handleKeyPress={handleKeyPress}
+                            chatRoomName={chatRoomName} //채팅방 이름
+                            messages={messages} // 채팅 메시지 목록 전달
+                            setMessages={setMessages} // 메시지 목록 업데이트하는 함수
+                            inputValue={inputValue} // 메시지 입력 값 전달
+                            setInputValue={setInputValue} // 메시지 입력 값 업데이트 함수
+                            handleSend={handleSend} // 메시지 전송 함수
+                            handleKeyPress={handleKeyPress} // 키보드 입력 처리 함수
                             handleClose={handleClose} // 추가된 부분
+                            username={username} // 사용자명 전달
                         />
                     )}
                 </MapAndChatContainer>
@@ -563,7 +594,31 @@ const PopularPostCard = ({ title, author, preview, image, like, watch, date, com
     );
 };
 
+const SearchContainer = styled.div`
+    display: flex;
+    align-items: center;
+    margin-bottom: 20px;
+`;
 
+const SearchInput = styled.input`
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 10px;
+`;
+
+const SearchButton = styled.button`
+    padding: 10px 20px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    &:hover {
+        background-color: #45a049;
+    }
+`;
 
 const CardOverlayTitle = styled.div`
   display: flex;

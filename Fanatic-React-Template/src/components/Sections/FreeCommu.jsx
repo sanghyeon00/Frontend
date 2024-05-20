@@ -1,15 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import heart from '../../../src/assets/img/heart.png';
 import watch from '../../../src/assets/img/watch.png';
 
 const FreeCommu = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [currentPage, setCurrentPage] = useState(1); // 현재 페이지 상태
     const [postsPerPage] = useState(8); // 페이지당 포스트 수 상태
     const [currentPosts, setCurrentPosts] = useState([]); // 현재 페이지에 표시할 포스트 목록 상태
     const [allPosts, setAllPosts] = useState([]); // 모든 포스트 목록
+    const [searchTerm, setSearchTerm] = useState(''); // 검색어 상태
 
     useEffect(() => {
         const fetchPosts = async () => {
@@ -33,6 +35,22 @@ const FreeCommu = () => {
 
         fetchPosts();
     }, []);
+
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const term = params.get('search');
+        if (term) {
+            setSearchTerm(term);
+        }
+    }, [location]);
+
+    useEffect(() => {
+        const filteredPosts = allPosts.filter(post => 
+            post.title.includes(searchTerm) || post.content.includes(searchTerm)
+        );
+        setCurrentPage(1);
+        setCurrentPosts(filteredPosts.slice(0, postsPerPage));
+    }, [searchTerm, allPosts, postsPerPage]);
 
     // currentPage 또는 allPosts가 변경될 때마다 현재 페이지에 표시할 포스트 목록을 계산하여 상태에 저장
     useEffect(() => {

@@ -50,12 +50,12 @@ const PostDetail = () => {
         e.preventDefault();
         if (commentText.trim()) {
             try {
-                const response = await fetch(`${process.env.REACT_APP_Server_IP}/comments/${postId}/`, {
+                const response = await fetch(`${process.env.REACT_APP_Server_IP}/comments/`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ text: commentText }),
+                    body: JSON.stringify({ content: commentText, post_id: postId, user_id: user.username }),
                 });
 
                 if (response.ok) {
@@ -156,7 +156,9 @@ const PostDetail = () => {
                 </CommentForm>
                 <CommentsList>
                     {comments.map((comment, index) => (
-                        <Comment key={index}>{comment.content}</Comment>
+                        <Comment key={index}>
+                            <strong>{comment.user_id}</strong>: {comment.content}
+                        </Comment>
                     ))}
                 </CommentsList>
             </CommentSection>
