@@ -4,6 +4,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../Member/AuthContext'; // useAuth 훅 임포트
 import heart from '../../../src/assets/img/heart.png';
 import watch from '../../../src/assets/img/watch.png';
+import Users from '../../../src/assets/img/users.png';
 
 const FreeCommu = () => {
     const { cookie } = useAuth();
@@ -115,7 +116,7 @@ return (
                 <PostCard key={post.id} onClick={() => handlePostClick(post.id)}>
                     <PostHeader>
                         <PostAuthorInfo>
-                            <PostAuthorAvatar src="/path/to/avatar.jpg" alt="Author Avatar" />
+                            <PostAuthorAvatar src={Users} alt="Author Avatar" />
                             <div>
                                 <PostAuthor>{post.author}</PostAuthor>
                                 <PostDate>{post.year}.{post.month}.{post.day}</PostDate>
@@ -126,16 +127,16 @@ return (
                     <PostTitle>{post.title}</PostTitle>
                     <PostExcerpt dangerouslySetInnerHTML={{ __html: (post.content || '').substring(0, 100) }} />
                     <PostFooter>
-                        <IconContainer>
-                            <Icon src={heart} alt="likes" />
-                            <IconCount>{post.like}</IconCount>
-                        </IconContainer>
-                        <IconContainer>
-                            <Icon src={watch} alt="views" />
-                            <IconCount>{post.watch}</IconCount>
-                        </IconContainer>
-                        <CommentsCount>댓글수: {post.comment_number}</CommentsCount>
-                    </PostFooter>
+    <IconContainer>
+        <Icon src={heart} alt="likes" />
+        <IconCount>{post.like}</IconCount>
+    </IconContainer>
+    <IconContainer>
+        <Icon src={watch} alt="views" />
+        <IconCount>{post.watch}</IconCount>
+    </IconContainer>
+    <CommentsCount>댓글수: {post.comment_number}</CommentsCount>
+</PostFooter>
                 </PostCard>
             ))}
         </PostList>
