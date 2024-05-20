@@ -17,7 +17,12 @@ import Write from './components/Sections/Write.jsx'; // Write를 올바르게 im
 import PostDetail from './components/Sections/PostDetail.jsx'; // PostDetail을 올바르게 import
 import Feedback from "./components/Sections/Feedback.jsx";
 import Feedbacklook from "./components/Sections/Feedbacklook.jsx";
+
+import StudyDiary from "./components/Sections/StudyDiary.jsx";
+import ClassDiary from "./components/Sections/ClassDiary.jsx";
+
 import Chatting from "./components/Sections/Chatting.jsx";
+
 
 // Member
 import Login from "./components/Member/Login.jsx";
@@ -51,13 +56,15 @@ export default function App() {
           <Route path="/studentSingout" element={<StudentSingout />} />
           <Route path="/diary" element={<DiaryPage />} />
           <Route path="/proClassroom" element={<ProClassroom />} />
-          <Route path="/freeCommu" element={<FreeCommu />} />
-          <Route path="/write" element={<Write />} />
-          <Route path="/post/:postId" element={<PostDetail />} />
-          <Route path="/feedback/:course_imformation" element={<Feedback />} />
-          <Route path="/feedbacklook/:course_imformation" element={<Feedbacklook />} />
-          <Route path="/chatting" element={<Chatting />} />
-       
+
+          <Route path="/freeCommu" element={<FreeCommu posts={posts} addPost={addPost} />} />
+          <Route path="/write" element={<Write addPost={addPost} />} />
+          <Route path="/posts/:postId" element={<PostDetail posts={posts} />} />
+          <Route path="/feedback/:course_imformation" element={<Feedback/>} />
+          <Route path="/feedbacklook/:course_imformation" element={<Feedbacklook/>} />
+          <Route path="/studyDiary" element={<StudyDiary/>} />
+          <Route path="/classDiary" element={<ClassDiary/>} />
+
         </Routes>         
       </AuthProvider>
       <Footer />
