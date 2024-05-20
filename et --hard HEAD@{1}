@@ -1,0 +1,28 @@
+[33m38ecc72b[m[33m ([m[1;36mHEAD -> [m[1;32mlogtest[m[33m, [m[1;31mupstream/ProblemTest[m[33m)[m HEAD@{0}: pull upstream ProblemTest: Fast-forward
+[33m54dcf834[m[33m ([m[1;31morigin/logtest[m[33m)[m HEAD@{1}: reset: moving to HEAD
+[33m54dcf834[m[33m ([m[1;31morigin/logtest[m[33m)[m HEAD@{2}: commit: aa
+[33m678f47a4[m HEAD@{3}: commit (merge): complate_accesstoken
+[33m82298c06[m HEAD@{4}: commit (merge): aa
+[33m2502c6ca[m HEAD@{5}: commit: dd
+[33m96d4459a[m HEAD@{6}: pull origin logtest: Merge made by the 'ort' strategy.
+[33mb93df4b7[m HEAD@{7}: checkout: moving from main to logtest
+[33m170c0b9a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{8}: checkout: moving from logtest to main
+[33mb93df4b7[m HEAD@{9}: commit: modi
+[33m2bf86243[m HEAD@{10}: commit: modified
+[33mb8c3886d[m HEAD@{11}: commit (merge): complate test ok
+[33m7cbce63f[m HEAD@{12}: checkout: moving from main to logtest
+[33m170c0b9a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{13}: checkout: moving from logtest to main
+[33m7cbce63f[m HEAD@{14}: commit: complate
+[33m5fa12249[m[33m ([m[1;31mupstream/NewP[m[33m)[m HEAD@{15}: pull upstream NewP: Fast-forward
+[33m2040432d[m HEAD@{16}: pull upstream NewP: Fast-forward
+[33m0a3b9082[m HEAD@{17}: commit: Sign_up and Login 90 complete but no duplication check
+[33ma1ee76cf[m HEAD@{18}: checkout: moving from main to logtest
+[33m170c0b9a[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m HEAD@{19}: commit: login complate
+[33m4aaece4d[m HEAD@{20}: checkout: moving from logtest to main
+[33ma1ee76cf[m HEAD@{21}: commit: login complate
+[33m68eedba2[m HEAD@{22}: commit: testlog
+[33m4aaece4d[m HEAD@{23}: checkout: moving from main to logtest
+[33m4aaece4d[m HEAD@{24}: commit (merge): change
+[33m99c5f3e1[m HEAD@{25}: commit: change
+[33mdb8b380c[m HEAD@{26}: pull upstream main: Fast-forward
+[33m1a7d6070[m HEAD@{27}: clone: from https://github.com/sanghyeon00/Frontend.git

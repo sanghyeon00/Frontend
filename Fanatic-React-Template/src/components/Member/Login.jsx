@@ -1,9 +1,9 @@
 import styled from "styled-components";
 import logo from '../../assets/img/Loginout/greenlogo.png';
 import React, { useState, useEffect } from 'react';
-import LoginButton from "../Buttons/LoginButon";
+import LoginButton from "../Buttons/LoginButton.jsx";
 import { useNavigate } from "react-router-dom";
-import { useCookies } from 'react-cookie';
+// import { useCookies } from 'react-cookie';
 import { Link } from 'react-router-dom';
 import { useAuth } from './AuthContext.jsx';
 
@@ -33,17 +33,23 @@ const Login = () => {
   ////////////////////////////////////////////////////////////////////////////////////
 
 
-    const [cookie, setCookie, removeCookie] = useCookies(['access_token', 'refresh_token']);
+    // const [cookie, setCookie, removeCookie] = useCookies(['access_token', 'refresh_token']);
 
-    const onCookie = (name, token) => {
-      setCookie(name, token, {path: '/'});
-    }
+    // const onCookie = (name, token) => {
+    //   setCookie(name, token, {path: '/'});
+    // }
 
-    const { login } = useAuth();
+    const { isLoggedIn, login, setTokens, userNameGet, onCookie, removeTokens, onCookie24 } = useAuth();
+
+    const [isAutoLogin, setIsAutoLogin] = useState(false);
+
+    const handleAutoLoginChange = () => {
+      setIsAutoLogin(!isAutoLogin);
+    };
 
     // 로그인 구현 (프론트)
     const accountAccess = async (id, password, selectedLoginType) => {
-      const response = await fetch(`${process.env.REACT_APP_Server_IP}/sign_in/`, { 
+      const response = await fetch(`${process.env.REACT_APP_Server_IP}/sign_in/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -56,13 +62,13 @@ const Login = () => {
       });
 
       if (response.status === 200) {
-        alert("가입 성공");
+        alert("로그인 성공");
         login();
         navigate('/');
       } 
       else {
-        console.error('가입 에러');
-        alert("가입 실패");
+        console.error('로그인 실패');
+        alert("로그인 실패");
       }
 
       const data = await response.json();
@@ -73,16 +79,32 @@ const Login = () => {
     };
 
     //로그아웃 구현
-    const removeTokens = () => {
-      removeCookie('access_token');
-      removeCookie('refresh_token');
-    };
+    // const removeTokens = () => {
+    //   removeCookie('access_token');
+    //   removeCookie('refresh_token');
+    // };
 
-    // 로그인 버튼 클릭이벤트 함수로 사용 >> 토큰 쿠키에 저장 >> access token 만료됐는지 확인 만료됐으면 refreshAccessToken함수 호출해서 기간 연장함.걍의자 하나 갖고오셈
+    // useEffect(() => {
+    //   if (!isLoggedIn) {
+    //     removeTokens();
+    //   }
+    // }, [isLoggedIn]);
+
+    // 로그인 버튼 클릭이벤트 함수로 사용 >> 토큰 쿠키에 저장 >> access token 만료됐는지 확인 만료됐으면 refreshAccessToken함수 호출해서 기간 연장함.
     const loadLogin = async () => {
       const { access, refresh } = await accountAccess(id, password, selectedLoginType);
-      onCookie('access_token', access);
-      onCookie('refresh_token', refresh);
+      if (isAutoLogin) {
+        onCookie24('access_token', access);
+        onCookie24('refresh_token', refresh);
+        console.log("24시간 토큰 ========")
+      } 
+      else {
+        onCookie('access_token', access);
+        onCookie('refresh_token', refresh);
+        console.log("일반 토큰 ========")
+      }
+      setTokens(access, refresh);
+      // userNameGet();
       
       try {
         const response = await fetch(`${process.env.REACT_APP_Server_IP}/access_token_check/`, { //백엔드 엔드포인트 수정해야함
@@ -91,18 +113,24 @@ const Login = () => {
             "Authorization": `Bearer ${access}`
           }
         });
-        console.log("-------------------------");
-        console.log(access);
-        console.log("-------------------------");
+    
         if (response.status === 401) { // 액세스 토큰이 만료되었을 때
           const newAccessToken = await refreshAccessToken(refresh);
-          const newResponse = await fetch(`${process.env.REACT_APP_Server_IP}/refresh/`, { //백엔드 엔드포인트 수정해야함 
+          const newResponse = await fetch(`${process.env.REACT_APP_Server_IP}/access_token_check/`, { //백엔드 엔드포인트 수정해야함
             method: "GET",
             headers: {
               "Authorization": `Bearer ${newAccessToken}`
             }
           });
           const newData = await newResponse.json();
+          if (isAutoLogin) {
+            onCookie24('access_token', newData);
+          } 
+          else {
+            onCookie('access_token', newData);
+          }
+          setTokens(newData, refresh);
+
           console.log(newData);
         } 
         else {
@@ -177,7 +205,7 @@ const Login = () => {
                     placeholder="비밀번호를 입력해주세요." 
                 />
                 <div style={{fontSize:"13px", marginTop:"10px", fontWeight:"bold"}}>
-                    <Checkbox type="checkbox" id="checkbox" name="checkbox" />자동 로그인
+                    <Checkbox type="checkbox" id="checkbox" name="checkbox" checked={isAutoLogin} onChange={handleAutoLoginChange} />자동 로그인
                     <a style={{fontSize:"13px", fontWeight:"bold", marginLeft:"160px"}}>아이디 찾기</a> | <a style={{fontSize:"13px", fontWeight:"bold"}}>비밀번호 찾기</a>
                 </div>
 

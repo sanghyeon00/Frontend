@@ -1,8 +1,31 @@
-import React, { useState } from 'react';
-import styled, { css } from 'styled-components';
-import ReactQuill from 'react-quill';
+import React, { useState, useEffect } from 'react';
+import styled, { css, keyframes } from 'styled-components';
 import 'react-quill/dist/quill.snow.css';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw';
+import remarkBreaks from 'remark-breaks';
+import ReactMde from 'react-mde';
+import * as Showdown from 'showdown';
+import 'react-mde/lib/styles/css/react-mde-all.css';
 
+const pulseAnimation = keyframes`
+  0% {
+    box-shadow: 0 0 0 0 var (--hover, #66bb6a);
+  }
+  100% {
+    box-shadow: 0 0 0 2em transparent;
+  }
+`;
+
+const blinkAnimation = keyframes`
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+`;
 
 const MainContent = styled.div`
   display: flex;
@@ -22,7 +45,7 @@ const InputColumn = styled.div`
   background-color: #ccffcc;
   border-radius: 8px;
   border: 1px solid #ccc;
-  box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
   margin-right: 20px;
 `;
 
@@ -46,31 +69,39 @@ const buttonStyles = css`
   padding: 10px 15px;
   margin: 0 5px;
   font-size: 16px;
-  margin-top : 20px;
+  margin-top: 20px;
   cursor: pointer;
-  border: 2px solid #4CAF50; /* 버튼 테두리 색상 추가 */
-  background-color: white; /* 배경색을 흰색으로 설정 */
-  color: black; /* 글자색을 검정색으로 설정 */
+  border: 2px solid #4CAF50;
+  background-color: white;
+  color: black;
   border-radius: 5px;
   transition: background-color 0.3s, color 0.3s, transform 0.3s, box-shadow 0.3s, border-radius 0.3s;
 
   &:hover {
-    transform: scale(1.05); /* 버튼이 조금 커지는 효과 */
-    box-shadow: 0px 8px 15px rgba(0,0,0,0.2); /* 그림자를 진하게 */
-    background: linear-gradient(145deg, #4caf50, #66bb6a); /* 그라디언트 배경 */
+    transform: scale(1.05);
+    background: linear-gradient(145deg, #4caf50, #66bb6a);
     background-color: #4CAF50;
-    border-radius: 8px; /* 모서리가 더 둥글게 */
+    border-radius: 8px;
+    animation: ${pulseAnimation} 1s;
+    box-shadow: 0 0 0 2em transparent;
   }
 
-  ${({ active }) => active && `
-    background-color: #007BFF; /* 활성화됐을 때의 배경색 */
-    color: white; /* 활성화됐을 때의 글자색 */
-    border-color: #007BFF; /* 활성화됐을 때의 테두리 색상 */
+  ${({ active }) =>
+    active &&
+    `
+    background-color: #007BFF;
+    color: white;
+    border-color: #007BFF;
   `}
 `;
 
 const Button = styled.button`
   ${buttonStyles}
+  --hover: #66bb6a;
+  &:hover, &:focus {
+    animation: ${pulseAnimation} 1s;
+    box-shadow: 0 0 0 2em transparent;
+  }
 `;
 
 const Tag = styled.div`
@@ -104,9 +135,8 @@ const HashTagBox = styled.div`
   word-wrap: break-word;
   border-radius: 8px;
   margin-top: 20px;
-  box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);
 `;
-
 
 const DiaryOutput = styled.div`
   width: 65%;
@@ -118,30 +148,80 @@ const DiaryOutput = styled.div`
   color: #333;
   position: relative;
   border-radius: 8px;
-  box-shadow: 0px 2px 4px rgba(0,0,0,0.1);
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  overflow: auto;
+
+  h1,
+  h2,
+  h3 {
+    font-size: 1.5em;
+    color: #333;
+  }
+
+  em {
+    font-weight: bold;
+  }
 `;
 
 const UploadSection = styled.div`
-  display: flex; // flex로 설정
-  justify-content: flex-end; // 우측 정렬
+  display: flex;
+  justify-content: flex-end;
   margin-top: 1px;
   margin-right: 50px;
 `;
 
-
 const GuidelineTitle = styled.h1`
-  color: #50C878; /* Emerald color */
+  color: #50C878;
   text-align: center;
-  margin-top : 50px;
+  margin-top: 50px;
 `;
 
 const GuidelineText = styled.p`
   font-weight: bold;
   text-align: center;
-  margin-top : 50px;
+  margin-top: 50px;
 `;
 
+const BlinkingGuideline = styled.div`
+  animation: ${blinkAnimation} 1s linear infinite;
+`;
 
+const MarkdownPreview = styled.div`
+  padding: 20px;
+  border: 1px solid #ccc;
+  margin-top: 20px;
+  background-color: #f9f9f9;
+
+  h1,
+  h2,
+  h3 {
+    font-size: 1.5em;
+    color: #333;
+    font-weight: bold;
+  }
+
+  em {
+    font-weight: normal;
+  }
+`;
+
+const StyledReactMde = styled(ReactMde)`
+  height: 1000px; /* 원하는 높이로 설정 */
+  .mde-textarea-wrapper {
+    height: calc(100% - 50px); /* 탭 높이를 제외한 높이 설정 */
+  }
+  .mde-text {
+    height: 100%; /* 텍스트 영역의 높이를 100%로 설정 */
+  }
+`;
+
+const converter = new Showdown.Converter({
+  tables: true,
+  simplifiedAutoLink: true,
+  strikethrough: true,
+  tasklists: true,
+});
 
 function DiaryPage() {
   const [formValues, setFormValues] = useState({
@@ -150,13 +230,25 @@ function DiaryPage() {
     where: '',
     what: '',
     how: '',
-    why: ''
+    why: '',
+    others: '',
   });
+
   const [hashtags, setHashtags] = useState([]);
-  const [diaryText, setDiaryText] = useState('');
   const [showGuideline, setShowGuideline] = useState(true);
+  const [showBlinkingGuideline, setShowBlinkingGuideline] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [editorText, setEditorText] = useState('');
+  const [editorText, setEditorText] = useState([]);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [selectedTab, setSelectedTab] = useState('write');
+
+  const togglePreview = () => {
+    setPreviewMode(!previewMode);
+  };
+
+  const handleTextChange = value => {
+    setEditorText(value.split('\n'));
+  };
 
   const placeholders = {
     who: 'ex) 내가, 친구랑',
@@ -164,7 +256,8 @@ function DiaryPage() {
     where: 'ex) 학교에서, 집에서',
     what: 'ex) 공부를 했다, 과제를 했다',
     how: 'ex) 강의를 보면서, 멘토링을 하면서',
-    why: 'ex) 시험 때문에, 프로젝트 때문에'
+    why: 'ex) 시험 때문에, 프로젝트 때문에',
+    others: 'ex) 기타 사항을 적어주세요',
   };
 
   const handleChange = e => {
@@ -179,7 +272,6 @@ function DiaryPage() {
     setHashtags(prev => prev.filter(t => t !== tag));
   };
 
-
   const generateHashtags = () => {
     const newTags = Object.values(formValues)
       .filter(value => value)
@@ -187,100 +279,152 @@ function DiaryPage() {
     setHashtags(newTags);
   };
 
+  const parseMarkdown = text => {
+    if (!text) return '';
+    return text;
+  };
+
+  useEffect(() => {
+    if (previewMode) {
+      setEditorText(editorText);
+    }
+  }, [previewMode]);
+
   const createDiary = async () => {
-    // 사용자 입력으로부터 해시태그를 생성합니다.
     const newTags = Object.values(formValues)
       .filter(value => value)
       .map(value => value.replace(/\s+/g, ''));
-    setHashtags(newTags);  // UI에 해시태그 표시
+    setHashtags(newTags);
 
-    // JSON 데이터 구조, 서버에 전송
+    const markdownText = [
+      `**Who:** ${formValues.who}`,
+      `**When:** ${formValues.when}`,
+      `**Where:** ${formValues.where}`,
+      `**What:** ${formValues.what}`,
+      `**How:** ${formValues.how}`,
+      `**Why:** ${formValues.why}`,
+      `${formValues.others}`
+    ];
+    setEditorText(markdownText);
+    setShowBlinkingGuideline(true);
+
     const diaryData = {
-        who: formValues.who,
-        when: formValues.when,
-        where: formValues.where,
-        what: formValues.what,
-        how: formValues.how,
-        why: formValues.why,
-        hashtags: newTags
+      who: formValues.who,
+      when: formValues.when,
+      where: formValues.where,
+      what: formValues.what,
+      how: formValues.how,
+      why: formValues.why,
+      others: formValues.others,
+      hashtags: newTags,
     };
 
-    // 서버에 일기 생성 요청
     try {
-      const response = await fetch(`${process.env.REACT_APP_Server_IP}/api/create-diary`, {
+      const response = await fetch(`${process.env.REACT_APP_Server_IP}/generate_daily/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(diaryData)  // JSON 형식의 데이터 전송
+        body: JSON.stringify(diaryData),
       });
 
       if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json();  // 응답 데이터를 JSON 형식으로 변환
-      const formattedText = data.diaryText.replace(/(\.)/g, '$1\n');
-    setEditorText(formattedText);
-    setShowGuideline(false);
-  } catch (error) {
-    console.error('Error creating diary:', error);
-  }
-};
+      const data = await response.json();
+      const generatedDiaryText = data.diaryText; // 리스트 그대로 받기
+
+      setEditorText(generatedDiaryText); // 리스트 그대로 설정
+      setShowGuideline(false);
+    } catch (error) {
+      console.error('Error creating diary:', error);
+    }
+  };
 
   const handleUpload = () => {
     setUploading(true);
-    // 여기에 실제 파일 업로드 로직을 추가하세요.
-    setTimeout(() => setUploading(false), 2000); // 임시 업로드 시뮬레이션
+    setTimeout(() => setUploading(false), 2000);
   };
 
   return (
     <Container>
       <MainContent>
-      <InputColumn>
-        {Object.keys(formValues).map(key => (
-          <div key={key}>
-            <InputLabel htmlFor={key}>{key.charAt(0).toUpperCase() + key.slice(1)}:</InputLabel>
-            <Input
-              type="text"
-              id={key}
-              name={key}
-              value={formValues[key]}
-              onChange={handleChange}
-              placeholder={placeholders[key]} // placeholder 추가
-            />
-          </div>
-        ))}
-        <Button onClick={generateHashtags}>해시태그 생성</Button>
-        <HashTagBox>
-          {hashtags.map((tag, index) => (
-            <Tag key={index} onClick={() => handleDeleteTag(tag)}>
-              {tag}
-            </Tag>
+        <InputColumn>
+          {Object.keys(formValues).map(key => (
+            <div key={key}>
+              <InputLabel htmlFor={key}>{key.charAt(0).toUpperCase() + key.slice(1)}:</InputLabel>
+              <Input
+                type="text"
+                id={key}
+                name={key}
+                value={formValues[key]}
+                onChange={handleChange}
+                placeholder={placeholders[key]}
+              />
+            </div>
           ))}
-        </HashTagBox>
-        <Button onClick={createDiary}>일기 생성</Button>
-      </InputColumn>
-      <DiaryOutput>
-  {/* showGuideline 상태에 따라 조건부 렌더링 */}
+          <Button onClick={generateHashtags}>해시태그 생성</Button>
+          <HashTagBox>
+            {hashtags.map((tag, index) => (
+              <Tag key={index} onClick={() => handleDeleteTag(tag)}>
+                {tag}
+              </Tag>
+            ))}
+          </HashTagBox>
+          <Button onClick={createDiary}>일기 생성</Button>
+          <Button onClick={togglePreview}>
+            {previewMode ? '일반 보기' : '마크다운 미리보기'}
+          </Button>
+        </InputColumn>
+        <DiaryOutput>
   {showGuideline ? (
-    // 가이드라인 텍스트를 표시합니다.
-    <>
-      <GuidelineTitle>Guide Line</GuidelineTitle>
-      <GuidelineText>육하원칙에 해당하는 내용을 작성해주세요.</GuidelineText>
-      <GuidelineText>작성한 후 해시태그 생성을 눌러주세요.</GuidelineText>
-      <GuidelineText>해시태그가 생성된 후 해시태그를 바탕으로 일기 생성이 됩니다.</GuidelineText>
-    </>
+    showBlinkingGuideline ? (
+      <BlinkingGuideline>
+        <GuidelineTitle>Guide Line</GuidelineTitle>
+        <GuidelineText>육하원칙에 해당하는 내용을 작성해주세요.</GuidelineText>
+        <GuidelineText>작성한 후 해시태그 생성을 눌러주세요.</GuidelineText>
+        <GuidelineText>해시태그가 생성된 후 해시태그를 바탕으로 일기 생성이 됩니다.</GuidelineText>
+      </BlinkingGuideline>
+    ) : (
+      <>
+        <GuidelineTitle>Guide Line</GuidelineTitle>
+        <GuidelineText>육하원칙에 해당하는 내용을 작성해주세요.</GuidelineText>
+        <GuidelineText>작성한 후 해시태그 생성을 눌러주세요.</GuidelineText>
+        <GuidelineText>해시태그가 생성된 후 해시태그를 바탕으로 일기 생성이 됩니다.</GuidelineText>
+      </>
+    )
+  ) : !previewMode ? (
+    <StyledReactMde
+      value={editorText.join('\n')}
+      onChange={value => setEditorText(value.split('\n'))}
+      selectedTab={selectedTab}
+      onTabChange={setSelectedTab}
+      generateMarkdownPreview={markdown =>
+        Promise.resolve(converter.makeHtml(markdown))
+      }
+    />
   ) : (
-    // 리치 텍스트 에디터를 표시합니다.
-    <ReactQuill value={editorText} onChange={setEditorText} />
+    <MarkdownPreview>
+      <ReactMarkdown
+        children={editorText.join('\n')}
+        remarkPlugins={[remarkGfm, remarkBreaks]}
+        rehypePlugins={[rehypeRaw]}
+        components={{
+          strong: ({ node, children, ...props }) => <span style={{ fontWeight: 'bold' }} {...props}>{children}</span>,
+          h1: ({ node, children, ...props }) => <h1 style={{ fontWeight: 'bold' }} {...props}>{children}</h1>,
+          h2: ({ node, children, ...props }) => <h2 style={{ fontWeight: 'bold' }} {...props}>{children}</h2>,
+          h3: ({ node, children, ...props }) => <h3 style={{ fontWeight: 'bold' }} {...props}>{children}</h3>,
+        }}
+      />
+    </MarkdownPreview>
   )}
 </DiaryOutput>
       </MainContent>
       <UploadSection>
-          <Button onClick={handleUpload}>업로드+</Button>
-          {uploading && <div style={{ fontSize: '16px', textAlign: 'center' }}>업로드중...</div>}
-        </UploadSection>
+        <Button onClick={handleUpload}>업로드+</Button>
+        {uploading && <div style={{ fontSize: '16px', textAlign: 'center' }}>업로드중...</div>}
+      </UploadSection>
     </Container>
   );
 }
