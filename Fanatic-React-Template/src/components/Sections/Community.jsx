@@ -137,8 +137,11 @@ export default function Community() {
             };
 
             ws.current.onmessage = (event) => {
+                console.log(event.data);
+
                 const message = JSON.parse(event.data);
                 console.log(`Received: ${event.data}`);
+                console.log(messages);
                 setMessages((prevMessages) => [...prevMessages, message]);
             };
 
@@ -161,7 +164,7 @@ export default function Community() {
             // WebSocket이 열려 있고 inputValue가 존재하는 경우 실행
             const message = { sender: 'User', text: inputValue, time: new Date().toLocaleTimeString() }; // 메시지 객체 생성
             ws.current.send(JSON.stringify(message));
-            setMessages((prevMessages) => [...prevMessages, message]);
+            // setMessages((prevMessages) => [...prevMessages, message]);
             setInputValue('');
         }
     };
